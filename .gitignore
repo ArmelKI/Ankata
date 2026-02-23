@@ -1,0 +1,15 @@
+# OS
+.vscode/
+.DS_Store
+
+# PDFs specs
+*.pdf
+
+# Flutter
+build/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Node
+node_modules/
+.env
