@@ -126,8 +126,8 @@ class LineModel {
         AND s.valid_from <= $3 AND s.valid_until >= $3
         AND EXTRACT(DOW FROM $3::date)::int = ANY(s.days_of_week)
         AND s.is_active = true
-      WHERE LOWER(l.origin_city) = LOWER($1)
-        AND LOWER(l.destination_city) = LOWER($2)
+      WHERE LOWER(l.origin_city) LIKE '%' || LOWER($1) || '%'
+        AND LOWER(l.destination_city) LIKE '%' || LOWER($2) || '%'
         AND l.is_active = true
       GROUP BY l.id, l.line_code, l.company_id, l.origin_city, l.destination_city,
         l.origin_name, l.destination_name, l.base_price, l.luggage_price_per_kg,
