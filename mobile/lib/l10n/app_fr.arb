@@ -1,0 +1,155 @@
+{
+  "@@locale": "fr",
+  "@@context": "Ankata Transport Application FR",
+  
+  "appTitle": "Ankata",
+  "appSubtitle": "Transport Intelligent au Burkina Faso",
+  "appDescription": "Réservez vos trajets en ligne facilement et rapidement",
+  
+  "search": "Rechercher",
+  "origin": "Départ",
+  "destination": "Arrivée",
+  "date": "Date",
+  "time": "Heure",
+  "searchTrips": "Rechercher des trajets",
+  "noResults": "Aucun trajet trouvé",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "retry": "Réessayer",
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  "save": "Enregistrer",
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  
+  "companies": "Compagnies",
+  "lines": "Lignes",
+  "schedules": "Horaires",
+  "bookings": "Réservations",
+  "profile": "Profil",
+  "settings": "Paramètres",
+  "help": "Aide",
+  
+  "price": "Prix",
+  "duration": "Durée",
+  "distance": "Distance",
+  "seats": "Sièges",
+  "available": "Disponible",
+  "soldOut": "Complet",
+  "rating": "Note",
+  "reviews": "Avis",
+  
+  "book": "Réserver",
+  "bookingConfirmed": "Réservation confirmée",
+  "bookingCancelled": "Réservation annulée",
+  "bookingHistory": "Historique de réservations",
+  
+  "payment": "Paiement",
+  "paymentMethod": "Méthode de paiement",
+  "orangeMoney": "Orange Money",
+  "moovMoney": "Moov Money",
+  "yengaPay": "Yenga Pay",
+  "cardPayment": "Carte bancaire",
+  
+  "login": "Connexion",
+  "logout": "Déconnexion",
+  "signup": "Inscription",
+  "email": "Email",
+  "password": "Mot de passe",
+  "phone": "Téléphone",
+  "forgotPassword": "Mot de passe oublié",
+  "resetPassword": "Réinitialiser le mot de passe",
+  
+  "otp": "Code OTP",
+  "otpSent": "Code OTP envoyé par SMS",
+  "otpExpired": "Le code OTP a expiré",
+  "otpInvalid": "Code OTP invalide",
+  
+  "about": "À propos",
+  "version": "Version",
+  "contact": "Contact",
+  "website": "Site web",
+  "facebook": "Facebook",
+  "whatsapp": "WhatsApp",
+  "language": "Langue",
+  "theme": "Thème",
+  "notifications": "Notifications",
+  
+  "monday": "Lundi",
+  "tuesday": "Mardi",
+  "wednesday": "Mercredi",
+  "thursday": "Jeudi",
+  "friday": "Vendredi",
+  "saturday": "Samedi",
+  "sunday": "Dimanche",
+  
+  "january": "Janvier",
+  "february": "Février",
+  "march": "Mars",
+  "april": "Avril",
+  "may": "Mai",
+  "june": "Juin",
+  "july": "Juillet",
+  "august": "Août",
+  "september": "Septembre",
+  "october": "Octobre",
+  "november": "Novembre",
+  "december": "Décembre",
+  
+  "fcfa": "FCFA",
+  "km": "km",
+  "minute": "minute",
+  "minutes": "minutes",
+  "hour": "heure",
+  "hours": "heures",
+  
+  "welcome": "Bienvenue {name}",
+  "@welcome": {
+    "description": "Bienvenue avec le nom de l'utilisateur",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "tripPrice": "Prix du trajet: {price} FCFA",
+  "@tripPrice": {
+    "description": "Prix d'un trajet",
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "departureTime": "Départ à {time}",
+  "@departureTime": {
+    "description": "Heure de départ",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "arrivalTime": "Arrivée à {time}",
+  "@arrivalTime": {
+    "description": "Heure d'arrivée",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "tripDuration": "Durée: {duration} heures",
+  "@tripDuration": {
+    "description": "Durée du trajet",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  }
+}

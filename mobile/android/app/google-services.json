@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "489782155468",
+    "project_id": "ankata-transport",
+    "storage_bucket": "ankata-transport.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489782155468:android:7d00bacf7fdac7f37e8a69",
+        "android_client_info": {
+          "package_name": "com.ankata.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANOSSQBUdsSP1QA9RnEBjNKafaz8JhRTY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
