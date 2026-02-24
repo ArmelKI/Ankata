@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SearchHistoryService.addSearch(search);
     _loadRecentSearches();
 
-    context.go('/trips/search', extra: search);
+    context.push('/trips/search', extra: search);
   }
 
   void _changePassengers(int delta) {
@@ -92,227 +92,336 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.lightGray,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 1,
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: AppRadius.radiusSm,
-              ),
-              child: Center(
-                child: Text(
-                  'A',
-                  style: AppTextStyles.h2.copyWith(color: AppColors.white),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Text('Ankata', style: AppTextStyles.h3),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon:
-                const Icon(Icons.notifications_outlined, color: AppColors.gray),
-            onPressed: () {
-              // Navigation vers la page notifications (à implémenter)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'Fonctionnalit\u00e9 notifications en cours de d\u00e9veloppement'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Card Hero
-              Container(
-                margin: const EdgeInsets.all(AppSpacing.md),
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  gradient: AppGradients.primaryGradient,
-                  borderRadius: AppRadius.radiusLg,
-                  boxShadow: AppShadows.shadow3,
-                ),
-                child: Column(
-                  children: [
-                    // Origine (Dropdown)
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: AppRadius.radiusMd,
-                      ),
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedOrigin,
-                        underline: const SizedBox(),
-                        hint: const Text('Sélectionner départ'),
-                        items: AppConstants.cities.map((city) {
-                          return DropdownMenuItem(
-                            value: city,
-                            child: Text(city),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() => _selectedOrigin = value);
-                        },
+              // Premium Header & Floating Search Card
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Immersive curved header
+                  Container(
+                    width: double.infinity,
+                    height: 260,
+                    decoration: const BoxDecoration(
+                      gradient: AppGradients.primaryGradient,
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(32),
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    // Destination (Dropdown)
-                    Stack(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
+                        AppSpacing.xxxl, AppSpacing.lg, AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: AppRadius.radiusMd,
-                          ),
-                          child: DropdownButton<String>(
-                            isExpanded: true,
-                            value: _selectedDestination,
-                            underline: const SizedBox(),
-                            hint: const Text('Sélectionner destination'),
-                            items: AppConstants.cities.map((city) {
-                              return DropdownMenuItem(
-                                value: city,
-                                child: Text(city),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() => _selectedDestination = value);
-                            },
-                          ),
-                        ),
-                        // Bouton d'échange
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                final temp = _selectedOrigin;
-                                _selectedOrigin = _selectedDestination;
-                                _selectedDestination = temp;
-                              });
-                              HapticHelper.lightImpact();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Bienvenue sur',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.white.withOpacity(0.8)),
+                                ),
+                                Text(
+                                  'Ankata.',
+                                  style: AppTextStyles.h1
+                                      .copyWith(color: AppColors.white),
+                                ),
+                              ],
+                            ),
+                            Container(
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: AppRadius.radiusSm,
+                                color: AppColors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
                               ),
-                              child: const Icon(
-                                Icons.repeat,
-                                color: AppColors.white,
-                                size: 18,
+                              child: IconButton(
+                                icon: const Icon(
+                                    Icons.notifications_none_rounded,
+                                    color: AppColors.white),
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Fonctionnalité notifications en cours')),
+                                  );
+                                },
                               ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'Où souhaitez-vous\naller aujourd\'hui ?',
+                          style: AppTextStyles.h2.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    // Date & Passagers
-                    Row(
+                  ),
+
+                  // Floating Search Card
+                  Container(
+                    margin: const EdgeInsets.only(
+                      top: 200, // Chevauche le header
+                      left: AppSpacing.md,
+                      right: AppSpacing.md,
+                      bottom: AppSpacing.xl,
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: AppRadius.radiusLg,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.charcoal.withOpacity(0.08),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _selectDate,
-                            child: Container(
-                              padding: const EdgeInsets.all(AppSpacing.md),
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: AppRadius.radiusMd,
-                              ),
-                              child: Row(
+                        // Origine & Destination avec Swap Bouton intégré
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppColors.border),
+                            borderRadius: AppRadius.radiusMd,
+                          ),
+                          child: Stack(
+                            alignment: Alignment.centerRight,
+                            children: [
+                              Column(
                                 children: [
-                                  const Icon(Icons.calendar_today,
-                                      color: AppColors.primary, size: 20),
-                                  const SizedBox(width: AppSpacing.md),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Date',
-                                          style: AppTextStyles.bodySmall),
-                                      Text(
-                                        _selectedDate != null
-                                            ? DateFormat('d MMM', 'fr_FR')
-                                                .format(_selectedDate!)
-                                            : 'Demain',
-                                        style:
-                                            AppTextStyles.bodyMedium.copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.charcoal,
+                                  // Départ
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm, vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.trip_origin,
+                                            color: AppColors.primary, size: 20),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              value: _selectedOrigin,
+                                              hint: Text('Lieu de départ',
+                                                  style: AppTextStyles
+                                                      .bodyMedium
+                                                      .copyWith(
+                                                          color:
+                                                              AppColors.gray)),
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  color: AppColors.gray),
+                                              items: AppConstants.cities
+                                                  .map((city) {
+                                                return DropdownMenuItem(
+                                                    value: city,
+                                                    child: Text(city,
+                                                        style: AppTextStyles
+                                                            .bodyLarge));
+                                              }).toList(),
+                                              onChanged: (value) => setState(
+                                                  () =>
+                                                      _selectedOrigin = value),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(height: 1, indent: 40),
+                                  // Arrivée
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm, vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.location_on,
+                                            color: AppColors.error, size: 20),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              value: _selectedDestination,
+                                              hint: Text('Destination',
+                                                  style: AppTextStyles
+                                                      .bodyMedium
+                                                      .copyWith(
+                                                          color:
+                                                              AppColors.gray)),
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  color: AppColors.gray),
+                                              items: AppConstants.cities
+                                                  .map((city) {
+                                                return DropdownMenuItem(
+                                                    value: city,
+                                                    child: Text(city,
+                                                        style: AppTextStyles
+                                                            .bodyLarge));
+                                              }).toList(),
+                                              onChanged: (value) => setState(
+                                                  () => _selectedDestination =
+                                                      value),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: AppRadius.radiusMd,
-                          ),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                onPressed: () => _changePassengers(-1),
-                                icon: const Icon(Icons.remove, size: 18),
-                                color: AppColors.primary,
-                              ),
-                              Text(
-                                '$_passengers',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.charcoal,
+                              // Swap Button flottant à droite
+                              Positioned(
+                                right: AppSpacing.md,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    HapticHelper.lightImpact();
+                                    setState(() {
+                                      final temp = _selectedOrigin;
+                                      _selectedOrigin = _selectedDestination;
+                                      _selectedDestination = temp;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.lightGray,
+                                      shape: BoxShape.circle,
+                                      border:
+                                          Border.all(color: AppColors.border),
+                                      boxShadow: AppShadows.shadow1,
+                                    ),
+                                    child: const Icon(Icons.swap_vert,
+                                        color: AppColors.primary, size: 22),
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                onPressed: () => _changePassengers(1),
-                                icon: const Icon(Icons.add, size: 18),
-                                color: AppColors.primary,
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.md),
+                        // Date & Passagers Row
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: GestureDetector(
+                                onTap: _selectDate,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.sm,
+                                      vertical: AppSpacing.md),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.border),
+                                    borderRadius: AppRadius.radiusMd,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.calendar_month_rounded,
+                                          color: AppColors.primary, size: 20),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Date de départ',
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                        color: AppColors.gray)),
+                                            Text(
+                                              _selectedDate != null
+                                                  ? DateFormat(
+                                                          'E d MMM', 'fr_FR')
+                                                      .format(_selectedDate!)
+                                                  : 'Aujourd\'hui',
+                                              style: AppTextStyles.bodyMedium
+                                                  .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: AppColors.border),
+                                  borderRadius: AppRadius.radiusMd,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _changePassengers(-1),
+                                      child: const Icon(
+                                          Icons.remove_circle_outline,
+                                          color: AppColors.primary,
+                                          size: 24),
+                                    ),
+                                    Column(
+                                      children: [
+                                        Text('Passagers',
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                                    color: AppColors.gray)),
+                                        Text('$_passengers',
+                                            style: AppTextStyles.bodyMedium
+                                                .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600)),
+                                      ],
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => _changePassengers(1),
+                                      child: const Icon(
+                                          Icons.add_circle_outline,
+                                          color: AppColors.primary,
+                                          size: 24),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        // Bouton Rechercher (UPGRADED avec AnimatedButton!)
+                        AnimatedButton(
+                          text: 'Rechercher des trajets',
+                          onPressed: () {
+                            HapticHelper.lightImpact();
+                            _searchTrips();
+                          },
+                          icon: Icons.search,
+                        ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    // Bouton Rechercher (UPGRADED avec AnimatedButton!)
-                    AnimatedButton(
-                      text: 'Rechercher des trajets',
-                      onPressed: () {
-                        HapticHelper.lightImpact();
-                        _searchTrips();
-                      },
-                      icon: Icons.search,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
               if (_recentSearches.isNotEmpty)
@@ -398,13 +507,64 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   children: [
-                    _buildPopularRoute(
-                        'Ouaga → Bobo', '6 compagnies', '4 500 FCFA', 4.2),
-                    _buildPopularRoute(
-                        'Bobo → Ouaga', '6 compagnies', '4 500 FCFA', 4.2),
-                    _buildPopularRoute(
-                        'Ouaga → Fada', '4 compagnies', '3 500 FCFA', 4.0),
+                    _buildPopularRoute('Ouagadougou', 'Bobo-Dioulasso',
+                        'Ouaga → Bobo', '4 500 FCFA'),
+                    _buildPopularRoute('Bobo-Dioulasso', 'Ouagadougou',
+                        'Bobo → Ouaga', '4 500 FCFA'),
+                    _buildPopularRoute('Ouagadougou', 'Fada N\'Gourma',
+                        'Ouaga → Fada', '3 500 FCFA'),
                   ],
+                ),
+              ),
+
+              // SOTRACO Banner
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md, AppSpacing.lg, AppSpacing.md, 0),
+                child: InkWell(
+                  onTap: () => context.push('/sotraco'),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: AppRadius.radiusLg,
+                      border: Border.all(
+                          color: CompanyColors.getCompanyColor('SOTRACO')),
+                      boxShadow: AppShadows.shadow2,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: CompanyColors.getCompanyColor('SOTRACO')
+                                .withValues(alpha: 0.1),
+                            borderRadius: AppRadius.radiusMd,
+                          ),
+                          child: Icon(Icons.directions_bus,
+                              color: CompanyColors.getCompanyColor('SOTRACO'),
+                              size: 30),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('SOTRACO - Transport Urbain',
+                                  style: AppTextStyles.h4),
+                              const SizedBox(height: 4),
+                              Text('Déplacez-vous facilement dans Ouagadougou',
+                                  style: AppTextStyles.bodySmall
+                                      .copyWith(color: AppColors.gray)),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios,
+                            size: 16, color: AppColors.gray),
+                      ],
+                    ),
+                  ),
                 ),
               ),
 
@@ -441,16 +601,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 2,
                   mainAxisSpacing: AppSpacing.md,
                   crossAxisSpacing: AppSpacing.md,
-                  childAspectRatio: 0.75,
+                  childAspectRatio: 0.85,
                   children: [
-                    _buildCompanyCard('SOTRACO', 4.5, 'Transport\nurbain',
-                        CompanyColors.getCompanyColor('SOTRACO')),
-                    _buildCompanyCard('TSR', 3.2, 'Prix bas',
+                    _buildCompanyCard('TSR', 'Prix abordables',
                         CompanyColors.getCompanyColor('TSR')),
-                    _buildCompanyCard('STAF', 4.1, 'Fiable',
+                    _buildCompanyCard('STAF', 'Large réseau',
                         CompanyColors.getCompanyColor('STAF')),
-                    _buildCompanyCard('RAHIMO', 4.6, 'Premium',
+                    _buildCompanyCard('RAHIMO', 'Confort Premium',
                         CompanyColors.getCompanyColor('RAHIMO')),
+                    _buildCompanyCard('TCV', 'Gares modernes',
+                        CompanyColors.getCompanyColor('TCV')),
                   ],
                 ),
               ),
@@ -463,69 +623,64 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPopularRoute(
-      String route, String companies, String price, double rating) {
-    return Container(
-      width: 280,
-      margin: const EdgeInsets.only(right: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.radiusMd,
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.shadow2,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(route, style: AppTextStyles.h4),
-              const SizedBox(height: 4),
-              Text(companies,
-                  style:
-                      AppTextStyles.bodyMedium.copyWith(color: AppColors.gray)),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  'À partir de $price',
-                  style: AppTextStyles.priceSmall,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.star, color: AppColors.star, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    rating.toString(),
+      String origin, String destination, String routeName, String price) {
+    return InkWell(
+      onTap: () {
+        context.push('/trips/search', extra: {
+          'originCity': origin,
+          'destinationCity': destination,
+          'departureDate': DateFormat('yyyy-MM-dd')
+              .format(DateTime.now().add(const Duration(days: 1))),
+          'passengers': 1,
+        });
+      },
+      child: Container(
+        width: 250,
+        margin: const EdgeInsets.only(right: AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.radiusMd,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.shadow2,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(routeName, style: AppTextStyles.h4),
+                const SizedBox(height: 4),
+                Text('Trajet direct',
                     style: AppTextStyles.bodyMedium
-                        .copyWith(fontWeight: FontWeight.w500),
+                        .copyWith(color: AppColors.gray)),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    'À partir de $price',
+                    style: AppTextStyles.priceSmall,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-            ],
-          ),
-        ],
+                ),
+                const Icon(Icons.arrow_forward_ios,
+                    size: 14, color: AppColors.gray),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCompanyCard(
-      String name, double rating, String badge, Color color) {
+  Widget _buildCompanyCard(String name, String badge, Color color) {
     return InkWell(
       onTap: () {
-        if (name == 'SOTRACO') {
-          context.push('/sotraco');
-          return;
-        }
         final id = _getCompanyIdByName(name);
         if (id != null) {
           context.push('/companies/$id');
@@ -534,51 +689,53 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: AppRadius.radiusMd,
+          borderRadius: AppRadius.radiusLg,
           boxShadow: AppShadows.shadow2,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: AppRadius.radiusMd,
+                shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   name[0],
-                  style: AppTextStyles.h1.copyWith(color: color),
+                  style: AppTextStyles.h2.copyWith(color: color),
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            Text(name, style: AppTextStyles.h4, textAlign: TextAlign.center),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.star, color: AppColors.star, size: 14),
-                const SizedBox(width: 4),
-                Text(rating.toString(),
-                    style: AppTextStyles.bodySmall
-                        .copyWith(fontWeight: FontWeight.w500)),
-              ],
-            ),
             const SizedBox(height: AppSpacing.sm),
+            Text(name,
+                style: AppTextStyles.bodyLarge
+                    .copyWith(fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+                maxLines: 1),
+            const SizedBox(height: 2),
             Text(
               badge,
-              style: AppTextStyles.bodySmall.copyWith(color: color),
+              style: AppTextStyles.caption.copyWith(color: AppColors.gray),
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Container(height: 3, color: color),
+            const Spacer(),
+            Container(
+              height: 3,
+              width: 30,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
           ],
         ),
       ),
