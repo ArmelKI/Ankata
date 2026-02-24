@@ -1,0 +1,49 @@
+{
+  "name": "ankata-backend",
+  "version": "1.0.0",
+  "description": "Ankata App Passagers - Backend API",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "test": "jest --coverage",
+    "lint": "eslint src",
+    "db:init": "node init-database.js",
+    "db:init:bash": "bash init-database.sh",
+    "db:migrate": "node src/database/migrations.js",
+    "db:seed": "node init-database.js",
+    "db:reset": "psql -U ${POSTGRES_USER:-ankata_user} -d ${POSTGRES_DB:-ankata_db} -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' && npm run db:init"
+  },
+  "keywords": ["ankata", "transport", "booking"],
+  "author": "Axiane Agency",
+  "license": "Proprietary",
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.0.3",
+    "pg": "^8.9.0",
+    "supabase": "^2.23.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "body-parser": "^1.20.2",
+    "axios": "^1.4.0",
+    "express-validator": "^7.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "whatsapp-web.js": "^1.20.0",
+    "twilio": "^3.82.1",
+    "uuid": "^9.0.0",
+    "winston": "^3.8.2",
+    "express-async-errors": "^3.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "jest": "^29.5.0",
+    "eslint": "^8.40.0",
+    "@types/node": "^20.0.0",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
