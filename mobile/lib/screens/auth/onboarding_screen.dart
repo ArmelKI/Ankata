@@ -15,18 +15,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<OnboardingPage> pages = [
     OnboardingPage(
       title: 'Bienvenue sur Ankata',
-      description: 'Réservez votre prochain trajet facilement et confortablement',
-      image: 'assets/images/onboard_1.png',
+      description:
+          'Réservez votre prochain trajet facilement et confortablement',
+      icon: Icons.directions_bus_filled_outlined,
     ),
     OnboardingPage(
       title: 'Disponibilité en temps réel',
-      description: 'Consultez la disponibilité des places et les tarifs en temps réel',
-      image: 'assets/images/onboard_2.png',
+      description:
+          'Consultez la disponibilité des places et les tarifs en temps réel',
+      icon: Icons.access_time_rounded,
     ),
     OnboardingPage(
       title: 'Paiement sécurisé',
-      description: 'Payez en toute sécurité avec Wave, Orange Money ou Moov Money',
-      image: 'assets/images/onboard_3.png',
+      description:
+          'Payez en toute sécurité avec Wave, Orange Money ou Moov Money',
+      icon: Icons.security_rounded,
     ),
   ];
 
@@ -98,7 +101,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         }
                       },
                       child: Text(
-                        _currentPage == pages.length - 1 ? 'Commencer' : 'Suivant',
+                        _currentPage == pages.length - 1
+                            ? 'Commencer'
+                            : 'Suivant',
                         style: const TextStyle(color: Colors.white),
                       ),
                     ),
@@ -118,15 +123,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // TODO: Add image
           Container(
             height: 300,
+            width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
+              color: const Color(0xFF00A859).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(32),
             ),
             child: Center(
-              child: Text(page.image),
+              child: Icon(
+                page.icon,
+                size: 120,
+                color: const Color(0xFF00A859),
+              ),
             ),
           ),
           const SizedBox(height: 48),
@@ -135,15 +144,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
+              color: Color(0xFF1E293B),
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
             page.description,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
-              color: Colors.grey.shade600,
+              color: Color(0xFF64748B),
+              height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -156,11 +167,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingPage {
   final String title;
   final String description;
-  final String image;
+  final IconData icon;
 
   OnboardingPage({
     required this.title,
     required this.description,
-    required this.image,
+    required this.icon,
   });
 }

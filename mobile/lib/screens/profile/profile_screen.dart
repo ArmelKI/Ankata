@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_theme.dart';
-import '../../services/streak_service.dart';
-import '../../services/xp_service.dart';
-import '../../services/badge_service.dart' as badge_svc;
 import '../../services/favorites_service.dart';
 import '../../widgets/referral_dialog.dart';
 import '../../widgets/company_logo.dart';
 import '../../utils/haptic_helper.dart';
+import '../../providers/app_providers.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
   bool _smsEnabled = true;
-  bool _emailEnabled = false;
   String? _photoPath;
 
   @override
@@ -63,8 +61,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildProfileHeader(),
             const SizedBox(height: AppSpacing.md),
             _buildPersonalInfoSection(),
-            const SizedBox(height: AppSpacing.md),
-            _buildGamificationSection(), // 🎮 Gamification (Streak, XP, Badges)
             const SizedBox(height: AppSpacing.md),
             _buildReferralSection(), // 🎁 Referral (100F par ami, max 15)
             const SizedBox(height: AppSpacing.md),
@@ -136,42 +132,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
           ),
           const SizedBox(height: AppSpacing.md),
-          
-          // 🎮 Gamification Stats (NOUVEAU!)
-          FutureBuilder<StreakData>(
-            future: StreakService.checkStreak(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data!.currentStreak > 0) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: StreakWidget(streak: snapshot.data!.currentStreak),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          
-          FutureBuilder<int>(
-            future: XPService.getXP(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return FutureBuilder<int>(
-                  future: XPService.getLevel(),
-                  builder: (context, levelSnapshot) {
-                    if (levelSnapshot.hasData) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: XPBar(level: levelSnapshot.data!, xp: snapshot.data!),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          
           ElevatedButton.icon(
             onPressed: () {
               HapticHelper.lightImpact();
@@ -201,7 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'Informations personnelles',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildListItem(
@@ -210,7 +171,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'B123456789',
             () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Modification CNIB en cours de d\u00e9veloppement')),
+                const SnackBar(
+                    content: Text(
+                        'Modification CNIB en cours de d\u00e9veloppement')),
               );
             },
           ),
@@ -259,63 +222,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
               if (date != null && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Date s\u00e9lectionn\u00e9e: ${date.day}/${date.month}/${date.year}')),
+                  SnackBar(
+                      content: Text(
+                          'Date s\u00e9lectionn\u00e9e: ${date.day}/${date.month}/${date.year}')),
                 );
               }
             },
           ),
-        ],
-      ),
-    );
-  }
-
-  // 🎮 NOUVEAU: Section Gamification (Badges)
-  Widget _buildGamificationSection() {
-    return Container(
-      color: AppColors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                const Icon(Icons.emoji_events, color: Colors.amber),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Mes badges',
-                  style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-          // Display badges
-          FutureBuilder<List<badge_svc.Badge>>(
-            future: badge_svc.BadgeService.getUnlockedBadges(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: snapshot.data!.take(6).map((badgeItem) {
-                      return badge_svc.BadgeWidget(badge: badgeItem, size: 60);
-                    }).toList(),
-                  ),
-                );
-              } else {
-                return Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text(
-                    'Aucun badge débloqué pour le moment. Continue à utiliser l\'app!',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
-                  ),
-                );
-              }
-            },
-          ),
-          const SizedBox(height: AppSpacing.sm),
         ],
       ),
     );
@@ -332,7 +245,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'Gagne Des Points',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildListItem(
@@ -375,7 +289,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'Notifications',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildSwitchItem(
@@ -397,16 +312,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               setState(() => _smsEnabled = value);
             },
           ),
-          const Divider(height: 1),
-          _buildSwitchItem(
-            Icons.email,
-            'Notifications email',
-            'Recevoir des emails promotionnels',
-            _emailEnabled,
-            (value) {
-              setState(() => _emailEnabled = value);
-            },
-          ),
         ],
       ),
     );
@@ -422,7 +327,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'Préférences',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildListItem(
@@ -464,7 +370,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'Favoris',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           FutureBuilder<List<Map<String, dynamic>>>(
@@ -476,7 +383,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Text(
                     'Aucun trajet favori pour le moment.',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
+                    style:
+                        AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
                   ),
                 );
               }
@@ -488,7 +396,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   return ListTile(
                     leading: const Icon(Icons.star, color: AppColors.star),
                     title: Text('$from → $to', style: AppTextStyles.bodyMedium),
-                    subtitle: Text(company, style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
+                    subtitle: Text(company,
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.gray)),
                   );
                 }).toList(),
               );
@@ -509,7 +419,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'Assistance',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildListItem(
@@ -549,7 +460,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'À propos',
-              style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildListItem(
@@ -594,8 +506,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Icon(icon, color: AppColors.primary, size: 20),
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
-      subtitle: Text(subtitle, style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
-      trailing: trailing ?? (onTap != null ? const Icon(Icons.chevron_right, color: AppColors.gray) : null),
+      subtitle: Text(subtitle,
+          style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
+      trailing: trailing ??
+          (onTap != null
+              ? const Icon(Icons.chevron_right, color: AppColors.gray)
+              : null),
       onTap: onTap,
     );
   }
@@ -617,7 +533,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Icon(icon, color: AppColors.primary, size: 20),
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
-      subtitle: Text(subtitle, style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
+      subtitle: Text(subtitle,
+          style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
@@ -820,10 +737,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Annuler'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implémenter la déconnexion
-              context.go('/phone-auth');
+              // Implémenter la déconnexion : vider le token et le cache local
+              try {
+                await ref.read(apiServiceProvider).clearToken();
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+
+                if (context.mounted) {
+                  context.go('/phone-auth');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erreur lors de la déconnexion')),
+                  );
+                }
+              }
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Se déconnecter'),

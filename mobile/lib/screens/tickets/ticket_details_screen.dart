@@ -5,12 +5,86 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
+import '../../providers/app_providers.dart';
 
-class TicketDetailsScreen extends StatelessWidget {
+class TicketDetailsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> ticket;
 
   const TicketDetailsScreen({super.key, required this.ticket});
+
+  @override
+  ConsumerState<TicketDetailsScreen> createState() =>
+      _TicketDetailsScreenState();
+}
+
+class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
+  bool _isCancelling = false;
+
+  void _showCancelDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Annuler le billet'),
+        content: const Text(
+            'Êtes-vous sûr de vouloir annuler ce billet ? Des frais d\'annulation peuvent s\'appliquer selon les conditions.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Non, garder'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _cancelTicket();
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Oui, annuler'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _cancelTicket() async {
+    setState(() => _isCancelling = true);
+    try {
+      final bookingId = widget.ticket['id']?.toString() ??
+          widget.ticket['bookingId']?.toString();
+      if (bookingId == null || bookingId.isEmpty) {
+        throw Exception('ID de réservation manquant');
+      }
+
+      await ref
+          .read(apiServiceProvider)
+          .cancelBooking(bookingId, 'Annulation par le passager');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Billet annulé avec succès'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        context.pop(true); // Return true to refresh list
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: Impossible d\'annuler ce billet'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCancelling = false);
+      }
+    }
+  }
 
   Future<void> _generatePdfTicket(BuildContext context) async {
     try {
@@ -18,7 +92,7 @@ class TicketDetailsScreen extends StatelessWidget {
 
       // Générer QR code en image
       final qrImage = await QrPainter(
-        data: ticket['bookingCode'] as String? ?? '',
+        data: widget.ticket['bookingCode'] as String? ?? '',
         version: QrVersions.auto,
         gapless: false,
         color: const Color(0xFF000000),
@@ -94,13 +168,15 @@ class TicketDetailsScreen extends StatelessWidget {
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
                           _buildPdfInfo('Compagnie',
-                              ticket['company'] as String? ?? 'N/A'),
+                              widget.ticket['company'] as String? ?? 'N/A'),
                           pw.SizedBox(height: 16),
                           _buildPdfInfo('Code de réservation',
-                              ticket['bookingCode'] as String? ?? 'N/A'),
+                              widget.ticket['bookingCode'] as String? ?? 'N/A'),
                           pw.SizedBox(height: 16),
-                          _buildPdfInfo('Date d\'achat',
-                              ticket['purchaseDate'] as String? ?? 'N/A'),
+                          _buildPdfInfo(
+                              'Date d\'achat',
+                              widget.ticket['purchaseDate'] as String? ??
+                                  'N/A'),
                           pw.SizedBox(height: 24),
                           pw.Container(
                             padding: const pw.EdgeInsets.all(16),
@@ -136,7 +212,8 @@ class TicketDetailsScreen extends StatelessWidget {
                                           ),
                                           pw.SizedBox(height: 4),
                                           pw.Text(
-                                            ticket['from'] as String? ?? 'N/A',
+                                            widget.ticket['from'] as String? ??
+                                                'N/A',
                                             style: pw.TextStyle(
                                               fontSize: 16,
                                               fontWeight: pw.FontWeight.bold,
@@ -144,7 +221,7 @@ class TicketDetailsScreen extends StatelessWidget {
                                           ),
                                           pw.SizedBox(height: 4),
                                           pw.Text(
-                                            '${ticket['date'] ?? 'N/A'} • ${ticket['departure'] ?? 'N/A'}',
+                                            '${widget.ticket['date'] ?? 'N/A'} • ${widget.ticket['departure'] ?? 'N/A'}',
                                             style: const pw.TextStyle(
                                               fontSize: 10,
                                               color: PdfColors.grey700,
@@ -177,7 +254,8 @@ class TicketDetailsScreen extends StatelessWidget {
                                           ),
                                           pw.SizedBox(height: 4),
                                           pw.Text(
-                                            ticket['to'] as String? ?? 'N/A',
+                                            widget.ticket['to'] as String? ??
+                                                'N/A',
                                             style: pw.TextStyle(
                                               fontSize: 16,
                                               fontWeight: pw.FontWeight.bold,
@@ -185,7 +263,7 @@ class TicketDetailsScreen extends StatelessWidget {
                                           ),
                                           pw.SizedBox(height: 4),
                                           pw.Text(
-                                            '${ticket['date'] ?? 'N/A'} • ${ticket['arrival'] ?? 'N/A'}',
+                                            '${widget.ticket['date'] ?? 'N/A'} • ${widget.ticket['arrival'] ?? 'N/A'}',
                                             style: const pw.TextStyle(
                                               fontSize: 10,
                                               color: PdfColors.grey700,
@@ -200,17 +278,21 @@ class TicketDetailsScreen extends StatelessWidget {
                             ),
                           ),
                           pw.SizedBox(height: 16),
-                          _buildPdfInfo('Passager',
-                              ticket['passengerName'] as String? ?? 'N/A'),
-                          pw.SizedBox(height: 12),
-                          _buildPdfInfo('Téléphone',
-                              ticket['passengerPhone'] as String? ?? 'N/A'),
-                          pw.SizedBox(height: 12),
-                          _buildPdfInfo('Siège',
-                              ticket['seatNumber'] as String? ?? 'N/A'),
+                          _buildPdfInfo(
+                              'Passager',
+                              widget.ticket['passengerName'] as String? ??
+                                  'N/A'),
                           pw.SizedBox(height: 12),
                           _buildPdfInfo(
-                              'Prix', '${ticket['totalPrice'] ?? 0} FCFA'),
+                              'Téléphone',
+                              widget.ticket['passengerPhone'] as String? ??
+                                  'N/A'),
+                          pw.SizedBox(height: 12),
+                          _buildPdfInfo('Siège',
+                              widget.ticket['seatNumber'] as String? ?? 'N/A'),
+                          pw.SizedBox(height: 12),
+                          _buildPdfInfo('Prix',
+                              '${widget.ticket['totalPrice'] ?? 0} FCFA'),
                         ],
                       ),
                     ),
@@ -242,7 +324,7 @@ class TicketDetailsScreen extends StatelessWidget {
                           ),
                           pw.SizedBox(height: 8),
                           pw.Text(
-                            ticket['bookingCode'] as String? ?? '',
+                            widget.ticket['bookingCode'] as String? ?? '',
                             style: pw.TextStyle(
                               fontSize: 11,
                               fontWeight: pw.FontWeight.bold,
@@ -324,13 +406,15 @@ class TicketDetailsScreen extends StatelessWidget {
 
       // Sauvegarder et partager le PDF
       final output = await getTemporaryDirectory();
-      final file = File('${output.path}/billet_${ticket['bookingCode']}.pdf');
+      final file =
+          File('${output.path}/billet_${widget.ticket['bookingCode']}.pdf');
       await file.writeAsBytes(await pdf.save());
 
       if (context.mounted) {
         await Share.shareXFiles(
           [XFile(file.path)],
-          text: 'Votre billet Ankata - ${ticket['from']} → ${ticket['to']}',
+          text:
+              'Votre billet Ankata - ${widget.ticket['from']} → ${widget.ticket['to']}',
         );
       }
     } catch (e) {
@@ -368,7 +452,9 @@ class TicketDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bookingCode = ticket['bookingCode'] as String? ?? '';
+    final bookingCode = widget.ticket['bookingCode'] as String? ?? '';
+    final status = widget.ticket['status'] as String? ?? '';
+    final isCancelled = status.toLowerCase() == 'cancelled';
 
     return Scaffold(
       backgroundColor: AppColors.lightGray,
@@ -418,26 +504,64 @@ class TicketDetailsScreen extends StatelessWidget {
                 Text('Trajet', style: AppTextStyles.bodyLarge),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  '${ticket['from']} → ${ticket['to']}',
+                  '${widget.ticket['from']} → ${widget.ticket['to']}',
                   style: AppTextStyles.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  '${ticket['date']} • ${ticket['departure']} - ${ticket['arrival']}',
+                  '${widget.ticket['date']} • ${widget.ticket['departure']} - ${widget.ticket['arrival']}',
                   style: AppTextStyles.caption.copyWith(color: AppColors.gray),
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _generatePdfTicket(context),
-              icon: const Icon(Icons.download),
-              label: const Text('Télécharger le billet PDF'),
+          if (isCancelled)
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: AppRadius.radiusMd,
+              ),
+              child: const Center(
+                child: Text(
+                  'BILLET ANNULÉ',
+                  style: TextStyle(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _generatePdfTicket(context),
+                icon: const Icon(Icons.download),
+                label: const Text('Télécharger le billet PDF'),
+              ),
             ),
-          ),
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed:
+                    _isCancelling ? null : () => _showCancelDialog(context),
+                icon: _isCancelling
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.cancel_outlined),
+                label: const Text('Annuler le billet'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
