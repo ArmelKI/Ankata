@@ -3,8 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/auth/onboarding_screen.dart';
-import '../screens/auth/phone_auth_screen.dart';
-import '../screens/auth/otp_verify_screen.dart';
+import '../screens/auth/login_screen.dart';
+import '../screens/auth/register_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/home/search_screen.dart';
 import '../screens/trips/trip_search_results_screen.dart';
@@ -43,14 +44,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/phone-auth',
-        builder: (context, state) => const PhoneAuthScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: '/otp-verify',
-        builder: (context, state) {
-          final phoneNumber = state.extra as String?;
-          return OtpVerifyScreen(phoneNumber: phoneNumber ?? '');
-        },
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
 
       // Main App Shell (avec Bottom Navigation)

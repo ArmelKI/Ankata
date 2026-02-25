@@ -11,6 +11,7 @@ import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
 import '../../utils/company_logo_helper.dart';
+import 'package:printing/printing.dart';
 
 class TicketDetailsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> ticket;
@@ -90,7 +91,15 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
 
   Future<void> _generatePdfTicket(BuildContext context) async {
     try {
-      final pdf = pw.Document();
+      final font = await PdfGoogleFonts.robotoRegular();
+      final boldFont = await PdfGoogleFonts.robotoBold();
+
+      final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+          base: font,
+          bold: boldFont,
+        ),
+      );
 
       // Générer QR code en image
       final qrImage = await QrPainter(
@@ -461,13 +470,13 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
     final companyColor = CompanyColors.getCompanyColor(companyName);
 
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.surface),
         title: Text('Votre Billet',
-            style: AppTextStyles.h3.copyWith(color: AppColors.white)),
+            style: AppTextStyles.h3.copyWith(color: Theme.of(context).colorScheme.surface)),
       ),
       body: Stack(
         children: [
@@ -482,7 +491,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
               // Billet Ticket Card
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: AppRadius.radiusLg,
                   boxShadow: [
                     BoxShadow(
@@ -517,7 +526,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                 Text(companyName, style: AppTextStyles.h3),
                                 Text('Transport et logistique',
                                     style: AppTextStyles.caption
-                                        .copyWith(color: AppColors.gray)),
+                                        .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                               ],
                             ),
                           ),
@@ -558,7 +567,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                   children: [
                                     Text('DÉPART',
                                         style: AppTextStyles.caption
-                                            .copyWith(color: AppColors.gray)),
+                                            .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                                     const SizedBox(height: 4),
                                     Text(widget.ticket['from'] as String? ?? '',
                                         style: AppTextStyles.h3),
@@ -576,7 +585,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: AppSpacing.sm),
                                 child: Icon(Icons.arrow_forward_rounded,
-                                    color: AppColors.gray, size: 28),
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant, size: 28),
                               ),
                               Expanded(
                                 child: Column(
@@ -584,7 +593,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                   children: [
                                     Text('ARRIVÉE',
                                         style: AppTextStyles.caption
-                                            .copyWith(color: AppColors.gray)),
+                                            .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                                     const SizedBox(height: 4),
                                     Text(widget.ticket['to'] as String? ?? '',
                                         style: AppTextStyles.h3),
@@ -592,7 +601,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                     Text(
                                       '${widget.ticket['arrival']}',
                                       style: AppTextStyles.bodySmall
-                                          .copyWith(color: AppColors.gray),
+                                          .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                     ),
                                   ],
                                 ),
@@ -611,7 +620,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                           width: 10,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: AppColors.lightGray,
+                              color: Theme.of(context).scaffoldBackgroundColor,
                               borderRadius: const BorderRadius.horizontal(
                                   right: Radius.circular(10)),
                             ),
@@ -624,12 +633,12 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: List.generate(
                               (constraints.constrainWidth() / 15).floor(),
-                              (index) => const SizedBox(
+                              (index) => SizedBox(
                                 width: 8,
                                 height: 1.5,
                                 child: DecoratedBox(
                                     decoration:
-                                        BoxDecoration(color: AppColors.border)),
+                                        BoxDecoration(color: Theme.of(context).dividerColor)),
                               ),
                             ),
                           );
@@ -639,7 +648,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                           width: 10,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: AppColors.lightGray,
+                              color: Theme.of(context).scaffoldBackgroundColor,
                               borderRadius: const BorderRadius.horizontal(
                                   left: Radius.circular(10)),
                             ),
@@ -690,21 +699,21 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.border),
+                                    border: Border.all(color: Theme.of(context).dividerColor),
                                     borderRadius: AppRadius.radiusSm,
                                   ),
                                   child: QrImageView(
                                     data: bookingCode,
                                     version: QrVersions.auto,
                                     size: 100,
-                                    backgroundColor: AppColors.white,
+                                    backgroundColor: Theme.of(context).colorScheme.surface,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Scannez-moi',
                                   style: AppTextStyles.caption
-                                      .copyWith(color: AppColors.gray),
+                                      .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 )
                               ],
                             ),
@@ -762,7 +771,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
         Text(
           label,
           style: AppTextStyles.caption
-              .copyWith(color: AppColors.gray, letterSpacing: 0.5),
+              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, letterSpacing: 0.5),
         ),
         const SizedBox(height: 4),
         Text(

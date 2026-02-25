@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
+import 'package:printing/printing.dart';
 
 class ConfirmationScreen extends StatelessWidget {
   final Map<String, dynamic> bookingData;
@@ -31,7 +32,15 @@ class ConfirmationScreen extends StatelessWidget {
 
   Future<void> _generateAndDownloadPdf(BuildContext context) async {
     try {
-      final pdf = pw.Document();
+      final font = await PdfGoogleFonts.robotoRegular();
+      final boldFont = await PdfGoogleFonts.robotoBold();
+
+      final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+          base: font,
+          bold: boldFont,
+        ),
+      );
       final tripRaw = bookingData['trip'] as Map<String, dynamic>;
       final passengerRaw = bookingData['passenger'] as Map<String, dynamic>;
       final bookingCode = bookingData['bookingCode'] as String? ?? '';
@@ -111,11 +120,17 @@ class ConfirmationScreen extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Départ:', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                          pw.Text('Départ:',
+                              style: const pw.TextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['from'] ?? '', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                          pw.Text(tripRaw['from'] ?? '',
+                              style: pw.TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: pw.FontWeight.bold)),
                           pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['departure'] ?? '', style: const pw.TextStyle(fontSize: 11)),
+                          pw.Text(tripRaw['departure'] ?? '',
+                              style: const pw.TextStyle(fontSize: 11)),
                         ],
                       ),
                     ),
@@ -123,11 +138,17 @@ class ConfirmationScreen extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Arrivée:', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                          pw.Text('Arrivée:',
+                              style: const pw.TextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['to'] ?? '', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                          pw.Text(tripRaw['to'] ?? '',
+                              style: pw.TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: pw.FontWeight.bold)),
                           pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['arrival'] ?? '', style: const pw.TextStyle(fontSize: 11)),
+                          pw.Text(tripRaw['arrival'] ?? '',
+                              style: const pw.TextStyle(fontSize: 11)),
                         ],
                       ),
                     ),
@@ -140,9 +161,12 @@ class ConfirmationScreen extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Compagnie:', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                          pw.Text('Compagnie:',
+                              style: const pw.TextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['company'] ?? '', style: const pw.TextStyle(fontSize: 11)),
+                          pw.Text(tripRaw['company'] ?? '',
+                              style: const pw.TextStyle(fontSize: 11)),
                         ],
                       ),
                     ),
@@ -150,9 +174,14 @@ class ConfirmationScreen extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Siège:', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                          pw.Text('Siège:',
+                              style: const pw.TextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(bookingData['seat'] ?? '', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                          pw.Text(bookingData['seat'] ?? '',
+                              style: pw.TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: pw.FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -173,9 +202,12 @@ class ConfirmationScreen extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Nom:', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                          pw.Text('Nom:',
+                              style: const pw.TextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(passengerRaw['name'] ?? '', style: const pw.TextStyle(fontSize: 11)),
+                          pw.Text(passengerRaw['name'] ?? '',
+                              style: const pw.TextStyle(fontSize: 11)),
                         ],
                       ),
                     ),
@@ -183,9 +215,12 @@ class ConfirmationScreen extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Téléphone:', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                          pw.Text('Téléphone:',
+                              style: const pw.TextStyle(
+                                  fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(passengerRaw['phone'] ?? '', style: const pw.TextStyle(fontSize: 11)),
+                          pw.Text(passengerRaw['phone'] ?? '',
+                              style: const pw.TextStyle(fontSize: 11)),
                         ],
                       ),
                     ),
@@ -210,11 +245,13 @@ class ConfirmationScreen extends StatelessWidget {
                         pw.SizedBox(height: 4),
                         pw.Text(
                           '• Présentez ce billet à l\'embarquement',
-                          style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700),
+                          style: const pw.TextStyle(
+                              fontSize: 7, color: PdfColors.grey700),
                         ),
                         pw.Text(
                           '• Arrivez 30 min avant le départ',
-                          style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700),
+                          style: const pw.TextStyle(
+                              fontSize: 7, color: PdfColors.grey700),
                         ),
                       ],
                     ),
@@ -231,7 +268,8 @@ class ConfirmationScreen extends StatelessWidget {
                         pw.SizedBox(height: 4),
                         pw.Text(
                           'support@ankata.bf',
-                          style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700),
+                          style: const pw.TextStyle(
+                              fontSize: 7, color: PdfColors.grey700),
                         ),
                       ],
                     ),
@@ -248,12 +286,12 @@ class ConfirmationScreen extends StatelessWidget {
       await outputFile.writeAsBytes(await pdf.save());
 
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Billet téléchargé: ${outputFile.path}'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 3),
-        ),
+
+      // Partage natif du PDF
+      await Share.shareXFiles(
+        [XFile(outputFile.path)],
+        text: 'Billet Ankata - Réservation $bookingCode',
+        subject: 'Billet de transport Ankata',
       );
     } catch (e) {
       if (!context.mounted) return;
@@ -298,24 +336,42 @@ class ConfirmationScreen extends StatelessWidget {
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('ANKATA TRANSPORT', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.blue700)),
+                        pw.Text('ANKATA TRANSPORT',
+                            style: pw.TextStyle(
+                                fontSize: 24,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.blue700)),
                         pw.SizedBox(height: 4),
-                        pw.Text('Billet de Transport', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+                        pw.Text('Billet de Transport',
+                            style: const pw.TextStyle(
+                                fontSize: 12, color: PdfColors.grey700)),
                       ],
                     ),
-                    pw.Container(width: 100, height: 100, child: pw.Image(pw.MemoryImage(qrBytes))),
+                    pw.Container(
+                        width: 100,
+                        height: 100,
+                        child: pw.Image(pw.MemoryImage(qrBytes))),
                   ],
                 ),
                 pw.SizedBox(height: 24),
                 pw.Divider(),
                 pw.SizedBox(height: 16),
-                pw.Text('Code: $bookingCode', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.Text('Code: $bookingCode',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 24),
-                pw.Text('Trajet: ${tripRaw['from']} → ${tripRaw['to']}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                pw.Text('Départ: ${tripRaw['departure']} - Arrivée: ${tripRaw['arrival']}', style: const pw.TextStyle(fontSize: 11)),
+                pw.Text('Trajet: ${tripRaw['from']} → ${tripRaw['to']}',
+                    style: pw.TextStyle(
+                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                    'Départ: ${tripRaw['departure']} - Arrivée: ${tripRaw['arrival']}',
+                    style: const pw.TextStyle(fontSize: 11)),
                 pw.SizedBox(height: 16),
-                pw.Text('Passager: ${passengerRaw['name']}', style: const pw.TextStyle(fontSize: 11)),
-                pw.Text('Siège: ${bookingData['seat']}', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                pw.Text('Passager: ${passengerRaw['name']}',
+                    style: const pw.TextStyle(fontSize: 11)),
+                pw.Text('Siège: ${bookingData['seat']}',
+                    style: pw.TextStyle(
+                        fontSize: 11, fontWeight: pw.FontWeight.bold)),
               ],
             );
           },
@@ -347,18 +403,20 @@ class ConfirmationScreen extends StatelessWidget {
     final passengerRaw = bookingData['passenger'];
     final bookingCode = bookingData['bookingCode'] as String? ?? '';
 
-    if (tripRaw is! Map<String, dynamic> || passengerRaw is! Map<String, dynamic>) {
+    if (tripRaw is! Map<String, dynamic> ||
+        passengerRaw is! Map<String, dynamic>) {
       return Scaffold(
-        backgroundColor: AppColors.lightGray,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: AppColors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           elevation: 1,
           title: Text('Confirmation', style: AppTextStyles.h4),
         ),
         body: Center(
           child: Text(
             'Donnees de reservation manquantes',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+            style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
       );
@@ -366,9 +424,9 @@ class ConfirmationScreen extends StatelessWidget {
 
     final trip = tripRaw;
     final passenger = passengerRaw;
-    
+
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -388,17 +446,19 @@ class ConfirmationScreen extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Votre billet a été envoyé par SMS',
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _buildBookingCode(context, bookingCode),
                     const SizedBox(height: AppSpacing.lg),
-                    _buildQRCode(bookingCode),
+                    _buildQRCode(context, bookingCode),
                     const SizedBox(height: AppSpacing.lg),
-                    _buildTripDetails(trip, passenger),
+                    _buildTripDetails(context, trip, passenger),
                     const SizedBox(height: AppSpacing.lg),
-                    _buildInstructions(),
+                    _buildInstructions(context),
                   ],
                 ),
               ),
@@ -430,7 +490,7 @@ class ConfirmationScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow2,
       ),
@@ -438,7 +498,8 @@ class ConfirmationScreen extends StatelessWidget {
         children: [
           Text(
             'Code de réservation',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
+            style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -462,18 +523,19 @@ class ConfirmationScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Présentez ce code à l\'embarquement',
-            style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+            style: AppTextStyles.caption.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQRCode(String code) {
+  Widget _buildQRCode(BuildContext context, String code) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -482,21 +544,23 @@ class ConfirmationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.white,
-              border: Border.all(color: AppColors.lightGray, width: 2),
+              color: Theme.of(context).colorScheme.surface,
+              border: Border.all(
+                  color: Theme.of(context).scaffoldBackgroundColor, width: 2),
               borderRadius: AppRadius.radiusSm,
             ),
             child: QrImageView(
               data: code,
               version: QrVersions.auto,
               size: 200,
-              backgroundColor: AppColors.white,
+              backgroundColor: Theme.of(context).colorScheme.surface,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Scannez ce code lors de l\'embarquement',
-            style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+            style: AppTextStyles.caption.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
         ],
@@ -504,11 +568,12 @@ class ConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTripDetails(Map<String, dynamic> trip, Map<String, dynamic> passenger) {
+  Widget _buildTripDetails(BuildContext context, Map<String, dynamic> trip,
+      Map<String, dynamic> passenger) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -517,7 +582,7 @@ class ConfirmationScreen extends StatelessWidget {
         children: [
           Text('Détails du voyage', style: AppTextStyles.h4),
           const SizedBox(height: AppSpacing.md),
-          
+
           // Company logo and name
           Row(
             children: [
@@ -531,7 +596,8 @@ class ConfirmationScreen extends StatelessWidget {
                 child: Center(
                   child: Text(
                     trip['company'][0],
-                    style: AppTextStyles.h2.copyWith(color: AppColors.white),
+                    style: AppTextStyles.h2
+                        .copyWith(color: Theme.of(context).colorScheme.surface),
                   ),
                 ),
               ),
@@ -542,11 +608,13 @@ class ConfirmationScreen extends StatelessWidget {
                   children: [
                     Text(
                       trip['company'],
-                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                      style: AppTextStyles.bodyLarge
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.star, size: 16, color: Color(0xFFFFB800)),
+                        const Icon(Icons.star,
+                            size: 16, color: Color(0xFFFFB800)),
                         const SizedBox(width: 4),
                         Text(
                           '${trip['rating']} (${trip['reviews']} avis)',
@@ -559,30 +627,38 @@ class ConfirmationScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const Divider(height: AppSpacing.lg),
-          
+
           // Route
-          _buildDetailRow(Icons.route, 'Trajet', '${trip['from']} → ${trip['to']}'),
-          _buildDetailRow(Icons.calendar_today, 'Date', trip['date']),
-          _buildDetailRow(Icons.access_time, 'Horaire', '${trip['departure']} - ${trip['arrival']}'),
-          _buildDetailRow(Icons.event_seat, 'Siège', bookingData['seat']),
-          
+          _buildDetailRow(context, Icons.route, 'Trajet',
+              '${trip['from']} → ${trip['to']}'),
+          _buildDetailRow(context, Icons.calendar_today, 'Date', trip['date']),
+          _buildDetailRow(context, Icons.access_time, 'Horaire',
+              '${trip['departure']} - ${trip['arrival']}'),
+          _buildDetailRow(
+              context, Icons.event_seat, 'Siège', bookingData['seat']),
+
           const Divider(height: AppSpacing.lg),
-          
+
           // Passenger
-          Text('Passager', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+          Text('Passager',
+              style: AppTextStyles.bodyMedium
+                  .copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: AppSpacing.sm),
-          _buildDetailRow(Icons.person, 'Nom', passenger['name']),
-          _buildDetailRow(Icons.phone, 'Téléphone', '+226 ${passenger['phone']}'),
-          
+          _buildDetailRow(context, Icons.person, 'Nom', passenger['name']),
+          _buildDetailRow(
+              context, Icons.phone, 'Téléphone', '+226 ${passenger['phone']}'),
+
           const Divider(height: AppSpacing.lg),
-          
+
           // Price
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total payé', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w700)),
+              Text('Total payé',
+                  style: AppTextStyles.bodyLarge
+                      .copyWith(fontWeight: FontWeight.w700)),
               Text('${trip['price'] + 500} FCFA', style: AppTextStyles.price),
             ],
           ),
@@ -591,7 +667,8 @@ class ConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildDetailRow(
+      BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -600,12 +677,14 @@ class ConfirmationScreen extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Text(
             '$label: ',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
+            style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           Expanded(
             child: Text(
               value,
-              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -613,7 +692,7 @@ class ConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructions() {
+  Widget _buildInstructions(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -638,16 +717,19 @@ class ConfirmationScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildInstructionItem('Présentez-vous 30 minutes avant le départ'),
-          _buildInstructionItem('Apportez votre pièce d\'identité'),
-          _buildInstructionItem('Présentez votre code de réservation ou QR code'),
-          _buildInstructionItem('Annulation gratuite jusqu\'à 24h avant le départ'),
+          _buildInstructionItem(
+              context, 'Présentez-vous 30 minutes avant le départ'),
+          _buildInstructionItem(context, 'Apportez votre pièce d\'identité'),
+          _buildInstructionItem(
+              context, 'Présentez votre code de réservation ou QR code'),
+          _buildInstructionItem(
+              context, 'Annulation gratuite jusqu\'à 24h avant le départ'),
         ],
       ),
     );
   }
 
-  Widget _buildInstructionItem(String text) {
+  Widget _buildInstructionItem(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
@@ -661,7 +743,8 @@ class ConfirmationScreen extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.charcoal),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         ],
@@ -673,7 +756,7 @@ class ConfirmationScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -693,7 +776,8 @@ class ConfirmationScreen extends StatelessWidget {
                   icon: const Icon(Icons.download),
                   label: const Text('Télécharger'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   ),
                 ),
               ),
@@ -704,7 +788,8 @@ class ConfirmationScreen extends StatelessWidget {
                   icon: const Icon(Icons.share),
                   label: const Text('Partager'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   ),
                 ),
               ),
