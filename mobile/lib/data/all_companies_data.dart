@@ -63,7 +63,8 @@ class AllCompaniesData {
     for (final company in getAllCompanies()) {
       final station = company.stations[from];
       if (station == null) continue;
-      final hasRoute = station.routes.any((route) => route.to == to && route.departures.isNotEmpty);
+      final hasRoute = station.routes
+          .any((route) => route.to == to && route.departures.isNotEmpty);
       if (hasRoute) {
         companies.add(company);
       }

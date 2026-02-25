@@ -53,10 +53,10 @@ class ReferralDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.card_giftcard,
                 size: 40,
-                color: AppColors.white,
+                color: Theme.of(context).colorScheme.surface,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -75,7 +75,7 @@ class ReferralDialog extends StatelessWidget {
             Text(
               'Invite tes amis et gagne 100F par personne ! Utilise ton bonus pour réserver tes trajets. Plus tu invites, plus tu économises (max 1500F) !',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.gray,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -93,7 +93,7 @@ class ReferralDialog extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 40,
-                  color: AppColors.gray.withValues(alpha: 0.2),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                 ),
                 _StatItem(
                   icon: Icons.account_balance_wallet,
@@ -108,10 +108,10 @@ class ReferralDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.gray.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
                 borderRadius: AppRadius.radiusMd,
                 border: Border.all(
-                  color: AppColors.gray.withValues(alpha: 0.2),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                   style: BorderStyle.solid,
                 ),
               ),
@@ -121,7 +121,7 @@ class ReferralDialog extends StatelessWidget {
                   Text(
                     'Code: ',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.gray,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   Text(
@@ -145,11 +145,11 @@ class ReferralDialog extends StatelessWidget {
                   HapticHelper.mediumImpact();
                   _shareReferralCode(context);
                 },
-                icon: const Icon(Icons.share, color: AppColors.white),
+                icon: Icon(Icons.share, color: Theme.of(context).colorScheme.surface),
                 label: Text(
                   'Partager mon code',
                   style: AppTextStyles.button.copyWith(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -171,7 +171,7 @@ class ReferralDialog extends StatelessWidget {
               child: Text(
                 'Fermer',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.gray,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -223,7 +223,7 @@ class _StatItem extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: AppColors.gray,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],

@@ -100,13 +100,13 @@ class _SponsorBannerState extends State<SponsorBanner> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.white.withValues(alpha: 0.3),
+                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                               borderRadius: AppRadius.radiusSm,
                             ),
                             child: Text(
                               sponsor.badge!,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -115,7 +115,7 @@ class _SponsorBannerState extends State<SponsorBanner> {
                         Text(
                           sponsor.title,
                           style: AppTextStyles.h3.copyWith(
-                            color: AppColors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -123,7 +123,7 @@ class _SponsorBannerState extends State<SponsorBanner> {
                         Text(
                           sponsor.description,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.white.withValues(alpha: 0.9),
+                            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -139,7 +139,7 @@ class _SponsorBannerState extends State<SponsorBanner> {
                       child: Icon(
                         sponsor.icon,
                         size: 48,
-                        color: AppColors.white.withValues(alpha: 0.3),
+                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                       ),
                     ),
                 ],

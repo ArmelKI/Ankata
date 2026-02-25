@@ -49,7 +49,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -58,7 +58,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
             backgroundColor: _company!.color,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(_company!.name,
-                  style: AppTextStyles.h3.copyWith(color: AppColors.white)),
+                  style: AppTextStyles.h3.copyWith(color: Theme.of(context).colorScheme.surface)),
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -85,9 +85,9 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
             ),
             bottom: TabBar(
               controller: _tabController,
-              labelColor: AppColors.white,
-              unselectedLabelColor: AppColors.white.withValues(alpha: 0.6),
-              indicatorColor: AppColors.white,
+              labelColor: Theme.of(context).colorScheme.surface,
+              unselectedLabelColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
+              indicatorColor: Theme.of(context).colorScheme.surface,
               tabs: const [
                 Tab(text: 'Informations'),
                 Tab(text: 'Destinations'),
@@ -197,7 +197,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -217,13 +217,13 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
         ),
         subtitle: Text(
           '${route.distanceKm} km • $durationLabel • ${route.priceStandard} FCFA',
-          style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+          style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         children: [
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.lightGray.withValues(alpha: 0.5),
+              color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +251,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: dep.isVip ? _company!.color : AppColors.white,
+                        color: dep.isVip ? _company!.color : Theme.of(context).colorScheme.surface,
                         borderRadius: AppRadius.radiusSm,
                         border: Border.all(color: _company!.color),
                       ),
@@ -261,7 +261,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                             dep.time,
                             style: TextStyle(
                               color:
-                                  dep.isVip ? AppColors.white : _company!.color,
+                                  dep.isVip ? Theme.of(context).colorScheme.surface : _company!.color,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -271,8 +271,8 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                               dep.gareSpecific!,
                               style: TextStyle(
                                 color: dep.isVip
-                                    ? AppColors.white
-                                    : AppColors.gray,
+                                    ? Theme.of(context).colorScheme.surface
+                                    : Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontSize: 8,
                               ),
                             ),
@@ -302,7 +302,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                     label: const Text('Réserver ce trajet'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _company!.color,
-                      foregroundColor: AppColors.white,
+                      foregroundColor: Theme.of(context).colorScheme.surface,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: AppRadius.radiusMd,
@@ -322,7 +322,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -349,7 +349,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
         return Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: AppRadius.radiusMd,
             boxShadow: AppShadows.shadow1,
           ),
@@ -365,7 +365,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                   Text(
                     count == 0 ? 'Aucun avis' : '$count avis',
                     style:
-                        AppTextStyles.caption.copyWith(color: AppColors.gray),
+                        AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -383,7 +383,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                   Expanded(
                     child: LinearProgressIndicator(
                       value: count == 0 ? 0 : (average / 5.0).clamp(0.0, 1.0),
-                      backgroundColor: AppColors.lightGray,
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                       color: AppColors.star,
                     ),
                   ),
@@ -421,7 +421,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
         return Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: AppRadius.radiusMd,
             boxShadow: AppShadows.shadow1,
           ),
@@ -466,7 +466,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                               Text(
                                 date.split('T').first,
                                 style: AppTextStyles.caption
-                                    .copyWith(color: AppColors.gray),
+                                    .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                               ),
                           ],
                         ),
@@ -526,7 +526,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
             padding: const EdgeInsets.only(left: 26),
             child: Text(
               station.address,
-              style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+              style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
           if (station.phone != null)
@@ -534,7 +534,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
               padding: const EdgeInsets.only(left: 26),
               child: Text(
                 station.phone!,
-                style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+                style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ),
         ],

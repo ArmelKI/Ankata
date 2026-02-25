@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
 import '../../data/sotraco_data.dart';
+import '../../data/sotraco_tarifs_data.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
@@ -14,9 +15,41 @@ class SotracoHomeScreen extends StatefulWidget {
 }
 
 class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
+  String _selectedCity = 'Ouagadougou';
   String _stopQuery = '';
+  String _selectedLineType = 'Toutes';
   LatLng? _currentPosition;
   final MapController _mapController = MapController();
+
+  static const Map<String, LatLng> _cityCenters = {
+    'Ouagadougou': LatLng(12.3681, -1.5271),
+    'Bobo-Dioulasso': LatLng(11.1771, -4.2979),
+    'Koudougou': LatLng(12.2533, -2.3628),
+    'Ouahigouya': LatLng(13.5753, -2.4072),
+    'Dédougou': LatLng(12.4530, -3.4610),
+    'Banfora': LatLng(10.6325, -4.7625),
+  };
+
+  static const List<Color> _lineColors = [
+    Color(0xFF2196F3),
+    Color(0xFFE91E63),
+    Color(0xFF4CAF50),
+    Color(0xFFFF9800),
+    Color(0xFF9C27B0),
+    Color(0xFF00BCD4),
+    Color(0xFFF44336),
+    Color(0xFF3F51B5),
+    Color(0xFF8BC34A),
+    Color(0xFFFF5722),
+    Color(0xFF607D8B),
+    Color(0xFF795548),
+    Color(0xFFCDDC39),
+    Color(0xFF009688),
+    Color(0xFF673AB7),
+    Color(0xFFFFEB3B),
+    Color(0xFF03A9F4),
+    Color(0xFFE040FB),
+  ];
 
   @override
   void initState() {
@@ -25,27 +58,30 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
   }
 
   Future<void> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
-
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) return;
     }
-
     if (permission == LocationPermission.deniedForever) return;
-
     final position = await Geolocator.getCurrentPosition();
     if (mounted) {
-      setState(() {
-        _currentPosition = LatLng(position.latitude, position.longitude);
-      });
-      _mapController.move(_currentPosition!, 14.0);
+      setState(() =>
+          _currentPosition = LatLng(position.latitude, position.longitude));
     }
+  }
+
+  List<SotracoLine> get _filteredLines {
+    var lines = SotracoData.getLinesByCity(_selectedCity);
+    if (_selectedLineType == 'Ordinaire')
+      lines = SotracoData.getOrdinaryLines(_selectedCity);
+    if (_selectedLineType == 'Intercommunale')
+      lines = SotracoData.getIntercommunalLines(_selectedCity);
+    if (_selectedLineType == 'Étudiants')
+      lines = SotracoData.getStudentLines(_selectedCity);
+    return lines;
   }
 
   @override
@@ -53,270 +89,565 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        backgroundColor: AppColors.lightGray,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: AppColors.white,
-          elevation: 1,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+            icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {
-              if (context.canPop()) {
+              if (context.canPop())
                 context.pop();
-              } else {
+              else
                 context.go('/home');
-              }
             },
           ),
-          title: Text('SOTRACO Urbain', style: AppTextStyles.h3),
-          bottom: const TabBar(
+          title: Row(
+            children: [
+              const Icon(Icons.directions_bus,
+                  color: AppColors.primary, size: 22),
+              const SizedBox(width: 8),
+              Text('SOTRACO', style: AppTextStyles.h3),
+              const Spacer(),
+              // City Selector
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedCity,
+                    icon: const Icon(Icons.expand_more,
+                        size: 18, color: AppColors.primary),
+                    style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primary, fontWeight: FontWeight.w600),
+                    isDense: true,
+                    items: SotracoData.cities
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) {
+                        setState(() => _selectedCity = v);
+                        final center = _cityCenters[v];
+                        if (center != null) {
+                          _mapController.move(center, 13.0);
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          bottom: TabBar(
             labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.gray,
+            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            indicatorColor: AppColors.primary,
+            indicatorWeight: 3,
             tabs: [
-              Tab(text: 'Lignes'),
-              Tab(text: 'Arrets'),
-              Tab(text: 'Itineraire'),
-              Tab(text: 'Abonnements'),
+              Tab(icon: Icon(Icons.map, size: 20), text: 'Carte'),
+              Tab(icon: Icon(Icons.list, size: 20), text: 'Lignes'),
+              Tab(icon: Icon(Icons.location_on, size: 20), text: 'Arrêts'),
+              Tab(icon: Icon(Icons.payment, size: 20), text: 'Tarifs'),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            _buildLinesTab(),
+            _buildMapTab(),
+            _buildLinesListTab(),
             _buildStopsTab(),
-            _buildItineraryTab(),
-            _buildSubscriptionTab(),
+            _buildTarifsTab(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLinesTab() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      itemCount: SotracoData.lines.length,
-      itemBuilder: (context, index) {
-        final line = SotracoData.lines[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: AppRadius.radiusMd,
-            boxShadow: AppShadows.shadow1,
-          ),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: Text(line.code, style: AppTextStyles.bodySmall),
-            ),
-            title: Text(line.name, style: AppTextStyles.bodyMedium),
-            subtitle: Text(
-              '${line.distanceKm} km • ${line.durationMin} min • ${line.frequency}',
-              style: AppTextStyles.caption.copyWith(color: AppColors.gray),
-            ),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.gray),
-            onTap: () => context.push('/sotraco/line/${line.id}'),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStopsTab() {
-    final stops = SotracoData.getAllStops()
-        .where((stop) => stop.toLowerCase().contains(_stopQuery.toLowerCase()))
-        .toList();
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: TextField(
-            decoration: const InputDecoration(
-              hintText: 'Rechercher un arret',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
-            ),
-            onChanged: (value) => setState(() => _stopQuery = value),
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            itemCount: stops.length,
-            itemBuilder: (context, index) {
-              final stop = stops[index];
-              return ListTile(
-                title: Text(stop, style: AppTextStyles.bodyMedium),
-                leading:
-                    const Icon(Icons.location_on, color: AppColors.primary),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildItineraryTab() {
-    // Coordonnées approximatives de Ouagadougou
-    final ouagaCenter = const LatLng(12.3681, -1.5271);
+  // ── TAB 1: Carte avec toutes les lignes ──
+  Widget _buildMapTab() {
+    final lines = _filteredLines;
+    final center =
+        _cityCenters[_selectedCity] ?? const LatLng(12.3681, -1.5271);
 
     return Stack(
       children: [
         FlutterMap(
           mapController: _mapController,
           options: MapOptions(
-            initialCenter: _currentPosition ?? ouagaCenter,
-            initialZoom: 13.0,
-          ),
+              initialCenter: _currentPosition ?? center, initialZoom: 13.0),
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.ankata.app',
             ),
-            MarkerLayer(
-              markers: [
-                if (_currentPosition != null)
+            PolylineLayer(
+              polylines: lines.asMap().entries.map((entry) {
+                final color = _lineColors[entry.key % _lineColors.length];
+                return Polyline(
+                  points: entry.value.coordinates,
+                  color: color.withValues(alpha: 0.85),
+                  strokeWidth: 4.0,
+                );
+              }).toList(),
+            ),
+            if (_currentPosition != null)
+              MarkerLayer(
+                markers: [
                   Marker(
                     point: _currentPosition!,
                     width: 40,
                     height: 40,
-                    child: const Icon(
-                      Icons.my_location,
-                      color: Colors.blue,
-                      size: 30,
-                    ),
+                    child: const Icon(Icons.my_location,
+                        color: Colors.blue, size: 30),
                   ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
-        // Search Overlay
+        // Filter chips
         Positioned(
-          top: AppSpacing.md,
-          left: AppSpacing.md,
-          right: AppSpacing.md,
+          top: 12,
+          left: 12,
+          right: 12,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['Toutes', 'Ordinaire', 'Intercommunale', 'Étudiants']
+                  .map((type) {
+                final isSelected = _selectedLineType == type;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(type,
+                        style: TextStyle(
+                            color:
+                                isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                            fontSize: 12)),
+                    selected: isSelected,
+                    selectedColor: AppColors.primary,
+                    backgroundColor: Colors.white,
+                    elevation: 2,
+                    onSelected: (_) => setState(() => _selectedLineType = type),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        // Bottom line cards carousel
+        Positioned(
+          bottom: 12,
+          left: 0,
+          right: 0,
+          height: 110,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: lines.length,
+            itemBuilder: (ctx, i) {
+              final line = lines[i];
+              final color = _lineColors[i % _lineColors.length];
+              return Container(
+                width: 260,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2))
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () {
+                      if (line.coordinates.isNotEmpty)
+                        _mapController.move(line.coordinates.first, 14.5);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6)),
+                              child: Text(line.code,
+                                  style: TextStyle(
+                                      color: color,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11)),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                child: Text(line.name,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis)),
+                          ]),
+                          const Spacer(),
+                          Row(children: [
+                            Icon(Icons.place, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Text('${line.stopsCount} arrêts',
+                                style: AppTextStyles.caption
+                                    .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                            const SizedBox(width: 12),
+                            Icon(Icons.schedule,
+                                size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Expanded(
+                                child: Text(line.frequency,
+                                    style: AppTextStyles.caption
+                                        .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis)),
+                          ]),
+                          const SizedBox(height: 4),
+                          Text('${line.firstDeparture} → ${line.lastDeparture}',
+                              style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── TAB 2: Liste de toutes les lignes ──
+  Widget _buildLinesListTab() {
+    final lines = _filteredLines;
+    if (lines.isEmpty) {
+      return Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.info_outline, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          const SizedBox(height: 12),
+          Text('Aucune ligne pour $_selectedCity',
+              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ]),
+      );
+    }
+    return Column(
+      children: [
+        // Filter chips
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['Toutes', 'Ordinaire', 'Intercommunale', 'Étudiants']
+                  .map((type) {
+                final isSelected = _selectedLineType == type;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(type,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: isSelected
+                                ? Colors.white
+                                : Theme.of(context).colorScheme.onSurface)),
+                    selected: isSelected,
+                    selectedColor: AppColors.primary,
+                    onSelected: (_) => setState(() => _selectedLineType = type),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: lines.length,
+            itemBuilder: (ctx, i) {
+              final line = lines[i];
+              final color = _lineColors[i % _lineColors.length];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2))
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Center(
+                        child: Text(line.code,
+                            style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11))),
+                  ),
+                  title: Text(line.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 13)),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(children: [
+                      _infoChip(Icons.place, '${line.stopsCount} arrêts'),
+                      const SizedBox(width: 8),
+                      _infoChip(Icons.schedule, line.frequency),
+                    ]),
+                  ),
+                  trailing: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: line.type == 'Ordinaire'
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : line.type == 'Intercommunale'
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : Colors.purple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      line.type == 'Spéciale Étudiants'
+                          ? 'Étud.'
+                          : line.type.substring(
+                              0, (line.type.length > 5 ? 5 : line.type.length)),
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: line.type == 'Ordinaire'
+                              ? AppColors.primary
+                              : line.type == 'Intercommunale'
+                                  ? Colors.orange
+                                  : Colors.purple),
+                    ),
+                  ),
+                  onTap: () => context.push('/sotraco/line/${line.id}'),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoChip(IconData icon, String text) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      const SizedBox(width: 3),
+      Text(text, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+    ]);
+  }
+
+  // ── TAB 3: Recherche d'arrêts ──
+  Widget _buildStopsTab() {
+    final allStops = SotracoData.getStopsByCity(_selectedCity);
+    final filteredStops = allStops
+        .where((s) => s.toLowerCase().contains(_stopQuery.toLowerCase()))
+        .toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: AppShadows.shadow1,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: AppColors.gray),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Où allez-vous ?',
-                      border: InputBorder.none,
-                    ),
-                    onSubmitted: (value) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'Recherche de l\'arrêt proche pour "$value"...')),
-                      );
-                    },
-                  ),
-                ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06), blurRadius: 6)
               ],
             ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Rechercher un arrêt à $_selectedCity...',
+                hintStyle: const TextStyle(fontSize: 14),
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              onChanged: (v) => setState(() => _stopQuery = v),
+            ),
           ),
         ),
-        // Bottom Action Sheet Placeholder
-        Positioned(
-          bottom: AppSpacing.md,
-          left: AppSpacing.md,
-          right: AppSpacing.md,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Calcul de l\'itinéraire...')),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text('${filteredStops.length} arrêts trouvés',
+              style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: filteredStops.length,
+            itemBuilder: (ctx, i) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  dense: true,
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle),
+                    child: const Icon(Icons.location_on,
+                        color: AppColors.primary, size: 18),
+                  ),
+                  title: Text(filteredStops[i],
+                      style: const TextStyle(fontSize: 14)),
+                ),
               );
             },
-            child: const Text('Trouver un itinéraire',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSubscriptionTab() {
+  // ── TAB 4: Tarifs ──
+  Widget _buildTarifsTab() {
+    final categories = SotracoTarifsData.getCategories(_selectedCity);
+
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(12),
       children: [
-        _buildSubscriptionCard(
-          title: 'Ticket unitaire',
-          description: SotracoData.fareNote,
-          price: '200 FCFA',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildSubscriptionCard(
-          title: 'Abonnement mensuel',
-          description: 'Trajets urbains illimites pendant 30 jours',
-          price: '12 000 FCFA',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildSubscriptionCard(
-          title: 'Abonnement etudiant',
-          description: 'Tarif reduit pour etudiants (carte requise)',
-          price: '6 000 FCFA',
-        ),
-        const SizedBox(height: AppSpacing.md),
+        // Info banner
         Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: AppRadius.radiusMd,
-            boxShadow: AppShadows.shadow1,
+            gradient: LinearGradient(colors: [
+              AppColors.primary,
+              AppColors.primary.withValues(alpha: 0.7)
+            ]),
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Text(
-            'Le paiement SOTRACO sera active apres confirmation du systeme de paiement.',
-            style: AppTextStyles.caption.copyWith(color: AppColors.gray),
-          ),
+          child: Row(children: [
+            const Icon(Icons.info_outline, color: Colors.white, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Horaires de service',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14)),
+                const SizedBox(height: 4),
+                ...SotracoTarifsData.serviceHours.entries.map((e) => Text(
+                      '${e.key}: ${e.value}',
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12),
+                    )),
+              ],
+            )),
+          ]),
         ),
+        const SizedBox(height: 16),
+        // Tarif sections by category
+        ...categories.map((cat) {
+          final tarifs =
+              SotracoTarifsData.getTarifsByCategory(_selectedCity, cat);
+          final isIntercommunal = cat == 'Lignes intercommunales';
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(children: [
+                  Icon(
+                    isIntercommunal
+                        ? Icons.directions_bus
+                        : cat.contains('Élèves')
+                            ? Icons.school
+                            : Icons.person,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(cat,
+                      style: AppTextStyles.bodyLarge
+                          .copyWith(fontWeight: FontWeight.bold)),
+                ]),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 6)
+                  ],
+                ),
+                child: Column(
+                  children: tarifs.asMap().entries.map((entry) {
+                    final t = entry.value;
+                    return Column(children: [
+                      ListTile(
+                        dense: true,
+                        title: Text(t.typeTarif,
+                            style: const TextStyle(fontSize: 13)),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(t.montant,
+                              style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12)),
+                        ),
+                      ),
+                      if (entry.key < tarifs.length - 1)
+                        const Divider(height: 1),
+                    ]);
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          );
+        }),
       ],
-    );
-  }
-
-  Widget _buildSubscriptionCard({
-    required String title,
-    required String description,
-    required String price,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.radiusMd,
-        boxShadow: AppShadows.shadow1,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style: AppTextStyles.bodyLarge
-                  .copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(description,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(price,
-              style: AppTextStyles.h4.copyWith(color: AppColors.primary)),
-        ],
-      ),
     );
   }
 }
