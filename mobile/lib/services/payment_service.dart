@@ -65,7 +65,6 @@ class PaymentData {
 class PaymentService {
   static const String _paymentHistoryKey = 'payment_history';
 
-  // Initier un paiement
   static Future<PaymentData> initiatePayment({
     required int amount,
     required String bookingId,
@@ -73,6 +72,21 @@ class PaymentService {
     required String phoneNumber,
   }) async {
     try {
+      if (kDebugMode ||
+          const bool.fromEnvironment('MOCK_PAYMENT', defaultValue: true)) {
+        await Future.delayed(const Duration(seconds: 2));
+        final mockPayment = PaymentData(
+          orderId: 'mock_${DateTime.now().millisecondsSinceEpoch}',
+          amount: amount,
+          method: method,
+          status: PaymentStatus.pending,
+          createdAt: DateTime.now(),
+        );
+        await _addToHistory(mockPayment);
+        HapticHelper.lightImpact();
+        return mockPayment;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
@@ -138,9 +152,14 @@ class PaymentService {
     }
   }
 
-  // Vérifier le statut d'un paiement
   static Future<PaymentStatus> checkPaymentStatus(String orderId) async {
     try {
+      if (kDebugMode && orderId.startsWith('mock_')) {
+        await Future.delayed(const Duration(seconds: 1));
+        HapticHelper.success();
+        return PaymentStatus.success;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 

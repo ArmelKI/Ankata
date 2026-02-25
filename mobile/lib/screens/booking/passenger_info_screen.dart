@@ -35,6 +35,21 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     if (passengers is int && passengers > 0) {
       _adultCount = passengers;
     }
+
+    // Pre-fill user data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(currentUserProvider);
+      if (user != null) {
+        final firstName = user['firstName'] ?? user['first_name'] ?? '';
+        final lastName = user['lastName'] ?? user['last_name'] ?? '';
+        setState(() {
+          _nameController.text = '$firstName $lastName'.trim();
+          final phone = user['phoneNumber'] ?? user['phone_number'] ?? '';
+          _phoneController.text =
+              phone.startsWith('+226') ? phone.substring(4).trim() : phone;
+        });
+      }
+    });
   }
 
   @override
@@ -74,15 +89,19 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         });
 
         final booking = response['booking'];
+        if (booking == null) {
+          throw Exception(
+              "La réponse de l'API ne contient pas de réservation validée");
+        }
 
         if (mounted) {
           context.push('/payment', extra: {
-            'amount': booking['totalAmount'],
-            'basePrice': booking['basePrice'],
-            'serviceFee': booking['serviceFee'],
+            'amount': booking['totalAmount'] ?? trip['price'],
+            'basePrice': booking['basePrice'] ?? trip['price'],
+            'serviceFee': booking['serviceFee'] ?? 500,
             'bookingId': booking['id']?.toString() ?? '',
             'tripDetails': '${trip['from']} → ${trip['to']}',
-            'bookingCode': booking['bookingCode'],
+            'bookingCode': booking['bookingCode'] ?? '',
             'trip': trip,
             'passenger': {
               'name': _nameController.text,
@@ -97,6 +116,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             SnackBar(
               content: Text('Erreur de réservation: $e'),
               backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -119,12 +139,12 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => _safePop(context),
         ),
         title: Text('Informations passager', style: AppTextStyles.h4),
@@ -166,7 +186,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Row(
         children: [
           _buildProgressStep(1, 'Recherche', true),
@@ -188,16 +208,16 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: completed ? AppColors.primary : AppColors.lightGray,
+            color: completed ? AppColors.primary : Theme.of(context).scaffoldBackgroundColor,
             shape: BoxShape.circle,
           ),
           child: Center(
             child: completed
-                ? const Icon(Icons.check, color: AppColors.white, size: 18)
+                ? Icon(Icons.check, color: Theme.of(context).colorScheme.surface, size: 18)
                 : Text(
                     step.toString(),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.gray,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -207,7 +227,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: completed ? AppColors.primary : AppColors.gray,
+            color: completed ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
             fontWeight: completed ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -220,7 +240,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 20),
-        color: completed ? AppColors.primary : AppColors.lightGray,
+        color: completed ? AppColors.primary : Theme.of(context).scaffoldBackgroundColor,
       ),
     );
   }
@@ -231,13 +251,13 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: AppRadius.radiusMd,
           boxShadow: AppShadows.shadow1,
         ),
         child: Text(
           'Aucun trajet selectionne',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+          style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -245,7 +265,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -259,7 +279,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             children: [
               Text('Compagnie',
                   style:
-                      AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
+                      AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               Text(trip['company'],
                   style: AppTextStyles.bodyMedium
                       .copyWith(fontWeight: FontWeight.w600)),
@@ -271,7 +291,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             children: [
               Text('Horaire',
                   style:
-                      AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
+                      AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               Text('${trip['departure']} → ${trip['arrival']}',
                   style: AppTextStyles.bodyMedium
                       .copyWith(fontWeight: FontWeight.w600)),
@@ -283,7 +303,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             children: [
               Text('Siège',
                   style:
-                      AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
+                      AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               Text(widget.tripData['seat'] ?? 'Non assigné',
                   style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600, color: AppColors.primary)),
@@ -308,7 +328,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -360,7 +380,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -373,7 +393,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             controller: _nameController,
             decoration: const InputDecoration(
               labelText: 'Nom complet',
-              hintText: 'Ex: Jean Ouedraogo',
+              hintText: 'Ex: Votre nom complet',
               prefixIcon: Icon(Icons.person),
             ),
             validator: (value) {
@@ -415,7 +435,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -486,7 +506,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -510,7 +530,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                 child: RichText(
                   text: TextSpan(
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.charcoal),
+                        .copyWith(color: Theme.of(context).colorScheme.onSurface),
                     children: [
                       const TextSpan(text: 'J\'accepte les '),
                       TextSpan(
@@ -545,7 +565,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -563,10 +583,10 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
             ),
             child: _isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(color: AppColors.white))
+                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface))
                 : const Text('Continuer vers le paiement'),
           ),
         ),

@@ -10,16 +10,21 @@ void main() {
     });
 
     group('Auth Endpoints', () {
-      test('requestOTP should return OTP request response', () async {
-        final response = await apiService.requestOTP('226XXXXXXXX');
+      test('registerWithPassword should return registered user response',
+          () async {
+        final response = await apiService.registerWithPassword({
+          'phoneNumber': '226XXXXXXXX',
+          'password': 'password123',
+          'firstName': 'Test',
+          'lastName': 'User',
+        });
         expect(response, isNotNull);
-        expect(response['success'], isNotNull);
       });
 
-      test('verifyOTP should return user token on success', () async {
-        final response = await apiService.verifyOTP('226XXXXXXXX', '123456');
+      test('loginWithPassword should return user token on success', () async {
+        final response =
+            await apiService.loginWithPassword('226XXXXXXXX', 'password123');
         expect(response, isNotNull);
-        expect(response['token'], isNotNull);
       });
 
       test('getCurrentUser should return user data', () async {

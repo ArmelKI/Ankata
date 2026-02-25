@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 import '../../widgets/animated_button.dart';
 import '../../utils/haptic_helper.dart';
-import '../../services/xp_service.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
   final int amount;
@@ -59,24 +58,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     Future.delayed(const Duration(milliseconds: 400), () {
       _confettiController.forward();
     });
-
-    // Award XP for booking
-    _awardXP();
-  }
-
-  Future<void> _awardXP() async {
-    try {
-      await XPService.addXP(10, reason: 'Réservation effectuée');
-
-      // Check if first booking
-      // TODO: Check if this is first booking
-      const isFirstBooking = true; // Replace with actual check
-      if (isFirstBooking) {
-        await XPService.addXP(100, reason: 'Première réservation!');
-      }
-    } catch (e) {
-      debugPrint('Error awarding XP: $e');
-    }
   }
 
   @override
@@ -230,49 +211,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                     ),
 
                     const SizedBox(height: 24),
-
-                    // XP Badge
-                    FutureBuilder<int>(
-                      future: XPService.getXP(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.purple.shade400,
-                                  Colors.blue.shade400,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.stars,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  '+10 XP gagné !',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return const SizedBox();
-                      },
-                    ),
 
                     const SizedBox(height: 32),
 

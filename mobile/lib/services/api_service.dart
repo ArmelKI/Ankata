@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../config/constants.dart';
 
 class ApiService {
@@ -252,8 +254,31 @@ class ApiService {
         '/bookings/my-bookings',
         queryParameters: queryParams,
       );
+
+      // Cache the response offline
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cacheKey = 'offline_bookings_${status ?? "all"}';
+        await prefs.setString(cacheKey, jsonEncode(response.data));
+      } catch (e) {
+        if (kDebugMode) print('Failed to cache bookings: $e');
+      }
+
       return response.data;
     } on DioException catch (e) {
+      // Offline fallback
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.unknown) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final cacheKey = 'offline_bookings_${status ?? "all"}';
+          final cachedData = prefs.getString(cacheKey);
+          if (cachedData != null) {
+            return jsonDecode(cachedData) as Map<String, dynamic>;
+          }
+        } catch (_) {}
+      }
       throw _handleError(e);
     }
   }

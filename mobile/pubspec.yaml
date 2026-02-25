@@ -53,8 +53,8 @@ dependencies:
   hive_flutter: ^1.1.0
 
   # Firebase (activé - voir FIREBASE_SETUP_GUIDE.md pour la configuration)
-  firebase_core: ^2.24.0
-  firebase_auth: ^4.16.0
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.8
   cloud_firestore: ^4.14.0
   firebase_storage: ^11.6.0
   firebase_messaging: ^14.7.6
@@ -86,6 +86,7 @@ dependencies:
   flutter_map: ^6.1.0
   latlong2: ^0.9.1
   flutter_secure_storage: ^9.2.4
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
@@ -101,6 +102,7 @@ flutter:
   generate: true
   assets:
     - assets/images/
+    - assets/images/companies/
     - assets/icons/
     - assets/animations/
   # Les polices sont chargées via google_fonts package
