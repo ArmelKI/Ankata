@@ -34,6 +34,7 @@ class _TripSearchResultsScreenState
   String _sortBy = 'price'; // price, time, duration, rating
   final Set<String> _favoriteKeys = {};
   final Set<String> _companyFilters = {};
+  bool _isVipOnly = false;
 
   @override
   void initState() {
@@ -196,23 +197,30 @@ class _TripSearchResultsScreenState
   }
 
   List<Map<String, dynamic>> get _filteredTrips {
-    if (_companyFilters.isEmpty) {
-      return _sortedTrips;
+    Iterable<Map<String, dynamic>> result = _sortedTrips;
+
+    if (_isVipOnly) {
+      result = result.where((trip) => trip['isVip'] == true);
     }
-    return _sortedTrips
-        .where((trip) => _companyFilters.contains(trip['company']))
-        .toList();
+
+    if (_companyFilters.isNotEmpty) {
+      result =
+          result.where((trip) => _companyFilters.contains(trip['company']));
+    }
+
+    return result.toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => _safePop(context),
         ),
         title: Column(
@@ -225,7 +233,8 @@ class _TripSearchResultsScreenState
             ),
             Text(
               widget.departureDate,
-              style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+              style: AppTextStyles.caption.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -247,7 +256,7 @@ class _TripSearchResultsScreenState
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -313,24 +322,43 @@ class _TripSearchResultsScreenState
           horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       child: Wrap(
         spacing: 8,
-        children: companies.map((company) {
-          final isSelected = _companyFilters.contains(company);
-          return FilterChip(
-            label: Text(company),
-            selected: isSelected,
+        runSpacing: 4,
+        children: [
+          FilterChip(
+            label: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.star, size: 16, color: AppColors.star),
+                SizedBox(width: 4),
+                Text('VIP Seulement'),
+              ],
+            ),
+            selected: _isVipOnly,
             onSelected: (value) {
-              setState(() {
-                if (value) {
-                  _companyFilters.add(company);
-                } else {
-                  _companyFilters.remove(company);
-                }
-              });
+              setState(() => _isVipOnly = value);
             },
-            selectedColor: AppColors.primary.withValues(alpha: 0.15),
-            checkmarkColor: AppColors.primary,
-          );
-        }).toList(),
+            selectedColor: AppColors.star.withValues(alpha: 0.15),
+            checkmarkColor: AppColors.star,
+          ),
+          ...companies.map((company) {
+            final isSelected = _companyFilters.contains(company);
+            return FilterChip(
+              label: Text(company),
+              selected: isSelected,
+              onSelected: (value) {
+                setState(() {
+                  if (value) {
+                    _companyFilters.add(company);
+                  } else {
+                    _companyFilters.remove(company);
+                  }
+                });
+              },
+              selectedColor: AppColors.primary.withValues(alpha: 0.15),
+              checkmarkColor: AppColors.primary,
+            );
+          }),
+        ],
       ),
     );
   }
@@ -338,7 +366,7 @@ class _TripSearchResultsScreenState
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -383,7 +411,7 @@ class _TripSearchResultsScreenState
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -421,8 +449,10 @@ class _TripSearchResultsScreenState
                         const SizedBox(height: 4),
                         Text(
                           '${trip['availableSeats'] ?? 0} places disponibles',
-                          style: AppTextStyles.caption
-                              .copyWith(color: AppColors.gray),
+                          style: AppTextStyles.caption.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -480,8 +510,10 @@ class _TripSearchResultsScreenState
                         Text(trip['departure'] as String? ?? '--:--',
                             style: AppTextStyles.h3),
                         Text('Départ',
-                            style: AppTextStyles.caption
-                                .copyWith(color: AppColors.gray)),
+                            style: AppTextStyles.caption.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant)),
                       ],
                     ),
                   ),
@@ -526,8 +558,10 @@ class _TripSearchResultsScreenState
                         Text(trip['arrival'] as String? ?? '--:--',
                             style: AppTextStyles.h3),
                         Text('Arrivée',
-                            style: AppTextStyles.caption
-                                .copyWith(color: AppColors.gray)),
+                            style: AppTextStyles.caption.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant)),
                       ],
                     ),
                   ),
@@ -548,7 +582,8 @@ class _TripSearchResultsScreenState
                                 vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.lightGray,
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
                                 borderRadius: AppRadius.radiusFull,
                               ),
                               child: Text(
@@ -602,14 +637,14 @@ class _TripSearchResultsScreenState
             Container(
               width: 120,
               height: 120,
-              decoration: const BoxDecoration(
-                color: AppColors.lightGray,
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.search_off,
                 size: 60,
-                color: AppColors.gray,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -621,7 +656,8 @@ class _TripSearchResultsScreenState
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Essayez de modifier vos critères de recherche',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+              style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),

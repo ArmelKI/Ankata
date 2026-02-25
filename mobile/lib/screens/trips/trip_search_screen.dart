@@ -33,10 +33,10 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
 
   Future<void> _searchTrips() async {
     setState(() => _isLoading = true);
-    
+
     // Simuler recherche API
     await Future.delayed(const Duration(seconds: 2));
-    
+
     setState(() {
       _trips = _buildTripsForRoute(
         widget.originCity,
@@ -77,7 +77,7 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
         'price': 9500,
         'availableSeats': 8,
         'rating': 4.6,
-          'amenities': ['AC', 'WiFi', 'Bagages', 'Snack'],
+        'amenities': ['AC', 'WiFi', 'Bagages', 'Snack'],
       },
       {
         'id': 'RAKIETA-3',
@@ -105,16 +105,17 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
 
     final seed = origin.length + destination.length;
     return baseTrips
-      .map((trip) => {
-          ...trip,
-          'price': (trip['price'] as int) + (seed * 25),
-          'companyColor': CompanyColors.getCompanyColor(trip['company'] as String),
-          'from': origin,
-          'to': destination,
-          'date': date,
+        .map((trip) => {
+              ...trip,
+              'price': (trip['price'] as int) + (seed * 25),
+              'companyColor':
+                  CompanyColors.getCompanyColor(trip['company'] as String),
+              'from': origin,
+              'to': destination,
+              'date': date,
               'passengers': widget.passengers,
-        })
-      .toList();
+            })
+        .toList();
   }
 
   void _safePop(BuildContext context) {
@@ -128,12 +129,12 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => _safePop(context),
         ),
         title: Column(
@@ -145,13 +146,13 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
             ),
             Text(
               widget.departureDate,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
+              style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list, color: AppColors.charcoal),
+            icon: Icon(Icons.filter_list, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {
               // TODO: Filtres
             },
@@ -175,7 +176,7 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -231,13 +232,14 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
         // Header résultats
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '${_trips.length} trajets disponibles',
-                style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(fontWeight: FontWeight.w600),
               ),
               Row(
                 children: [
@@ -279,9 +281,9 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: AppShadows.shadow1,
       ),
       child: Material(
@@ -325,7 +327,8 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.star, color: AppColors.star, size: 16),
+                                const Icon(Icons.star,
+                                    color: AppColors.star, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
                                   trip['rating'].toString(),
@@ -380,12 +383,13 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
                     // Durée
                     Column(
                       children: [
-                        const Icon(Icons.arrow_forward, color: AppColors.gray, size: 20),
+                        Icon(Icons.arrow_forward,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
                         const SizedBox(height: 4),
                         Text(
                           trip['duration'],
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.gray,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -473,17 +477,17 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: AppColors.lightGray,
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: AppRadius.radiusFull,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.gray),
+          Icon(icon, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 4),
           Text(
             amenity,
-            style: AppTextStyles.caption.copyWith(color: AppColors.gray),
+            style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -500,7 +504,7 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
             Icon(
               Icons.search_off,
               size: 80,
-              color: AppColors.gray.withValues(alpha: 0.3),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
@@ -511,12 +515,12 @@ class _TripSearchScreenState extends State<TripSearchScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Essayez de modifier vos critères de recherche ou choisissez une autre date.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.lg),
             OutlinedButton(
-              onPressed: () => context.pop(),
+              onPressed: () => _safePop(context),
               child: const Text('Modifier la recherche'),
             ),
           ],
