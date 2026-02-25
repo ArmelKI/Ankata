@@ -233,7 +233,7 @@ Pour votre rôle (sélectionnez un):
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Créé par: GitHub Copilot
+Créé par: Armel KI
 Date: 23 Février 2026
 Projet: Ankata - Transport Booking App (Burkina Faso)
 Statut: ✅ READY TO BUILD
