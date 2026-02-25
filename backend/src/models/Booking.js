@@ -3,24 +3,24 @@ const pool = require('../database/connection');
 class BookingModel {
   static async create(data) {
     const {
-      bookingCode, userId, scheduleId, lineId, companyId,
-      passengerName, passengerPhone, departureDate, seatNumber,
-      luggageWeightKg, basePrice, luggageFee, totalAmount, paymentMethod
+      bookingCode, userId, scheduleId, lineId,
+      passengerName, passengerPhone, passengerEmail, numPassengers, departureDate, seatNumbers,
+      luggageWeightKg, totalPrice, luggagePrice, serviceFee, paymentMethod, specialRequests
     } = data;
 
     const query = `
       INSERT INTO bookings
-      (booking_code, user_id, schedule_id, line_id, company_id,
-       passenger_name, passenger_phone, departure_date, seat_number,
-       luggage_weight_kg, base_price, luggage_fee, total_amount, payment_method)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      (booking_code, user_id, schedule_id, line_id,
+       passenger_name, passenger_phone, passenger_email, num_passengers, departure_date, seat_numbers,
+       luggage_weight_kg, total_price, luggage_price, service_fee, payment_method, special_requests)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *;
     `;
 
     const result = await pool.query(query, [
-      bookingCode, userId, scheduleId, lineId, companyId,
-      passengerName, passengerPhone, departureDate, seatNumber || 'A1',
-      luggageWeightKg || 0, basePrice || 0, luggageFee || 0, totalAmount || 0, paymentMethod || 'PENDING'
+      bookingCode, userId, scheduleId, lineId,
+      passengerName, passengerPhone, passengerEmail, numPassengers || 1, departureDate, seatNumbers || [],
+      luggageWeightKg || 0, totalPrice, luggagePrice || 0, serviceFee || 0, paymentMethod, specialRequests
     ]);
 
     return result.rows[0];

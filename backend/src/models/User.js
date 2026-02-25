@@ -36,7 +36,17 @@ class UserModel {
   }
 
   static async update(id, data) {
-    const allowedFields = ['first_name', 'last_name', 'date_of_birth', 'cnib', 'gender', 'profile_picture_url', 'is_verified', 'email'];
+    const allowedFields = [
+      'first_name',
+      'last_name',
+      'date_of_birth',
+      'cnib',
+      'gender',
+      'profile_picture_url',
+      'is_verified',
+      'email',
+      'city',
+    ];
     const updateFields = [];
     const values = [];
     let paramIndex = 1;
@@ -86,7 +96,7 @@ class UserModel {
 
   static async getAllUsers(limit = 10, offset = 0) {
     const query = `
-      SELECT id, phone_number, first_name, last_name, email, date_of_birth, cnib, gender, is_verified, created_at
+      SELECT id, phone_number, first_name, last_name, email, date_of_birth, cnib, gender, city, is_verified, created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2;
