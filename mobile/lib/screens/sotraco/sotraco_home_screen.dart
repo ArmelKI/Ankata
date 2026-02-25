@@ -89,12 +89,12 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: AppColors.lightGray,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: AppColors.white,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+            icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
             onPressed: () {
               if (context.canPop())
                 context.pop();
@@ -142,9 +142,9 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
               ),
             ],
           ),
-          bottom: TabBar(
+          bottom: const TabBar(
             labelColor: AppColors.primary,
-            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            unselectedLabelColor: AppColors.gray,
             indicatorColor: AppColors.primary,
             indicatorWeight: 3,
             tabs: [
@@ -225,7 +225,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                     label: Text(type,
                         style: TextStyle(
                             color:
-                                isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                                isSelected ? Colors.white : AppColors.charcoal,
                             fontSize: 12)),
                     selected: isSelected,
                     selectedColor: AppColors.primary,
@@ -302,19 +302,19 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                           ]),
                           const Spacer(),
                           Row(children: [
-                            Icon(Icons.place, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            Icon(Icons.place, size: 14, color: AppColors.gray),
                             const SizedBox(width: 4),
                             Text('${line.stopsCount} arrêts',
                                 style: AppTextStyles.caption
-                                    .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                    .copyWith(color: AppColors.gray)),
                             const SizedBox(width: 12),
                             Icon(Icons.schedule,
-                                size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                size: 14, color: AppColors.gray),
                             const SizedBox(width: 4),
                             Expanded(
                                 child: Text(line.frequency,
                                     style: AppTextStyles.caption
-                                        .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                        .copyWith(color: AppColors.gray),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis)),
                           ]),
@@ -342,10 +342,10 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
     if (lines.isEmpty) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.info_outline, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(Icons.info_outline, size: 48, color: AppColors.gray),
           const SizedBox(height: 12),
           Text('Aucune ligne pour $_selectedCity',
-              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray)),
         ]),
       );
     }
@@ -368,7 +368,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                             fontSize: 12,
                             color: isSelected
                                 ? Colors.white
-                                : Theme.of(context).colorScheme.onSurface)),
+                                : AppColors.charcoal)),
                     selected: isSelected,
                     selectedColor: AppColors.primary,
                     onSelected: (_) => setState(() => _selectedLineType = type),
@@ -462,9 +462,9 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
 
   Widget _infoChip(IconData icon, String text) {
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      Icon(icon, size: 12, color: AppColors.gray),
       const SizedBox(width: 3),
-      Text(text, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+      Text(text, style: TextStyle(fontSize: 11, color: AppColors.gray)),
     ]);
   }
 
@@ -492,7 +492,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
               decoration: InputDecoration(
                 hintText: 'Rechercher un arrêt à $_selectedCity...',
                 hintStyle: const TextStyle(fontSize: 14),
-                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                prefixIcon: const Icon(Icons.search, color: AppColors.gray),
                 border: InputBorder.none,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -504,7 +504,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text('${filteredStops.length} arrêts trouvés',
-              style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
         ),
         Expanded(
           child: ListView.builder(

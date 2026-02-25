@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
-import 'package:printing/printing.dart';
 
 class ConfirmationScreen extends StatelessWidget {
   final Map<String, dynamic> bookingData;
@@ -32,15 +31,7 @@ class ConfirmationScreen extends StatelessWidget {
 
   Future<void> _generateAndDownloadPdf(BuildContext context) async {
     try {
-      final font = await PdfGoogleFonts.robotoRegular();
-      final boldFont = await PdfGoogleFonts.robotoBold();
-
-      final pdf = pw.Document(
-        theme: pw.ThemeData.withFont(
-          base: font,
-          bold: boldFont,
-        ),
-      );
+      final pdf = pw.Document();
       final tripRaw = bookingData['trip'] as Map<String, dynamic>;
       final passengerRaw = bookingData['passenger'] as Map<String, dynamic>;
       final bookingCode = bookingData['bookingCode'] as String? ?? '';
@@ -286,12 +277,12 @@ class ConfirmationScreen extends StatelessWidget {
       await outputFile.writeAsBytes(await pdf.save());
 
       if (!context.mounted) return;
-
-      // Partage natif du PDF
-      await Share.shareXFiles(
-        [XFile(outputFile.path)],
-        text: 'Billet Ankata - Réservation $bookingCode',
-        subject: 'Billet de transport Ankata',
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Billet téléchargé: ${outputFile.path}'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 3),
+        ),
       );
     } catch (e) {
       if (!context.mounted) return;
@@ -406,17 +397,16 @@ class ConfirmationScreen extends StatelessWidget {
     if (tripRaw is! Map<String, dynamic> ||
         passengerRaw is! Map<String, dynamic>) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: AppColors.lightGray,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: AppColors.white,
           elevation: 1,
           title: Text('Confirmation', style: AppTextStyles.h4),
         ),
         body: Center(
           child: Text(
             'Donnees de reservation manquantes',
-            style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
           ),
         ),
       );
@@ -426,7 +416,7 @@ class ConfirmationScreen extends StatelessWidget {
     final passenger = passengerRaw;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       body: SafeArea(
         child: Column(
           children: [
@@ -446,19 +436,18 @@ class ConfirmationScreen extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Votre billet a été envoyé par SMS',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.gray),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _buildBookingCode(context, bookingCode),
                     const SizedBox(height: AppSpacing.lg),
-                    _buildQRCode(context, bookingCode),
+                    _buildQRCode(bookingCode),
                     const SizedBox(height: AppSpacing.lg),
-                    _buildTripDetails(context, trip, passenger),
+                    _buildTripDetails(trip, passenger),
                     const SizedBox(height: AppSpacing.lg),
-                    _buildInstructions(context),
+                    _buildInstructions(),
                   ],
                 ),
               ),
@@ -490,7 +479,7 @@ class ConfirmationScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow2,
       ),
@@ -498,8 +487,7 @@ class ConfirmationScreen extends StatelessWidget {
         children: [
           Text(
             'Code de réservation',
-            style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -523,19 +511,18 @@ class ConfirmationScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Présentez ce code à l\'embarquement',
-            style: AppTextStyles.caption.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.caption.copyWith(color: AppColors.gray),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQRCode(BuildContext context, String code) {
+  Widget _buildQRCode(String code) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -544,23 +531,21 @@ class ConfirmationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              border: Border.all(
-                  color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+              color: AppColors.white,
+              border: Border.all(color: AppColors.lightGray, width: 2),
               borderRadius: AppRadius.radiusSm,
             ),
             child: QrImageView(
               data: code,
               version: QrVersions.auto,
               size: 200,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: AppColors.white,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Scannez ce code lors de l\'embarquement',
-            style: AppTextStyles.caption.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.caption.copyWith(color: AppColors.gray),
             textAlign: TextAlign.center,
           ),
         ],
@@ -568,12 +553,12 @@ class ConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTripDetails(BuildContext context, Map<String, dynamic> trip,
-      Map<String, dynamic> passenger) {
+  Widget _buildTripDetails(
+      Map<String, dynamic> trip, Map<String, dynamic> passenger) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -596,8 +581,7 @@ class ConfirmationScreen extends StatelessWidget {
                 child: Center(
                   child: Text(
                     trip['company'][0],
-                    style: AppTextStyles.h2
-                        .copyWith(color: Theme.of(context).colorScheme.surface),
+                    style: AppTextStyles.h2.copyWith(color: AppColors.white),
                   ),
                 ),
               ),
@@ -631,13 +615,12 @@ class ConfirmationScreen extends StatelessWidget {
           const Divider(height: AppSpacing.lg),
 
           // Route
-          _buildDetailRow(context, Icons.route, 'Trajet',
-              '${trip['from']} → ${trip['to']}'),
-          _buildDetailRow(context, Icons.calendar_today, 'Date', trip['date']),
-          _buildDetailRow(context, Icons.access_time, 'Horaire',
-              '${trip['departure']} - ${trip['arrival']}'),
           _buildDetailRow(
-              context, Icons.event_seat, 'Siège', bookingData['seat']),
+              Icons.route, 'Trajet', '${trip['from']} → ${trip['to']}'),
+          _buildDetailRow(Icons.calendar_today, 'Date', trip['date']),
+          _buildDetailRow(Icons.access_time, 'Horaire',
+              '${trip['departure']} - ${trip['arrival']}'),
+          _buildDetailRow(Icons.event_seat, 'Siège', bookingData['seat']),
 
           const Divider(height: AppSpacing.lg),
 
@@ -646,9 +629,9 @@ class ConfirmationScreen extends StatelessWidget {
               style: AppTextStyles.bodyMedium
                   .copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: AppSpacing.sm),
-          _buildDetailRow(context, Icons.person, 'Nom', passenger['name']),
+          _buildDetailRow(Icons.person, 'Nom', passenger['name']),
           _buildDetailRow(
-              context, Icons.phone, 'Téléphone', '+226 ${passenger['phone']}'),
+              Icons.phone, 'Téléphone', '+226 ${passenger['phone']}'),
 
           const Divider(height: AppSpacing.lg),
 
@@ -667,8 +650,7 @@ class ConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(
-      BuildContext context, IconData icon, String label, String value) {
+  Widget _buildDetailRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -677,8 +659,7 @@ class ConfirmationScreen extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Text(
             '$label: ',
-            style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
           ),
           Expanded(
             child: Text(
@@ -692,7 +673,7 @@ class ConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructions(BuildContext context) {
+  Widget _buildInstructions() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -717,19 +698,18 @@ class ConfirmationScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
+          _buildInstructionItem('Présentez-vous 30 minutes avant le départ'),
+          _buildInstructionItem('Apportez votre pièce d\'identité'),
           _buildInstructionItem(
-              context, 'Présentez-vous 30 minutes avant le départ'),
-          _buildInstructionItem(context, 'Apportez votre pièce d\'identité'),
+              'Présentez votre code de réservation ou QR code'),
           _buildInstructionItem(
-              context, 'Présentez votre code de réservation ou QR code'),
-          _buildInstructionItem(
-              context, 'Annulation gratuite jusqu\'à 24h avant le départ'),
+              'Annulation gratuite jusqu\'à 24h avant le départ'),
         ],
       ),
     );
   }
 
-  Widget _buildInstructionItem(BuildContext context, String text) {
+  Widget _buildInstructionItem(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
@@ -743,8 +723,8 @@ class ConfirmationScreen extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: Theme.of(context).colorScheme.onSurface),
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: AppColors.charcoal),
             ),
           ),
         ],
@@ -756,7 +736,7 @@ class ConfirmationScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),

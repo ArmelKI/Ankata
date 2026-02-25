@@ -29,9 +29,9 @@ class _RatingScreenState extends State<RatingScreen> {
     final companies = AllCompaniesData.getAllCompanies();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         title: Text('Laisser un avis', style: AppTextStyles.h4),
       ),

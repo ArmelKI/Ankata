@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
+import '../../config/app_constants.dart';
 import '../../data/all_companies_data.dart';
 import '../../services/ratings_service.dart';
-import '../../utils/company_logo_helper.dart';
 
 class CompaniesScreen extends StatefulWidget {
   const CompaniesScreen({Key? key}) : super(key: key);
@@ -61,9 +61,9 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         title: Text('Compagnies', style: AppTextStyles.h3),
       ),
@@ -99,7 +99,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -145,14 +145,14 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
             Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
+              decoration: const BoxDecoration(
+                color: AppColors.lightGray,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.business,
                 size: 60,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppColors.gray,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -164,7 +164,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Essayez de modifier vos filtres',
-              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
               textAlign: TextAlign.center,
             ),
           ],
@@ -188,7 +188,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -207,9 +207,22 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
           child: Row(
             children: [
               // Logo
-              CompanyLogoHelper.buildLogo(
-                company['name'] as String? ?? '',
-                size: 80,
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: CompanyColors.getCompanyColor(company['name']),
+                  borderRadius: AppRadius.radiusMd,
+                ),
+                child: Center(
+                  child: Text(
+                    company['name'][0],
+                    style: AppTextStyles.h1.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
 
@@ -263,7 +276,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                     Text(
                       company['fullName'],
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: AppColors.gray,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -284,15 +297,15 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                         Text(
                           ' (${company['reviews']} avis)',
                           style: AppTextStyles.caption.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: AppColors.gray,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Container(
                           width: 4,
                           height: 4,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          decoration: const BoxDecoration(
+                            color: AppColors.gray,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -300,7 +313,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                         Text(
                           '${company['totalTrips']} trajets',
                           style: AppTextStyles.caption.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: AppColors.gray,
                           ),
                         ),
                       ],
@@ -309,7 +322,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                 ),
               ),
 
-              Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const Icon(Icons.chevron_right, color: AppColors.gray),
             ],
           ),
         ),

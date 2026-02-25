@@ -7,7 +7,6 @@ import '../../config/app_constants.dart';
 import '../../data/all_companies_data.dart';
 import '../../widgets/animated_button.dart';
 import '../../utils/haptic_helper.dart';
-import '../../utils/company_logo_helper.dart';
 import '../../services/search_history_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -92,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -127,24 +126,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   'Bienvenue sur',
                                   style: AppTextStyles.bodyMedium.copyWith(
-                                      color: Theme.of(context).colorScheme.surface.withOpacity(0.8)),
+                                      color: AppColors.white.withOpacity(0.8)),
                                 ),
                                 Text(
                                   'Ankata.',
                                   style: AppTextStyles.h1
-                                      .copyWith(color: Theme.of(context).colorScheme.surface),
+                                      .copyWith(color: AppColors.white),
                                 ),
                               ],
                             ),
                             Container(
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface.withOpacity(0.2),
+                                color: AppColors.white.withOpacity(0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
-                                icon: Icon(
+                                icon: const Icon(
                                     Icons.notifications_none_rounded,
-                                    color: Theme.of(context).colorScheme.surface),
+                                    color: AppColors.white),
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -161,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Text(
                             'Où souhaitez-vous\naller aujourd\'hui ?',
                             style: AppTextStyles.h2.copyWith(
-                              color: Theme.of(context).colorScheme.surface,
+                              color: AppColors.white,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -180,11 +179,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
+                      color: AppColors.white,
                       borderRadius: AppRadius.radiusLg,
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+                          color: AppColors.charcoal.withOpacity(0.08),
                           blurRadius: 24,
                           offset: const Offset(0, 12),
                         ),
@@ -195,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Origine & Destination avec Swap Bouton intégré
                         Container(
                           decoration: BoxDecoration(
-                            border: Border.all(color: Theme.of(context).dividerColor),
+                            border: Border.all(color: AppColors.border),
                             borderRadius: AppRadius.radiusMd,
                           ),
                           child: Stack(
@@ -223,9 +222,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         .copyWith(
                                                             color: AppColors
                                                                 .gray)),
-                                                icon: Icon(
+                                                icon: const Icon(
                                                     Icons.keyboard_arrow_down,
-                                                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                                    color: AppColors.gray),
                                                 items: AppConstants.cities
                                                     .map((city) {
                                                   return DropdownMenuItem(
@@ -268,9 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         .copyWith(
                                                             color: AppColors
                                                                 .gray)),
-                                                icon: Icon(
+                                                icon: const Icon(
                                                     Icons.keyboard_arrow_down,
-                                                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                                    color: AppColors.gray),
                                                 items: AppConstants.cities
                                                     .map((city) {
                                                   return DropdownMenuItem(
@@ -306,10 +305,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).scaffoldBackgroundColor,
+                                      color: AppColors.lightGray,
                                       shape: BoxShape.circle,
                                       border:
-                                          Border.all(color: Theme.of(context).dividerColor),
+                                          Border.all(color: AppColors.border),
                                       boxShadow: AppShadows.shadow1,
                                     ),
                                     child: const Icon(Icons.swap_vert,
@@ -333,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       horizontal: AppSpacing.sm,
                                       vertical: AppSpacing.md),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: Theme.of(context).dividerColor),
+                                    border: Border.all(color: AppColors.border),
                                     borderRadius: AppRadius.radiusMd,
                                   ),
                                   child: Row(
@@ -349,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             Text('Date de départ',
                                                 style: AppTextStyles.caption
                                                     .copyWith(
-                                                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                                        color: AppColors.gray)),
                                             Text(
                                               _selectedDate != null
                                                   ? DateFormat(
@@ -376,51 +375,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 4, vertical: 8),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Theme.of(context).dividerColor),
+                                  border: Border.all(color: AppColors.border),
                                   borderRadius: AppRadius.radiusMd,
                                 ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () => _changePassengers(-1),
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 4.0),
-                                          child: Icon(
-                                              Icons.remove_circle_outline,
-                                              color: AppColors.primary,
-                                              size: 20),
-                                        ),
-                                      ),
-                                      Column(
-                                        children: [
-                                          Text('Passagers',
-                                              style: AppTextStyles.caption
-                                                  .copyWith(
-                                                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                                          Text('$_passengers',
-                                              style: AppTextStyles.bodyMedium
-                                                  .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w600)),
-                                        ],
-                                      ),
-                                      GestureDetector(
-                                        onTap: () => _changePassengers(1),
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 4.0),
-                                          child: Icon(Icons.add_circle_outline,
-                                              color: AppColors.primary,
-                                              size: 20),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _changePassengers(-1),
+                                      child: const Icon(
+                                          Icons.remove_circle_outline,
+                                          color: AppColors.primary,
+                                          size: 24),
+                                    ),
+                                    Column(
+                                      children: [
+                                        Text('Passagers',
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                                    color: AppColors.gray)),
+                                        Text('$_passengers',
+                                            style: AppTextStyles.bodyMedium
+                                                .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600)),
+                                      ],
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => _changePassengers(1),
+                                      child: const Icon(
+                                          Icons.add_circle_outline,
+                                          color: AppColors.primary,
+                                          size: 24),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -463,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading:
-                              Icon(Icons.history, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              const Icon(Icons.history, color: AppColors.gray),
                           title: Text('$origin → $destination',
                               style: AppTextStyles.bodyMedium),
                           subtitle: Text('$date • $passengers passager(s)'),
@@ -544,7 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
+                      color: AppColors.white,
                       borderRadius: AppRadius.radiusLg,
                       border: Border.all(
                           color: CompanyColors.getCompanyColor('SOTRACO')),
@@ -574,12 +563,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 4),
                               Text('Déplacez-vous facilement dans Ouagadougou',
                                   style: AppTextStyles.bodySmall
-                                      .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                      .copyWith(color: AppColors.gray)),
                             ],
                           ),
                         ),
-                        Icon(Icons.arrow_forward_ios,
-                            size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        const Icon(Icons.arrow_forward_ios,
+                            size: 16, color: AppColors.gray),
                       ],
                     ),
                   ),
@@ -657,9 +646,9 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.only(right: AppSpacing.md),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: AppColors.white,
           borderRadius: AppRadius.radiusMd,
-          border: Border.all(color: Theme.of(context).dividerColor),
+          border: Border.all(color: AppColors.border),
           boxShadow: AppShadows.shadow2,
         ),
         child: Column(
@@ -673,7 +662,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 4),
                 Text('Trajet direct',
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                        .copyWith(color: AppColors.gray)),
               ],
             ),
             Row(
@@ -686,8 +675,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios,
-                    size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                const Icon(Icons.arrow_forward_ios,
+                    size: 14, color: AppColors.gray),
               ],
             ),
           ],
@@ -709,7 +698,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: AppColors.white,
           borderRadius: AppRadius.radiusLg,
           boxShadow: AppShadows.shadow2,
         ),
@@ -717,7 +706,20 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CompanyLogoHelper.buildCircleLogo(name, size: 50),
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  name[0],
+                  style: AppTextStyles.h2.copyWith(color: color),
+                ),
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text(name,
                 style: AppTextStyles.bodyLarge
@@ -727,7 +729,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 2),
             Text(
               badge,
-              style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: AppTextStyles.caption.copyWith(color: AppColors.gray),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

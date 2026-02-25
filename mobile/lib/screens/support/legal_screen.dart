@@ -14,9 +14,9 @@ class LegalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         title: Text(title, style: AppTextStyles.h3),
       ),

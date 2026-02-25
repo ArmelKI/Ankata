@@ -3,8 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
-import '../../services/api_service.dart';
-import '../../utils/company_logo_helper.dart';
+import '../../services/booking_service.dart';
 
 class MyTicketsScreen extends StatefulWidget {
   const MyTicketsScreen({Key? key}) : super(key: key);
@@ -37,87 +36,60 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
   Future<void> _loadTickets() async {
     setState(() => _isLoading = true);
 
-    try {
-      final apiService = ApiService();
-      final response = await apiService.getMyBookings();
+    // Simulation du chargement depuis l'API
+    await Future.delayed(const Duration(seconds: 1));
 
-      final List<dynamic> allBookings = response['bookings'] ?? [];
+    // Données de test (à remplacer par l'API)
+    setState(() {
+      _upcomingTickets = [
+        {
+          'id': 'ANK123456',
+          'bookingCode': 'ANK123456',
+          'company': 'SOTRACO',
+          'from': 'Ouagadougou',
+          'to': 'Bobo-Dioulasso',
+          'date': '25 Jan 2024',
+          'departure': '08:00',
+          'arrival': '13:00',
+          'seat': 'A12',
+          'price': 8500,
+          'rating': 4.5,
+        },
+        {
+          'id': 'ANK789012',
+          'bookingCode': 'ANK789012',
+          'company': 'TSR',
+          'from': 'Ouagadougou',
+          'to': 'Koudougou',
+          'date': '28 Jan 2024',
+          'departure': '15:00',
+          'arrival': '17:00',
+          'seat': 'B8',
+          'price': 3500,
+          'rating': 4.2,
+        },
+      ];
 
-      final now = DateTime.now();
-      final List<Map<String, dynamic>> upcoming = [];
-      final List<Map<String, dynamic>> past = [];
-      final List<Map<String, dynamic>> cancelled = [];
+      _pastTickets = [
+        {
+          'id': 'ANK456789',
+          'bookingCode': 'ANK456789',
+          'company': 'RAKIETA',
+          'from': 'Ouagadougou',
+          'to': 'Fada N\'Gourma',
+          'date': '15 Jan 2024',
+          'departure': '09:00',
+          'arrival': '13:30',
+          'seat': 'C5',
+          'price': 6000,
+          'rating': 4.3,
+        },
+      ];
 
-      for (var b in allBookings) {
-        final booking = b as Map<String, dynamic>;
+      _cancelledTickets = [];
 
-        // Convert API format to UI format
-        final schedule = booking['schedule'] ?? {};
-        final line = schedule['line'] ?? {};
-        final company = line['company'] ?? {};
-        final companyName = company['name'] ?? 'Inconnu';
-
-        final departureTimeRaw = schedule['departureTime'] ?? '';
-        final arrivalTimeRaw = schedule['arrivalTime'] ?? '';
-
-        final mappedBooking = {
-          'id': booking['id']?.toString() ?? '',
-          'bookingCode': booking['bookingCode'] ?? '',
-          'company': companyName,
-          'from': line['originCity'] ?? '',
-          'to': line['destinationCity'] ?? '',
-          'date': booking['travelDate'] ?? '',
-          'departure': departureTimeRaw,
-          'arrival': arrivalTimeRaw,
-          'seat': booking['seatNumber']?.toString() ?? 'N/A',
-          'price': booking['totalPrice'] ?? 0,
-          'rating': company['rating_average'] ?? 0.0,
-          'status': booking['status'] ?? 'pending',
-          ...booking,
-        };
-
-        if (mappedBooking['status'] == 'cancelled') {
-          cancelled.add(mappedBooking);
-          continue;
-        }
-
-        try {
-          // Check if date is in the past
-          final dateStr = mappedBooking['date'];
-          final dateObj = DateTime.parse(dateStr);
-          if (dateObj.isBefore(DateTime(now.year, now.month, now.day))) {
-            past.add(mappedBooking);
-          } else {
-            upcoming.add(mappedBooking);
-          }
-        } catch (_) {
-          upcoming.add(mappedBooking);
-        }
-      }
-
-      setState(() {
-        _upcomingTickets = upcoming;
-        _pastTickets = past;
-        _cancelledTickets = cancelled;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading tickets: $e');
-      setState(() {
-        _upcomingTickets = [];
-        _pastTickets = [];
-        _cancelledTickets = [];
-        _isLoading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erreur lors du chargement de vos billets'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
+      _isLoading = false;
+    });
   }
 
   Future<void> _refreshTickets() async {
@@ -127,15 +99,15 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         title: Text('Mes Billets', style: AppTextStyles.h3),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
-          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          unselectedLabelColor: AppColors.gray,
           indicatorColor: AppColors.primary,
           labelStyle:
               AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
@@ -172,7 +144,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -261,14 +233,14 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
             Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
+              decoration: const BoxDecoration(
+                color: AppColors.lightGray,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.confirmation_number_outlined,
                 size: 60,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppColors.gray,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -280,7 +252,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
             const SizedBox(height: AppSpacing.sm),
             Text(
               message,
-              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
               textAlign: TextAlign.center,
             ),
             if (type == 'upcoming') ...[
@@ -303,7 +275,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -322,9 +294,19 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
             ),
             child: Row(
               children: [
-                CompanyLogoHelper.buildLogo(
-                  ticket['company'] as String? ?? '',
-                  size: 60,
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: CompanyColors.getCompanyColor(ticket['company']),
+                    borderRadius: AppRadius.radiusSm,
+                  ),
+                  child: Center(
+                    child: Text(
+                      ticket['company'][0],
+                      style: AppTextStyles.h2.copyWith(color: AppColors.white),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -363,7 +345,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                     child: Text(
                       'Confirmé',
                       style: AppTextStyles.caption.copyWith(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: AppColors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -390,7 +372,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                           Text(
                             ticket['from'],
                             style: AppTextStyles.bodySmall
-                                .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                .copyWith(color: AppColors.gray),
                           ),
                         ],
                       ),
@@ -403,7 +385,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                         Text(
                           ticket['date'],
                           style: AppTextStyles.caption
-                              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              .copyWith(color: AppColors.gray),
                         ),
                       ],
                     ),
@@ -418,7 +400,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                           Text(
                             ticket['to'],
                             style: AppTextStyles.bodySmall
-                                .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                .copyWith(color: AppColors.gray),
                             textAlign: TextAlign.right,
                           ),
                         ],
@@ -430,58 +412,41 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
+                    color: AppColors.lightGray,
                     borderRadius: AppRadius.radiusSm,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.confirmation_number,
-                                size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                ticket['bookingCode'],
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(fontWeight: FontWeight.w600),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.event_seat,
-                                size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                'Siège ${ticket['seat']}',
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(fontWeight: FontWeight.w600),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          '${ticket['price']} FCFA',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                      Row(
+                        children: [
+                          const Icon(Icons.confirmation_number,
+                              size: 16, color: AppColors.gray),
+                          const SizedBox(width: 4),
+                          Text(
+                            ticket['bookingCode'],
+                            style: AppTextStyles.bodySmall
+                                .copyWith(fontWeight: FontWeight.w600),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.event_seat,
+                              size: 16, color: AppColors.gray),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Siège ${ticket['seat']}',
+                            style: AppTextStyles.bodySmall
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '${ticket['price']} FCFA',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
@@ -597,17 +562,11 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                 return;
               }
 
-              bool success = false;
-              try {
-                final apiService = ApiService();
-                await apiService.cancelBooking(
-                  bookingId,
-                  'Annulé par l\'utilisateur',
-                );
-                success = true;
-              } catch (e) {
-                print('Erreur lors de l\'annulation de la réservation: $e');
-              }
+              final bookingService = BookingService();
+              final success = await bookingService.cancelBooking(
+                bookingId,
+                'Annulée par l\'utilisateur',
+              );
 
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
