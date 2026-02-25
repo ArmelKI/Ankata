@@ -7,6 +7,7 @@ import '../../config/app_constants.dart';
 import '../../data/all_companies_data.dart';
 import '../../widgets/animated_button.dart';
 import '../../utils/haptic_helper.dart';
+import '../../utils/company_logo_helper.dart';
 import '../../services/search_history_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -156,11 +157,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.lg),
-                        Text(
-                          'Où souhaitez-vous\naller aujourd\'hui ?',
-                          style: AppTextStyles.h2.copyWith(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: Text(
+                            'Où souhaitez-vous\naller aujourd\'hui ?',
+                            style: AppTextStyles.h2.copyWith(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
@@ -206,34 +209,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                         horizontal: AppSpacing.sm, vertical: 4),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.trip_origin,
-                                            color: AppColors.primary, size: 20),
-                                        const SizedBox(width: AppSpacing.sm),
                                         Expanded(
-                                          child: DropdownButtonHideUnderline(
-                                            child: DropdownButton<String>(
-                                              isExpanded: true,
-                                              value: _selectedOrigin,
-                                              hint: Text('Lieu de départ',
-                                                  style: AppTextStyles
-                                                      .bodyMedium
-                                                      .copyWith(
-                                                          color:
-                                                              AppColors.gray)),
-                                              icon: const Icon(
-                                                  Icons.keyboard_arrow_down,
-                                                  color: AppColors.gray),
-                                              items: AppConstants.cities
-                                                  .map((city) {
-                                                return DropdownMenuItem(
-                                                    value: city,
-                                                    child: Text(city,
-                                                        style: AppTextStyles
-                                                            .bodyLarge));
-                                              }).toList(),
-                                              onChanged: (value) => setState(
-                                                  () =>
-                                                      _selectedOrigin = value),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 30),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                isExpanded: true,
+                                                value: _selectedOrigin,
+                                                hint: Text('Lieu de départ',
+                                                    style: AppTextStyles
+                                                        .bodyMedium
+                                                        .copyWith(
+                                                            color: AppColors
+                                                                .gray)),
+                                                icon: const Icon(
+                                                    Icons.keyboard_arrow_down,
+                                                    color: AppColors.gray),
+                                                items: AppConstants.cities
+                                                    .map((city) {
+                                                  return DropdownMenuItem(
+                                                      value: city,
+                                                      child: Text(city,
+                                                          style: AppTextStyles
+                                                              .bodyLarge));
+                                                }).toList(),
+                                                onChanged: (value) => setState(
+                                                    () => _selectedOrigin =
+                                                        value),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -251,30 +255,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                             color: AppColors.error, size: 20),
                                         const SizedBox(width: AppSpacing.sm),
                                         Expanded(
-                                          child: DropdownButtonHideUnderline(
-                                            child: DropdownButton<String>(
-                                              isExpanded: true,
-                                              value: _selectedDestination,
-                                              hint: Text('Destination',
-                                                  style: AppTextStyles
-                                                      .bodyMedium
-                                                      .copyWith(
-                                                          color:
-                                                              AppColors.gray)),
-                                              icon: const Icon(
-                                                  Icons.keyboard_arrow_down,
-                                                  color: AppColors.gray),
-                                              items: AppConstants.cities
-                                                  .map((city) {
-                                                return DropdownMenuItem(
-                                                    value: city,
-                                                    child: Text(city,
-                                                        style: AppTextStyles
-                                                            .bodyLarge));
-                                              }).toList(),
-                                              onChanged: (value) => setState(
-                                                  () => _selectedDestination =
-                                                      value),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 30),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                isExpanded: true,
+                                                value: _selectedDestination,
+                                                hint: Text('Destination',
+                                                    style: AppTextStyles
+                                                        .bodyMedium
+                                                        .copyWith(
+                                                            color: AppColors
+                                                                .gray)),
+                                                icon: const Icon(
+                                                    Icons.keyboard_arrow_down,
+                                                    color: AppColors.gray),
+                                                items: AppConstants.cities
+                                                    .map((city) {
+                                                  return DropdownMenuItem(
+                                                      value: city,
+                                                      child: Text(city,
+                                                          style: AppTextStyles
+                                                              .bodyLarge));
+                                                }).toList(),
+                                                onChanged: (value) => setState(
+                                                    () => _selectedDestination =
+                                                        value),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -699,20 +707,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  name[0],
-                  style: AppTextStyles.h2.copyWith(color: color),
-                ),
-              ),
-            ),
+            CompanyLogoHelper.buildCircleLogo(name, size: 50),
             const SizedBox(height: AppSpacing.sm),
             Text(name,
                 style: AppTextStyles.bodyLarge

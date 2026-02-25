@@ -4,6 +4,7 @@ import '../../config/app_theme.dart';
 import '../../data/all_companies_data.dart';
 import '../../models/transport_company.dart';
 import '../../services/ratings_service.dart';
+import '../../utils/company_logo_helper.dart';
 
 class CompanyDetailsScreen extends StatefulWidget {
   final String companyId;
@@ -59,12 +60,25 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
               title: Text(_company!.name,
                   style: AppTextStyles.h3.copyWith(color: AppColors.white)),
               background: Container(
-                color: _company!.color,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      _company!.color,
+                      _company!.color.withValues(alpha: 0.7),
+                    ],
+                  ),
+                ),
                 child: Center(
-                  child: Icon(
-                    Icons.business,
-                    size: 80,
-                    color: AppColors.white.withValues(alpha: 0.3),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 40, top: 20),
+                    child: CompanyLogoHelper.buildLogo(
+                      _company!.name,
+                      size: 90,
+                      showShadow: false,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),
@@ -126,6 +140,8 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
               .map((entry) => _buildStationRow(entry.value))
               .toList(),
         ),
+        const SizedBox(height: AppSpacing.md),
+        _buildReviewsSection(),
       ],
     );
   }
@@ -172,7 +188,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
   }
 
   Widget _buildRouteCard(RouteSchedule route) {
-    final originCity = route.from;
     final durationHours = route.durationMinutes ~/ 60;
     final durationMinutes = route.durationMinutes % 60;
     final durationLabel = durationMinutes > 0
@@ -273,10 +288,10 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                   child: ElevatedButton.icon(
                     onPressed: () {
                       context.push(
-                        '/trip-search-results',
+                        '/trips/search',
                         extra: {
-                          'origin': originCity,
-                          'destination': route.to,
+                          'originCity': route.from,
+                          'destinationCity': route.to,
                           'date': DateTime.now(),
                           'passengers': 1,
                           'companyFilter': _company!.id,
@@ -386,6 +401,86 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
                   icon: const Icon(Icons.rate_review, size: 18),
                   label: const Text('Laisser un avis'),
                 ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReviewsSection() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: RatingsService.getCompanyReviews(_company!.id),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final reviews = snapshot.data!;
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: AppRadius.radiusMd,
+            boxShadow: AppShadows.shadow1,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Avis récents',
+                  style: AppTextStyles.bodyLarge
+                      .copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: AppSpacing.md),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: reviews.length.clamp(0, 5), // Show max 5 reviews
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final review = reviews[index];
+                  final rating = review['rating'] as int? ?? 5;
+                  final comment = review['comment'] as String? ?? '';
+                  final date = review['createdAt'] as String? ?? '';
+
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Row(
+                              children: List.generate(
+                                5,
+                                (i) => Icon(
+                                  i < rating ? Icons.star : Icons.star_border,
+                                  size: 14,
+                                  color: AppColors.star,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (date.isNotEmpty)
+                              Text(
+                                date.split('T').first,
+                                style: AppTextStyles.caption
+                                    .copyWith(color: AppColors.gray),
+                              ),
+                          ],
+                        ),
+                        if (comment.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            comment,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        ]
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),
