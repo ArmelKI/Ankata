@@ -17,6 +17,7 @@ const paymentsRoutes = require('./routes/payments.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 const sotracoRoutes = require('./routes/sotraco.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
 // Initialize Express app
 const app = express();
@@ -43,6 +44,10 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
+// Serve static files (uploads)
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -79,6 +84,7 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/sotraco', sotracoRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,181 +1,244 @@
 const UserModel = require('../models/User');
-const OtpModel = require('../models/Otp');
-const { generateOTP, generateToken, formatPhoneNumber } = require('../utils/helpers');
-const twilio = require('twilio');
-
-const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
-const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-const hasTwilioConfig = Boolean(
-  twilioAccountSid &&
-  twilioAccountSid.startsWith('AC') &&
-  twilioAuthToken &&
-  twilioPhoneNumber
-);
-const client = hasTwilioConfig ? twilio(twilioAccountSid, twilioAuthToken) : null;
+const { generateToken, formatPhoneNumber } = require('../utils/helpers');
+const bcrypt = require('bcryptjs');
+const admin = require('../config/firebase');
 
 class AuthController {
-  // Request OTP via WhatsApp
-  static async requestOTP(req, res) {
+  // Register with Password
+  static async register(req, res) {
     try {
-      const { phoneNumber } = req.body;
+      const { phoneNumber, firstName, lastName, password, securityQ1, securityA1, securityQ2, securityA2 } = req.body;
 
-      if (!phoneNumber) {
-        return res.status(400).json({ error: 'Phone number is required' });
+      if (!phoneNumber || !firstName || !lastName || !password || !securityQ1 || !securityA1 || !securityQ2 || !securityA2) {
+        return res.status(400).json({ error: 'All fields are required.' });
       }
 
       const formattedPhone = formatPhoneNumber(phoneNumber);
-      const otp = generateOTP(6);
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-      // Save OTP to database
-      await OtpModel.create(formattedPhone, otp, expiresAt);
-
-      // Send OTP via WhatsApp using Twilio when configured
-      if (client) {
-        try {
-          await client.messages.create({
-            from: `whatsapp:${twilioPhoneNumber}`,
-            to: `whatsapp:${formattedPhone}`,
-            body: `Your Ankata verification code is: ${otp}. Valid for 10 minutes.`,
-          });
-        } catch (smsError) {
-          console.error('WhatsApp message error:', smsError);
-          // In development, we might want to still proceed
-          if (process.env.NODE_ENV === 'production') {
-            throw smsError;
-          }
-        }
-      } else if (process.env.NODE_ENV === 'production') {
-        return res.status(500).json({
-          error: 'OTP service is not configured',
-        });
+      
+      const existingUser = await UserModel.findByPhone(formattedPhone);
+      if (existingUser) {
+        return res.status(400).json({ error: 'Phone number already registered.' });
       }
 
-      res.status(200).json({
-        message: 'OTP sent successfully',
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+      const secA1Hash = await bcrypt.hash(securityA1.toLowerCase().trim(), salt);
+      const secA2Hash = await bcrypt.hash(securityA2.toLowerCase().trim(), salt);
+
+      const user = await UserModel.create({
         phoneNumber: formattedPhone,
-        expiresIn: 600, // 10 minutes in seconds
+        firstName,
+        lastName,
+        passwordHash,
+        securityQ1,
+        securityA1: secA1Hash,
+        securityQ2,
+        securityA2: secA2Hash,
+        isVerified: true,
+      });
+
+      const token = generateToken(user.id, formattedPhone);
+      await UserModel.updateLastLogin(user.id);
+
+      res.status(201).json({
+        message: 'Registered successfully',
+        token,
+        user: { ...user, isVerified: true },
+        expiresIn: 604800,
       });
     } catch (error) {
-      console.error('Request OTP error:', error);
-      res.status(500).json({
-        error: 'Failed to send OTP',
-        details: error.message,
-      });
+      console.error('Register error:', error);
+      res.status(500).json({ error: 'Registration failed', details: error.message });
     }
   }
 
-  // Verify OTP
-  static async verifyOTP(req, res) {
+  // Login with Password
+  static async login(req, res) {
     try {
-      const { phoneNumber, otp } = req.body;
+      const { phoneNumber, password } = req.body;
 
-      if (!phoneNumber || !otp) {
-        return res.status(400).json({
-          error: 'Phone number and OTP are required',
-        });
+      if (!phoneNumber || !password) {
+        return res.status(400).json({ error: 'Phone number and password are required.' });
       }
 
       const formattedPhone = formatPhoneNumber(phoneNumber);
+      const user = await UserModel.findByPhone(formattedPhone);
 
-      // 🔧 DEV MODE: Accept test OTP 123456
-      if (process.env.NODE_ENV === 'development' && otp === '123456') {
-        let user = await UserModel.findByPhone(formattedPhone);
-        if (!user) {
-          user = await UserModel.create(formattedPhone);
-        }
-        await UserModel.update(user.id, { is_verified: true });
-        const token = generateToken(user.id, formattedPhone);
-        await UserModel.updateLastLogin(user.id);
-
-        return res.status(200).json({
-          message: 'OTP verified successfully (DEV MODE)',
-          token,
-          user: {
-            id: user.id,
-            phoneNumber: user.phone_number,
-            fullName: user.full_name,
-            email: user.email,
-            isVerified: true,
-          },
-          expiresIn: 604800,
-        });
-      }
-
-      // Verify OTP
-      const otpRecord = await OtpModel.findLatestByPhone(formattedPhone);
-
-      if (!otpRecord) {
-        return res.status(400).json({
-          error: 'No OTP found for this phone number',
-        });
-      }
-
-      if (otpRecord.is_verified) {
-        return res.status(400).json({
-          error: 'OTP already verified',
-        });
-      }
-
-      if (new Date() > new Date(otpRecord.expires_at)) {
-        return res.status(400).json({
-          error: 'OTP has expired',
-        });
-      }
-
-      if (otpRecord.otp_code !== otp) {
-        // Increment attempts
-        await OtpModel.updateAttempts(otpRecord.id);
-        
-        if (otpRecord.attempts >= otpRecord.max_attempts - 1) {
-          return res.status(400).json({
-            error: 'Maximum OTP attempts exceeded. Request a new OTP.',
-          });
-        }
-
-        return res.status(400).json({
-          error: 'Invalid OTP',
-          attemptsRemaining: otpRecord.max_attempts - otpRecord.attempts - 1,
-        });
-      }
-
-      // Mark OTP as verified
-      await OtpModel.markVerified(otpRecord.id);
-
-      // Find or create user
-      let user = await UserModel.findByPhone(formattedPhone);
       if (!user) {
-        user = await UserModel.create(formattedPhone);
+        return res.status(400).json({ error: 'Invalid credentials.' });
       }
 
-      // Update user verification status
-      await UserModel.update(user.id, { is_verified: true });
+      if (!user.password_hash) {
+        return res.status(400).json({ error: 'This account was created with Google. Please use Google Login.' });
+      }
 
-      // Generate JWT token
+      const isMatch = await bcrypt.compare(password, user.password_hash);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Invalid credentials.' });
+      }
+
       const token = generateToken(user.id, formattedPhone);
-
-      // Update last login
       await UserModel.updateLastLogin(user.id);
 
       res.status(200).json({
-        message: 'OTP verified successfully',
+        message: 'Login successful',
         token,
         user: {
           id: user.id,
           phoneNumber: user.phone_number,
-          fullName: user.full_name,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          dateOfBirth: user.date_of_birth,
+          cnib: user.cnib,
+          gender: user.gender,
           email: user.email,
-          isVerified: true,
+          profilePictureUrl: user.profile_picture_url,
+          isVerified: user.is_verified,
         },
-        expiresIn: 604800, // 7 days in seconds
+        expiresIn: 604800,
       });
     } catch (error) {
-      console.error('Verify OTP error:', error);
-      res.status(500).json({
-        error: 'Failed to verify OTP',
-        details: error.message,
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Login failed', details: error.message });
+    }
+  }
+
+  // Google Auth Login/Register
+  static async googleAuth(req, res) {
+    try {
+      const { idToken, phoneNumber } = req.body; // Phone number optional depending on what info user gave Firebase
+
+      if (!idToken) {
+        return res.status(400).json({ error: 'Google ID token is required.' });
+      }
+
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const { uid, email, name, picture } = decodedToken;
+
+      let user = await UserModel.findByGoogleId(uid);
+      let [firstName, ...lastNames] = (name || '').split(' ');
+      const lastName = lastNames.join(' ');
+
+      // Also check if email exists if not found by GoogleId?
+      // In this case we mostly rely on GoogleId.
+      
+      let formattedPhone = null;
+      if (phoneNumber) {
+        formattedPhone = formatPhoneNumber(phoneNumber);
+        // If user not found by googleId, check by phone? We can link them if needed.
+        if (!user) {
+          user = await UserModel.findByPhone(formattedPhone);
+        }
+      }
+
+      if (!user) {
+        // Create new user via Google
+        user = await UserModel.create({
+          phoneNumber: formattedPhone || null, // Might be null for Google users initially
+          firstName: firstName || 'GoogleUser',
+          lastName: lastName || '',
+          passwordHash: null,
+          securityQ1: null,
+          securityA1: null,
+          securityQ2: null,
+          securityA2: null,
+          googleId: uid,
+          email: email || null,
+        });
+
+        if (picture) {
+           await UserModel.update(user.id, { profile_picture_url: picture, is_verified: true });
+           user.profile_picture_url = picture;
+        }
+      } else if (!user.google_id) {
+        // Link Google ID if user already exists
+        await UserModel.update(user.id, { googleId: uid, is_verified: true });
+      }
+
+      const token = generateToken(user.id, formattedPhone);
+      await UserModel.updateLastLogin(user.id);
+
+      res.status(200).json({
+        message: 'Google login successful',
+        token,
+        user: {
+          id: user.id || user.id,
+          phoneNumber: user.phone_number || formattedPhone,
+          firstName: user.first_name || firstName,
+          lastName: user.last_name || lastName,
+          dateOfBirth: user.date_of_birth,
+          cnib: user.cnib,
+          gender: user.gender,
+          email: user.email || email,
+          profilePictureUrl: user.profile_picture_url || picture,
+          isVerified: true,
+        },
+        expiresIn: 604800,
       });
+
+    } catch (error) {
+      console.error('Google Auth error:', error);
+      res.status(500).json({ error: 'Google login failed', details: error.message });
+    }
+  }
+
+  // Get Security Questions for Forgot Password
+  static async getSecurityQuestions(req, res) {
+    try {
+      const { phoneNumber } = req.params;
+      const formattedPhone = formatPhoneNumber(phoneNumber);
+
+      const user = await UserModel.findByPhone(formattedPhone);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!user.security_q1 || !user.security_q2) {
+        return res.status(400).json({ error: 'No security questions set for this user. If registered via Google, use Google Login.' });
+      }
+
+      res.status(200).json({
+        securityQ1: user.security_q1,
+        securityQ2: user.security_q2,
+      });
+    } catch (error) {
+      console.error('Get security questions error:', error);
+      res.status(500).json({ error: 'Failed to fetch questions', details: error.message });
+    }
+  }
+
+  // Reset Password
+  static async resetPassword(req, res) {
+    try {
+      const { phoneNumber, securityA1, securityA2, newPassword } = req.body;
+
+      if (!phoneNumber || !securityA1 || !securityA2 || !newPassword) {
+        return res.status(400).json({ error: 'All fields are required.' });
+      }
+
+      const formattedPhone = formatPhoneNumber(phoneNumber);
+      const user = await UserModel.findByPhone(formattedPhone);
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+
+      const isA1Match = await bcrypt.compare(securityA1.toLowerCase().trim(), user.security_a1);
+      const isA2Match = await bcrypt.compare(securityA2.toLowerCase().trim(), user.security_a2);
+
+      if (!isA1Match || !isA2Match) {
+         return res.status(400).json({ error: 'Incorrect answers to security questions.' });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+      await UserModel.updatePassword(user.id, newPasswordHash);
+
+      res.status(200).json({ message: 'Password reset successful. You can now login with your new password.' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ error: 'Password reset failed', details: error.message });
     }
   }
 
@@ -193,7 +256,11 @@ class AuthController {
         user: {
           id: user.id,
           phoneNumber: user.phone_number,
-          fullName: user.full_name,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          dateOfBirth: user.date_of_birth,
+          cnib: user.cnib,
+          gender: user.gender,
           email: user.email,
           profilePictureUrl: user.profile_picture_url,
           isVerified: user.is_verified,
@@ -214,10 +281,14 @@ class AuthController {
   static async updateProfile(req, res) {
     try {
       const userId = req.user.userId;
-      const { fullName, email, profilePictureUrl } = req.body;
+      const { firstName, lastName, dateOfBirth, cnib, gender, email, profilePictureUrl } = req.body;
 
       const updatedUser = await UserModel.update(userId, {
-        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: dateOfBirth,
+        cnib,
+        gender,
         email,
         profile_picture_url: profilePictureUrl,
       });
@@ -231,9 +302,14 @@ class AuthController {
         user: {
           id: updatedUser.id,
           phoneNumber: updatedUser.phone_number,
-          fullName: updatedUser.full_name,
+          firstName: updatedUser.first_name,
+          lastName: updatedUser.last_name,
+          dateOfBirth: updatedUser.date_of_birth,
+          cnib: updatedUser.cnib,
+          gender: updatedUser.gender,
           email: updatedUser.email,
           profilePictureUrl: updatedUser.profile_picture_url,
+          isVerified: updatedUser.is_verified,
         },
       });
     } catch (error) {

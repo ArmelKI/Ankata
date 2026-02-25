@@ -13,18 +13,30 @@ class UserModel {
     return result.rows[0] || null;
   }
 
-  static async create(phoneNumber, fullName = null, email = null) {
+  static async findByGoogleId(googleId) {
+    const query = 'SELECT * FROM users WHERE google_id = $1';
+    const result = await pool.query(query, [googleId]);
+    return result.rows[0] || null;
+  }
+
+  static async create(data) {
+    const {
+      phoneNumber, firstName, lastName, passwordHash, securityQ1, securityA1, securityQ2, securityA2, googleId, email
+    } = data;
+
     const query = `
-      INSERT INTO users (phone_number, full_name, email, is_verified)
-      VALUES ($1, $2, $3, false)
-      RETURNING *;
+      INSERT INTO users (phone_number, first_name, last_name, password_hash, security_q1, security_a1, security_q2, security_a2, google_id, email, is_verified)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING id, phone_number, first_name, last_name, email, is_verified, created_at;
     `;
-    const result = await pool.query(query, [phoneNumber, fullName, email]);
+    const result = await pool.query(query, [
+      phoneNumber, firstName, lastName, passwordHash, securityQ1, securityA1, securityQ2, securityA2, googleId, email, !!googleId
+    ]);
     return result.rows[0];
   }
 
   static async update(id, data) {
-    const allowedFields = ['full_name', 'email', 'profile_picture_url', 'is_verified'];
+    const allowedFields = ['first_name', 'last_name', 'date_of_birth', 'cnib', 'gender', 'profile_picture_url', 'is_verified', 'email'];
     const updateFields = [];
     const values = [];
     let paramIndex = 1;
@@ -50,6 +62,17 @@ class UserModel {
     return result.rows[0] || null;
   }
 
+  static async updatePassword(id, passwordHash) {
+    const query = `
+      UPDATE users
+      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id;
+    `;
+    const result = await pool.query(query, [passwordHash, id]);
+    return result.rows[0] || null;
+  }
+
   static async updateLastLogin(id) {
     const query = `
       UPDATE users
@@ -63,7 +86,7 @@ class UserModel {
 
   static async getAllUsers(limit = 10, offset = 0) {
     const query = `
-      SELECT id, phone_number, full_name, email, is_verified, created_at
+      SELECT id, phone_number, first_name, last_name, email, date_of_birth, cnib, gender, is_verified, created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2;

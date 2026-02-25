@@ -5,8 +5,11 @@ const { authMiddleware } = require('../middleware/auth');
 const router = express.Router();
 
 // Public endpoints
-router.post('/request-otp', AuthController.requestOTP);
-router.post('/verify-otp', AuthController.verifyOTP);
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+router.post('/google', AuthController.googleAuth);
+router.get('/security-questions/:phoneNumber', AuthController.getSecurityQuestions);
+router.post('/reset-password', AuthController.resetPassword);
 
 // Protected endpoints
 router.get('/me', authMiddleware, AuthController.getCurrentUser);
