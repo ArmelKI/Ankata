@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../config/app_theme.dart';
 import '../../data/sotraco_data.dart';
 
@@ -47,13 +48,12 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: Theme.of(context).colorScheme.onSurface),
+          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -81,7 +81,7 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
-          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          unselectedLabelColor: AppColors.gray,
           indicatorColor: AppColors.primary,
           indicatorWeight: 3,
           tabs: const [
@@ -261,25 +261,18 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
                           fontSize: 14,
                           color: (isFirst || isLast)
                               ? AppColors.primary
-                              : Theme.of(context).colorScheme.onSurface,
+                              : AppColors.charcoal,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.schedule,
-                              size: 13,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant),
+                          Icon(Icons.schedule, size: 13, color: AppColors.gray),
                           const SizedBox(width: 4),
                           Text(
                             '${stop.premierDepart} → ${stop.dernierDepart}',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant),
+                            style:
+                                TextStyle(fontSize: 12, color: AppColors.gray),
                           ),
                           const Spacer(),
                           Container(
@@ -392,10 +385,7 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
                     Container(
                         width: 2,
                         height: 30,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withValues(alpha: 0.3)),
+                        color: AppColors.gray.withValues(alpha: 0.3)),
                     Container(
                       width: 12,
                       height: 12,
@@ -453,7 +443,7 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4)
@@ -463,8 +453,7 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title,
-              style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
           Flexible(
             child: Text(value,
                 style: AppTextStyles.bodyMedium

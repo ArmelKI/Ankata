@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
 import '../../providers/app_providers.dart';
+import '../../widgets/seat_selection_widget.dart';
 
 class PassengerInfoScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> tripData;
@@ -22,6 +23,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _idNumberController = TextEditingController();
+  List<String> _selectedSeats = [];
 
   bool _acceptTerms = false;
   String? _idType = 'CNI';
@@ -76,38 +78,42 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
 
       setState(() => _isLoading = true);
       final trip = widget.tripData['trip'] as Map<String, dynamic>;
+      final seatSurcharge = _selectedSeats.length * 500; // 500 FCFA par siège
 
       try {
         final response = await ref.read(apiServiceProvider).createBooking({
           'scheduleId': trip['scheduleId'],
           'lineId': trip['lineId'],
           'companyId': trip['companyId'],
-          'passengerName': _nameController.text,
-          'passengerPhone': _phoneController.text,
+          'passengers': [
+            {
+              'name': _nameController.text,
+              'phone': _phoneController.text,
+            }
+          ],
+          'seatNumbers': _selectedSeats,
           'departureDate': trip['date'],
           'luggageWeightKg': 0,
         });
 
         final booking = response['booking'];
-        if (booking == null) {
-          throw Exception(
-              "La réponse de l'API ne contient pas de réservation validée");
-        }
+        final totalWithSeats = (booking['totalAmount'] ?? 0) + seatSurcharge;
 
         if (mounted) {
           context.push('/payment', extra: {
-            'amount': booking['totalAmount'] ?? trip['price'],
-            'basePrice': booking['basePrice'] ?? trip['price'],
-            'serviceFee': booking['serviceFee'] ?? 500,
+            'amount': totalWithSeats,
+            'basePrice': booking['basePrice'],
+            'serviceFee': booking['serviceFee'],
+            'seatSurcharge': seatSurcharge,
             'bookingId': booking['id']?.toString() ?? '',
             'tripDetails': '${trip['from']} → ${trip['to']}',
-            'bookingCode': booking['bookingCode'] ?? '',
+            'bookingCode': booking['bookingCode'],
             'trip': trip,
             'passenger': {
               'name': _nameController.text,
               'phone': _phoneController.text,
             },
-            'seat': 'Non assigné',
+            'seats': _selectedSeats.join(', '),
           });
         }
       } catch (e) {
@@ -116,7 +122,6 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             SnackBar(
               content: Text('Erreur de réservation: $e'),
               backgroundColor: AppColors.error,
-              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -139,12 +144,12 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
           onPressed: () => _safePop(context),
         ),
         title: Text('Informations passager', style: AppTextStyles.h4),
@@ -163,6 +168,14 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                     _buildTripSummary(),
                     const SizedBox(height: AppSpacing.lg),
                     _buildPassengerCounts(),
+                    const SizedBox(height: AppSpacing.lg),
+                    SeatSelectionWidget(
+                      selectedSeats: _selectedSeats,
+                      onSeatsSelected: (seats) {
+                        setState(() => _selectedSeats = seats);
+                      },
+                      maxSeats: 4,
+                    ),
                     const SizedBox(height: AppSpacing.lg),
                     _buildPersonalInfo(),
                     const SizedBox(height: AppSpacing.lg),
@@ -186,7 +199,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Row(
         children: [
           _buildProgressStep(1, 'Recherche', true),
@@ -208,16 +221,16 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: completed ? AppColors.primary : Theme.of(context).scaffoldBackgroundColor,
+            color: completed ? AppColors.primary : AppColors.lightGray,
             shape: BoxShape.circle,
           ),
           child: Center(
             child: completed
-                ? Icon(Icons.check, color: Theme.of(context).colorScheme.surface, size: 18)
+                ? const Icon(Icons.check, color: AppColors.white, size: 18)
                 : Text(
                     step.toString(),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: AppColors.gray,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -227,7 +240,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: completed ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+            color: completed ? AppColors.primary : AppColors.gray,
             fontWeight: completed ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -240,7 +253,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 20),
-        color: completed ? AppColors.primary : Theme.of(context).scaffoldBackgroundColor,
+        color: completed ? AppColors.primary : AppColors.lightGray,
       ),
     );
   }
@@ -251,13 +264,13 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: AppColors.white,
           borderRadius: AppRadius.radiusMd,
           boxShadow: AppShadows.shadow1,
         ),
         child: Text(
           'Aucun trajet selectionne',
-          style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
         ),
       );
     }
@@ -265,7 +278,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -279,7 +292,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             children: [
               Text('Compagnie',
                   style:
-                      AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
               Text(trip['company'],
                   style: AppTextStyles.bodyMedium
                       .copyWith(fontWeight: FontWeight.w600)),
@@ -291,7 +304,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             children: [
               Text('Horaire',
                   style:
-                      AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
               Text('${trip['departure']} → ${trip['arrival']}',
                   style: AppTextStyles.bodyMedium
                       .copyWith(fontWeight: FontWeight.w600)),
@@ -303,7 +316,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             children: [
               Text('Siège',
                   style:
-                      AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
               Text(widget.tripData['seat'] ?? 'Non assigné',
                   style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600, color: AppColors.primary)),
@@ -328,7 +341,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -380,7 +393,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -435,7 +448,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -506,7 +519,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -530,7 +543,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                 child: RichText(
                   text: TextSpan(
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: Theme.of(context).colorScheme.onSurface),
+                        .copyWith(color: AppColors.charcoal),
                     children: [
                       const TextSpan(text: 'J\'accepte les '),
                       TextSpan(
@@ -565,7 +578,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -583,10 +596,10 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
             ),
             child: _isLoading
-                ? SizedBox(
+                ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface))
+                    child: CircularProgressIndicator(color: AppColors.white))
                 : const Text('Continuer vers le paiement'),
           ),
         ),

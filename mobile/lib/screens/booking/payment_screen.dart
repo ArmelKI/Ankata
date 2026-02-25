@@ -27,36 +27,35 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _processPayment() async {
-    if (_wavePhoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez entrer votre numéro de téléphone'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
+    if (_selectedPaymentMethod == 'wave') {
+      if (_wavePhoneController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez entrer votre numéro Wave'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
     }
 
     setState(() => _isProcessing = true);
 
-    // Simulation du paiement USSD (attente de 4 secondes)
-    await Future.delayed(const Duration(seconds: 4));
+    // Simulation du paiement
+    await Future.delayed(const Duration(seconds: 3));
 
     if (!mounted) return;
 
     setState(() => _isProcessing = false);
 
-    // Utilisation du code de réservation généré par l'API
-    final bookingCode = widget.bookingData['bookingCode'] ?? 'UNKNOWN';
-
-    // (TODO: Appeler une API backend pour marquer le paiement comme effectif)
+    // Générer un code de réservation
+    final bookingCode = _generateBookingCode();
 
     // Naviguer vers l'écran de confirmation
     context.go('/confirmation', extra: {
       ...widget.bookingData,
       'bookingCode': bookingCode,
       'paymentMethod': _selectedPaymentMethod,
-      'paymentPhone': _wavePhoneController.text,
     });
   }
 
@@ -68,17 +67,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
+  String _generateBookingCode() {
+    final random = Random();
+    const letters =
+        'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Sans I, O pour éviter confusion
+    const numbers = '0123456789';
+
+    String code = '';
+    // 3 lettres
+    for (int i = 0; i < 3; i++) {
+      code += letters[random.nextInt(letters.length)];
+    }
+    // 6 chiffres
+    for (int i = 0; i < 6; i++) {
+      code += numbers[random.nextInt(numbers.length)];
+    }
+
+    return code;
+  }
+
   @override
   Widget build(BuildContext context) {
     final tripRaw = widget.bookingData['trip'];
     if (tripRaw is! Map<String, dynamic>) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: AppColors.lightGray,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: AppColors.white,
           elevation: 1,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+            icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
             onPressed: () => _safePop(context),
           ),
           title: Text('Paiement', style: AppTextStyles.h4),
@@ -86,7 +104,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         body: Center(
           child: Text(
             'Aucun trajet selectionne',
-            style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
           ),
         ),
       );
@@ -94,18 +112,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final trip = tripRaw;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
           onPressed: () => _safePop(context),
         ),
         title: Text('Paiement', style: AppTextStyles.h4),
       ),
       body: _isProcessing
-          ? _buildProcessingScreen(trip)
+          ? _buildProcessingScreen()
           : Column(
               children: [
                 _buildProgressBar(),
@@ -130,101 +148,40 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildProcessingScreen(Map<String, dynamic> trip) {
-    Color methodColor = _selectedPaymentMethod == 'wave'
-        ? const Color(0xFF00D8C6)
-        : _selectedPaymentMethod == 'orange'
-            ? const Color(0xFFFF7900)
-            : const Color(0xFF009FE3);
-
-    String methodName = _selectedPaymentMethod == 'wave'
-        ? 'Wave'
-        : _selectedPaymentMethod == 'orange'
-            ? 'Orange Money'
-            : 'Moov Money';
-
-    final totalAmount = trip['price'] + 500;
-
+  Widget _buildProcessingScreen() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 140,
-                  height: 140,
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    duration: const Duration(seconds: 2),
-                    builder: (context, value, child) {
-                      return Transform.scale(
-                        scale: 1.0 + (0.1 * sin(value * 2 * pi)),
-                        child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(methodColor),
-                          strokeWidth: 6,
-                        ),
-                      );
-                    },
-                    onEnd: () {},
-                  ),
-                ),
-                Icon(
-                  Icons.phone_android_rounded,
-                  size: 60,
-                  color: methodColor,
-                ),
-              ],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'En attente de validation',
-              style: AppTextStyles.h3.copyWith(color: Theme.of(context).colorScheme.onSurface),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: methodColor.withValues(alpha: 0.1),
-                borderRadius: AppRadius.radiusMd,
-                border: Border.all(color: methodColor.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Veuillez consulter votre téléphone',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: methodColor.withOpacity(
-                          0.8), // Using withOpacity to ensure dark enough text
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Un popup $methodName a été envoyé au ${_wavePhoneController.text}. Saisissez votre code secret pour valider le paiement de $totalAmount FCFA.',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: Theme.of(context).colorScheme.onSurface),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 4,
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'Ne fermez pas cette application',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Paiement en cours...',
+            style: AppTextStyles.h3,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            _selectedPaymentMethod == 'wave'
+                ? 'Veuillez valider le paiement sur votre téléphone'
+                : 'Traitement de votre paiement',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -235,7 +192,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Row(
         children: [
           _buildProgressStep(1, 'Recherche', true),
@@ -257,16 +214,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: completed ? AppColors.primary : Theme.of(context).scaffoldBackgroundColor,
+            color: completed ? AppColors.primary : AppColors.lightGray,
             shape: BoxShape.circle,
           ),
           child: Center(
             child: completed
-                ? Icon(Icons.check, color: Theme.of(context).colorScheme.surface, size: 18)
+                ? const Icon(Icons.check, color: AppColors.white, size: 18)
                 : Text(
                     step.toString(),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: AppColors.gray,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -276,7 +233,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: completed ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+            color: completed ? AppColors.primary : AppColors.gray,
             fontWeight: completed ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -289,16 +246,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 20),
-        color: completed ? AppColors.primary : Theme.of(context).scaffoldBackgroundColor,
+        color: completed ? AppColors.primary : AppColors.lightGray,
       ),
     );
   }
 
   Widget _buildOrderSummary(Map<String, dynamic> trip) {
+    final seatSurcharge = (widget.bookingData['seatSurcharge'] as int?) ?? 0;
+    final seats = (widget.bookingData['seats'] as String?) ?? '';
+    final basePrice = trip['price'] as int? ?? 0;
+    final serviceFee = 500;
+    final totalPrice = basePrice + serviceFee + seatSurcharge;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -311,11 +274,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
               'Trajet', '${trip['departure']} → ${trip['arrival']}'),
           _buildSummaryRow('Compagnie', trip['company']),
           _buildSummaryRow('Date', trip['date']),
-          _buildSummaryRow('Siège', widget.bookingData['seat']),
+          if (seats.isNotEmpty)
+            _buildSummaryRow('Sièges', seats),
           const Divider(height: AppSpacing.lg),
-          _buildSummaryRow('Prix du billet', '${trip['price']} FCFA',
+          _buildSummaryRow('Prix du billet', '$basePrice FCFA',
               isBold: true),
-          _buildSummaryRow('Frais de service', '500 FCFA'),
+          _buildSummaryRow('Frais de service', '$serviceFee FCFA'),
+          if (seatSurcharge > 0)
+            _buildSummaryRow('Surcharge sièges', '$seatSurcharge FCFA'),
           const Divider(height: AppSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -323,7 +289,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Text('Total à payer',
                   style: AppTextStyles.bodyLarge
                       .copyWith(fontWeight: FontWeight.w700)),
-              Text('${trip['price'] + 500} FCFA', style: AppTextStyles.price),
+              Text('$totalPrice FCFA', style: AppTextStyles.price),
             ],
           ),
         ],
@@ -339,7 +305,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           Text(
             label,
-            style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
           ),
           Text(
             value,
@@ -356,7 +322,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -473,11 +439,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? color : Theme.of(context).scaffoldBackgroundColor,
+            color: isSelected ? color : AppColors.lightGray,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: AppRadius.radiusSm,
-          color: isSelected ? color.withValues(alpha: 0.05) : Theme.of(context).colorScheme.surface,
+          color: isSelected ? color.withValues(alpha: 0.05) : AppColors.white,
         ),
         child: Row(
           children: [
@@ -505,7 +471,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Text(
                     subtitle,
                     style:
-                        AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        AppTextStyles.caption.copyWith(color: AppColors.gray),
                   ),
                 ],
               ),
@@ -550,7 +516,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Toutes vos transactions sont cryptées et sécurisées',
-                  style: AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.gray),
                 ),
               ],
             ),
@@ -561,10 +527,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildBottomBar(Map<String, dynamic> trip) {
+    final seatSurcharge = (widget.bookingData['seatSurcharge'] as int?) ?? 0;
+    final basePrice = trip['price'] as int? ?? 0;
+    final serviceFee = 500;
+    final totalPrice = basePrice + serviceFee + seatSurcharge;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -583,9 +554,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Text(
                   'Total à payer',
                   style:
-                      AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
                 ),
-                Text('${trip['price'] + 500} FCFA', style: AppTextStyles.price),
+                Text('$totalPrice FCFA', style: AppTextStyles.price),
               ],
             ),
             const SizedBox(height: AppSpacing.md),

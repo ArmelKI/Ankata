@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/app_theme.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/referral_dialog.dart';
 import '../../widgets/company_logo.dart';
+import '../../widgets/edit_profile_dialog.dart';
 import '../../utils/haptic_helper.dart';
 import '../../providers/app_providers.dart';
 import '../../config/constants.dart';
@@ -30,9 +32,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _loadProfilePhoto() async {
-    final prefs = await SharedPreferences.getInstance();
+    final box = Hive.box('user_profile');
     if (!mounted) return;
-    setState(() => _photoPath = prefs.getString('profile_photo_path'));
+    setState(() => _photoPath = box.get('avatarUrl'));
   }
 
   Future<void> _pickPhoto() async {
@@ -50,11 +52,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final response = await apiService.uploadProfilePicture(image.path);
 
       if (response['profilePictureUrl'] != null) {
-        final serverUrl = AppConfig.apiBaseUrl.replaceAll('/api', '') +
-            response['profilePictureUrl'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('profile_photo_url', serverUrl);
-        await prefs.setString('profile_photo_path', image.path);
+        final serverUrl = response['profilePictureUrl'];
+        final box = Hive.box('user_profile');
+        await box.put('avatarUrl', serverUrl);
 
         // Update user provider
         final currentUser = ref.read(currentUserProvider);
@@ -88,9 +88,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         title: Text('Profil', style: AppTextStyles.h3),
       ),
@@ -131,7 +131,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         children: [
           // 🎨 User Avatar (NOUVEAU - remplace l'initiale simple)
@@ -157,14 +157,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                          color: Theme.of(context).colorScheme.surface,
-                          width: 3),
+                      border: Border.all(color: AppColors.white, width: 3),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.camera_alt,
                       size: 16,
-                      color: Theme.of(context).colorScheme.surface,
+                      color: AppColors.white,
                     ),
                   ),
                 ),
@@ -179,8 +177,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: AppSpacing.xs),
           Text(
             phone,
-            style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
           ),
           const SizedBox(height: AppSpacing.md),
           ElevatedButton.icon(
@@ -204,7 +201,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildPersonalInfoSection() {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -288,7 +285,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // 💰 NOUVEAU: Section Premium & Referral
   Widget _buildReferralSection() {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -332,7 +329,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildNotificationsSection() {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -369,8 +366,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildPreferencesSection() {
+    final isDarkMode = ref.watch(darkModeProvider);
+
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -394,7 +393,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _buildListItem(
             Icons.dark_mode,
             'Thème',
-            'Clair',
+            isDarkMode ? 'Sombre' : 'Clair',
             () {
               _showThemeDialog();
             },
@@ -413,7 +412,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildFavoritesSection() {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -434,8 +433,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Text(
                     'Aucun trajet favori pour le moment.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    style:
+                        AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
                   ),
                 );
               }
@@ -448,10 +447,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     leading: const Icon(Icons.star, color: AppColors.star),
                     title: Text('$from → $to', style: AppTextStyles.bodyMedium),
                     subtitle: Text(company,
-                        style: AppTextStyles.caption.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant)),
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.gray)),
                   );
                 }).toList(),
               );
@@ -464,7 +461,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildSupportSection() {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -505,7 +502,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildAboutSection() {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -560,12 +557,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: Text(subtitle,
-          style: AppTextStyles.caption
-              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
       trailing: trailing ??
           (onTap != null
-              ? Icon(Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)
+              ? const Icon(Icons.chevron_right, color: AppColors.gray)
               : null),
       onTap: onTap,
     );
@@ -589,8 +584,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: Text(subtitle,
-          style: AppTextStyles.caption
-              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
@@ -622,59 +616,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showEditProfileDialog() {
     final user = ref.read(currentUserProvider);
-    final firstName = user?['firstName'] ?? user?['first_name'] ?? '';
-    final lastName = user?['lastName'] ?? user?['last_name'] ?? '';
+    final apiService = ref.read(apiServiceProvider);
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Modifier le profil'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              initialValue: firstName,
-              decoration: const InputDecoration(
-                labelText: 'Pr\u00e9nom',
-                prefixIcon: Icon(Icons.person_outline),
+      builder: (context) => EditProfileDialog(
+        currentUser: user ?? {},
+        onSave: (updatedData) async {
+          try {
+            if (!mounted) return;
+
+            // Show loading
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Mise à jour en cours...'),
+                duration: Duration(seconds: 5),
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextFormField(
-              initialValue: lastName,
-              decoration: const InputDecoration(
-                labelText: 'Nom',
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextFormField(
-              initialValue: user?['email'] ?? '',
-              decoration: const InputDecoration(
-                labelText: 'CNIB',
-                prefixIcon: Icon(Icons.badge),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
+            );
+
+            // Call API
+            final userId = user?['id'] ?? user?['userId'] ?? '';
+            await apiService.updateUserProfile(userId, updatedData);
+
+            // Update local provider
+            if (mounted) {
+              ref.read(currentUserProvider.notifier).state = {
+                ...?user,
+                ...updatedData,
+              };
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Profil mis à jour avec succès'),
                   backgroundColor: AppColors.success,
                 ),
               );
-            },
-            child: const Text('Enregistrer'),
-          ),
-        ],
+            }
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Erreur: $e'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -691,28 +678,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               title: const Text('Français'),
               value: 'fr',
               groupValue: 'fr',
-              onChanged: (value) => Navigator.pop(context),
+              onChanged: (value) {
+                Navigator.pop(context);
+              },
               activeColor: AppColors.primary,
             ),
-            RadioListTile<String>(
-              title: const Text('Mooré'),
-              value: 'mos',
+            const RadioListTile<String>(
+              title: Text('English (à venir)'),
+              value: 'en',
               groupValue: 'fr',
-              onChanged: (value) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Traduction Mooré activée')));
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Dioula'),
-              value: 'dyu',
-              groupValue: 'fr',
-              onChanged: (value) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Traduction Dioula activée')));
-              },
+              onChanged: null,
             ),
           ],
         ),
@@ -727,6 +702,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showThemeDialog() {
+    final isDarkMode = ref.watch(darkModeProvider);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -734,24 +711,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RadioListTile<String>(
-              title: const Text('Système (Auto)'),
-              value: 'system',
-              groupValue: 'system',
+            RadioListTile<bool>(
+              title: const Text('Clair'),
+              value: false,
+              groupValue: isDarkMode,
               onChanged: (value) {
+                if (value == null) return;
+                ref.read(darkModeProvider.notifier).state = value;
+                Hive.box('user_profile').put('darkMode', value);
                 Navigator.pop(context);
               },
               activeColor: AppColors.primary,
             ),
-            RadioListTile<String>(
-              title: const Text('Mode Sombre'),
-              value: 'dark',
-              groupValue: 'system',
+            RadioListTile<bool>(
+              title: const Text('Sombre'),
+              value: true,
+              groupValue: isDarkMode,
               onChanged: (value) {
+                if (value == null) return;
+                ref.read(darkModeProvider.notifier).state = value;
+                Hive.box('user_profile').put('darkMode', value);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Theme Sombre activé')));
               },
+              activeColor: AppColors.primary,
             ),
           ],
         ),

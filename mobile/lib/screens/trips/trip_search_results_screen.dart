@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_theme.dart';
+import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
 import '../../services/favorites_service.dart';
-import '../../utils/company_logo_helper.dart';
+import '../../widgets/stops_list_widget.dart';
 
 class TripSearchResultsScreen extends ConsumerStatefulWidget {
   final String originCity;
@@ -34,7 +35,6 @@ class _TripSearchResultsScreenState
   String _sortBy = 'price'; // price, time, duration, rating
   final Set<String> _favoriteKeys = {};
   final Set<String> _companyFilters = {};
-  bool _isVipOnly = false;
 
   @override
   void initState() {
@@ -124,6 +124,12 @@ class _TripSearchResultsScreenState
             departureStr = departureStr.substring(0, 5); // Take only HH:mm
           }
 
+          // Parse stops from schedule or use mock data
+          final stops = (schedule['stops'] as List<dynamic>?)
+                  ?.map((s) => Map<String, dynamic>.from(s as Map))
+                  .toList() ??
+              _generateMockStops(line['origin_city'] as String?, line['destination_city'] as String?);
+
           parsedTrips.add({
             'lineId': line['id'],
             'scheduleId': schedule['id'],
@@ -146,6 +152,7 @@ class _TripSearchResultsScreenState
             'rating': line['rating_average'] ?? 0.0,
             'reviews': 0,
             'logoUrl': line['logo_url'],
+            'stops': stops,
           });
         }
       }
@@ -197,30 +204,23 @@ class _TripSearchResultsScreenState
   }
 
   List<Map<String, dynamic>> get _filteredTrips {
-    Iterable<Map<String, dynamic>> result = _sortedTrips;
-
-    if (_isVipOnly) {
-      result = result.where((trip) => trip['isVip'] == true);
+    if (_companyFilters.isEmpty) {
+      return _sortedTrips;
     }
-
-    if (_companyFilters.isNotEmpty) {
-      result =
-          result.where((trip) => _companyFilters.contains(trip['company']));
-    }
-
-    return result.toList();
+    return _sortedTrips
+        .where((trip) => _companyFilters.contains(trip['company']))
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: Theme.of(context).colorScheme.onSurface),
+          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
           onPressed: () => _safePop(context),
         ),
         title: Column(
@@ -233,8 +233,7 @@ class _TripSearchResultsScreenState
             ),
             Text(
               widget.departureDate,
-              style: AppTextStyles.caption.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: AppTextStyles.caption.copyWith(color: AppColors.gray),
             ),
           ],
         ),
@@ -256,7 +255,7 @@ class _TripSearchResultsScreenState
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -322,43 +321,24 @@ class _TripSearchResultsScreenState
           horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       child: Wrap(
         spacing: 8,
-        runSpacing: 4,
-        children: [
-          FilterChip(
-            label: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.star, size: 16, color: AppColors.star),
-                SizedBox(width: 4),
-                Text('VIP Seulement'),
-              ],
-            ),
-            selected: _isVipOnly,
+        children: companies.map((company) {
+          final isSelected = _companyFilters.contains(company);
+          return FilterChip(
+            label: Text(company),
+            selected: isSelected,
             onSelected: (value) {
-              setState(() => _isVipOnly = value);
+              setState(() {
+                if (value) {
+                  _companyFilters.add(company);
+                } else {
+                  _companyFilters.remove(company);
+                }
+              });
             },
-            selectedColor: AppColors.star.withValues(alpha: 0.15),
-            checkmarkColor: AppColors.star,
-          ),
-          ...companies.map((company) {
-            final isSelected = _companyFilters.contains(company);
-            return FilterChip(
-              label: Text(company),
-              selected: isSelected,
-              onSelected: (value) {
-                setState(() {
-                  if (value) {
-                    _companyFilters.add(company);
-                  } else {
-                    _companyFilters.remove(company);
-                  }
-                });
-              },
-              selectedColor: AppColors.primary.withValues(alpha: 0.15),
-              checkmarkColor: AppColors.primary,
-            );
-          }),
-        ],
+            selectedColor: AppColors.primary.withValues(alpha: 0.15),
+            checkmarkColor: AppColors.primary,
+          );
+        }).toList(),
       ),
     );
   }
@@ -366,7 +346,7 @@ class _TripSearchResultsScreenState
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -411,7 +391,7 @@ class _TripSearchResultsScreenState
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -430,9 +410,35 @@ class _TripSearchResultsScreenState
               Row(
                 children: [
                   // Logo compagnie
-                  CompanyLogoHelper.buildLogo(
-                    trip['company'] as String? ?? '',
-                    size: 60,
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: CompanyColors.getCompanyColor(trip['company']),
+                      borderRadius: AppRadius.radiusSm,
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: trip['logoUrl'] != null && trip['logoUrl'].isNotEmpty
+                        ? Image.asset(
+                            trip['logoUrl'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Text(
+                                  trip['company'][0],
+                                  style: AppTextStyles.h3
+                                      .copyWith(color: AppColors.white),
+                                ),
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Text(
+                              trip['company'][0],
+                              style: AppTextStyles.h3
+                                  .copyWith(color: AppColors.white),
+                            ),
+                          ),
                   ),
                   const SizedBox(width: AppSpacing.md),
 
@@ -449,10 +455,8 @@ class _TripSearchResultsScreenState
                         const SizedBox(height: 4),
                         Text(
                           '${trip['availableSeats'] ?? 0} places disponibles',
-                          style: AppTextStyles.caption.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant),
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.gray),
                         ),
                       ],
                     ),
@@ -510,10 +514,8 @@ class _TripSearchResultsScreenState
                         Text(trip['departure'] as String? ?? '--:--',
                             style: AppTextStyles.h3),
                         Text('Départ',
-                            style: AppTextStyles.caption.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant)),
+                            style: AppTextStyles.caption
+                                .copyWith(color: AppColors.gray)),
                       ],
                     ),
                   ),
@@ -558,10 +560,8 @@ class _TripSearchResultsScreenState
                         Text(trip['arrival'] as String? ?? '--:--',
                             style: AppTextStyles.h3),
                         Text('Arrivée',
-                            style: AppTextStyles.caption.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant)),
+                            style: AppTextStyles.caption
+                                .copyWith(color: AppColors.gray)),
                       ],
                     ),
                   ),
@@ -582,8 +582,7 @@ class _TripSearchResultsScreenState
                                 vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    Theme.of(context).scaffoldBackgroundColor,
+                                color: AppColors.lightGray,
                                 borderRadius: AppRadius.radiusFull,
                               ),
                               child: Text(
@@ -596,6 +595,29 @@ class _TripSearchResultsScreenState
               ),
 
               const SizedBox(height: AppSpacing.md),
+
+              // Arrêts
+              if ((trip['stops'] as List?)?.isNotEmpty ?? false) ...[
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGray,
+                    borderRadius: AppRadius.radiusSm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Arrêts', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: AppSpacing.sm),
+                      StopsListWidget(
+                        stops: (trip['stops'] as List).cast<Map<String, dynamic>>(),
+                        routeName: trip['company'] as String? ?? 'Ligne',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
 
               // Prix et bouton
               Row(
@@ -637,14 +659,14 @@ class _TripSearchResultsScreenState
             Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
+              decoration: const BoxDecoration(
+                color: AppColors.lightGray,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.search_off,
                 size: 60,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppColors.gray,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -656,8 +678,7 @@ class _TripSearchResultsScreenState
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Essayez de modifier vos critères de recherche',
-              style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -670,4 +691,42 @@ class _TripSearchResultsScreenState
       ),
     );
   }
+
+  List<Map<String, dynamic>> _generateMockStops(String? from, String? to) {
+    // Mock stops between two cities
+    final fromCity = from ?? 'Ouagadougou';
+    final toCity = to ?? 'Bobo-Dioulasso';
+
+    return [
+      {
+        'name': fromCity,
+        'duration': '00:00',
+        'price': 0,
+        'lat': 12.3656,
+        'lng': -1.5197,
+      },
+      {
+        'name': 'Koudougou',
+        'duration': '02:15',
+        'price': 2000,
+        'lat': 12.2592,
+        'lng': -2.3707,
+      },
+      {
+        'name': 'Kaya',
+        'duration': '04:30',
+        'price': 3500,
+        'lat': 13.0450,
+        'lng': -1.2722,
+      },
+      {
+        'name': toCity,
+        'duration': '06:00',
+        'price': 5000,
+        'lat': 11.1847,
+        'lng': -4.2695,
+      },
+    ];
+  }
 }
+
