@@ -30,6 +30,8 @@ class ApiService {
           if (_token != null) {
             options.headers['Authorization'] = 'Bearer $_token';
           }
+          // Bypass ngrok interstitial page
+          options.headers['ngrok-skip-browser-warning'] = 'true';
           if (kDebugMode) {
             print('[API] ${options.method} ${options.path}');
           }
@@ -68,11 +70,12 @@ class ApiService {
   }
 
   // Auth Endpoints
-  Future<Map<String, dynamic>> requestOTP(String phoneNumber) async {
+  Future<Map<String, dynamic>> loginWithPassword(
+      String phoneNumber, String password) async {
     try {
       final response = await _dio.post(
-        '/auth/request-otp',
-        data: {'phoneNumber': phoneNumber},
+        '/auth/login',
+        data: {'phoneNumber': phoneNumber, 'password': password},
       );
       return response.data;
     } on DioException catch (e) {
@@ -80,15 +83,41 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> verifyOTP(String phoneNumber, String otp) async {
+  Future<Map<String, dynamic>> registerWithPassword(
+      Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/auth/register', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> loginWithGoogle(String idToken,
+      {String? phoneNumber}) async {
     try {
       final response = await _dio.post(
-        '/auth/verify-otp',
-        data: {
-          'phoneNumber': phoneNumber,
-          'otp': otp,
-        },
+        '/auth/google',
+        data: {'idToken': idToken, 'phoneNumber': phoneNumber},
       );
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> getSecurityQuestions(String phoneNumber) async {
+    try {
+      final response = await _dio.get('/auth/security-questions/$phoneNumber');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/auth/reset-password', data: data);
       return response.data;
     } on DioException catch (e) {
       throw _handleError(e);
@@ -107,6 +136,26 @@ class ApiService {
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
     try {
       final response = await _dio.put('/auth/profile', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadProfilePicture(String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(filePath),
+      });
+      final response = await _dio.post(
+        '/upload/profile-picture',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
       return response.data;
     } on DioException catch (e) {
       throw _handleError(e);
@@ -355,10 +404,33 @@ class ApiService {
   }
 
   Exception _handleError(DioException error) {
-    if (error.response != null) {
-      final errorMessage = error.response!.data['error'] ?? error.message;
-      return Exception(errorMessage);
+    String message = 'Une erreur inattendue est survenue.';
+
+    if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      message =
+          'Le délai de connexion a expiré. Veuillez vérifier votre réseau.';
+    } else if (error.type == DioExceptionType.connectionError) {
+      message =
+          'Erreur de connexion : impossible de joindre le serveur. Assurez-vous d\'être connecté à Internet.';
+    } else if (error.response != null) {
+      final data = error.response?.data;
+      if (data != null && data is Map && data.containsKey('error')) {
+        message = data['error'].toString();
+      } else if (error.response?.statusCode == 404) {
+        message = 'La ressource demandée est introuvable (Erreur 404).';
+      } else if (error.response?.statusCode == 500) {
+        message = 'Erreur interne du serveur. Veuillez réessayer plus tard.';
+      } else {
+        message = 'Erreur serveur: ${error.response?.statusCode}';
+      }
+    } else {
+      message = error.message ?? message;
     }
-    return Exception(error.message);
+
+    if (kDebugMode) {
+      print('[API Error] $message');
+    }
+    return Exception(message);
   }
 }
