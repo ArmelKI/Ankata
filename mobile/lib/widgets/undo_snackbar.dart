@@ -15,12 +15,12 @@ class UndoSnackbar {
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.check_circle, color: Theme.of(context).colorScheme.surface, size: 20),
+          const Icon(Icons.check_circle, color: AppColors.white, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.surface),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
             ),
           ),
         ],
@@ -30,7 +30,7 @@ class UndoSnackbar {
       behavior: SnackBarBehavior.floating,
       action: SnackBarAction(
         label: 'ANNULER',
-        textColor: Theme.of(context).colorScheme.surface,
+        textColor: AppColors.white,
         onPressed: () {
           HapticHelper.mediumImpact();
           onUndo();
@@ -54,12 +54,12 @@ class UndoSnackbar {
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.error, color: Theme.of(context).colorScheme.surface, size: 20),
+          const Icon(Icons.error, color: AppColors.white, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.surface),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
             ),
           ),
         ],
@@ -70,7 +70,7 @@ class UndoSnackbar {
       action: onRetry != null
           ? SnackBarAction(
               label: 'RÉESSAYER',
-              textColor: Theme.of(context).colorScheme.surface,
+              textColor: AppColors.white,
               onPressed: () {
                 HapticHelper.mediumImpact();
                 onRetry();
@@ -94,12 +94,12 @@ class UndoSnackbar {
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.check_circle, color: Theme.of(context).colorScheme.surface, size: 20),
+          const Icon(Icons.check_circle, color: AppColors.white, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.surface),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
             ),
           ),
         ],

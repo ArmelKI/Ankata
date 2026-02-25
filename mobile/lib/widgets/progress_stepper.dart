@@ -21,10 +21,10 @@ class ProgressStepper extends StatelessWidget {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+            color: AppColors.charcoal.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -51,28 +51,28 @@ class ProgressStepper extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: isActive
                                 ? AppColors.primary
-                                : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                                : AppColors.gray.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: isActive
                                   ? AppColors.primary
-                                  : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                                  : AppColors.gray.withValues(alpha: 0.3),
                               width: 2,
                             ),
                           ),
                           child: Center(
                             child: index < currentStep
-                                ? Icon(
+                                ? const Icon(
                                     Icons.check,
-                                    color: Theme.of(context).colorScheme.surface,
+                                    color: AppColors.white,
                                     size: 16,
                                   )
                                 : Text(
                                     '${index + 1}',
                                     style: AppTextStyles.bodySmall.copyWith(
                                       color: isActive
-                                          ? Theme.of(context).colorScheme.surface
-                                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                                          ? AppColors.white
+                                          : AppColors.gray,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -83,9 +83,11 @@ class ProgressStepper extends StatelessWidget {
                         Text(
                           steps[index],
                           style: AppTextStyles.caption.copyWith(
-                            color: isActive ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontWeight:
-                                index == currentStep ? FontWeight.w600 : FontWeight.w400,
+                            color:
+                                isActive ? AppColors.primary : AppColors.gray,
+                            fontWeight: index == currentStep
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 1,
@@ -102,7 +104,7 @@ class ProgressStepper extends StatelessWidget {
                         margin: const EdgeInsets.only(bottom: 24),
                         color: index < currentStep
                             ? AppColors.primary
-                            : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                            : AppColors.gray.withValues(alpha: 0.2),
                       ),
                     ),
                 ],

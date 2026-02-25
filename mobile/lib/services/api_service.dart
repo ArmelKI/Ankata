@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import '../config/constants.dart';
 
 class ApiService {
@@ -32,8 +30,6 @@ class ApiService {
           if (_token != null) {
             options.headers['Authorization'] = 'Bearer $_token';
           }
-          // Bypass ngrok interstitial page
-          options.headers['ngrok-skip-browser-warning'] = 'true';
           if (kDebugMode) {
             print('[API] ${options.method} ${options.path}');
           }
@@ -138,6 +134,18 @@ class ApiService {
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
     try {
       final response = await _dio.put('/auth/profile', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> updateUserProfile(
+    String userId,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dio.put('/users/$userId', data: data);
       return response.data;
     } on DioException catch (e) {
       throw _handleError(e);
@@ -254,31 +262,8 @@ class ApiService {
         '/bookings/my-bookings',
         queryParameters: queryParams,
       );
-
-      // Cache the response offline
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final cacheKey = 'offline_bookings_${status ?? "all"}';
-        await prefs.setString(cacheKey, jsonEncode(response.data));
-      } catch (e) {
-        if (kDebugMode) print('Failed to cache bookings: $e');
-      }
-
       return response.data;
     } on DioException catch (e) {
-      // Offline fallback
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.unknown) {
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          final cacheKey = 'offline_bookings_${status ?? "all"}';
-          final cachedData = prefs.getString(cacheKey);
-          if (cachedData != null) {
-            return jsonDecode(cachedData) as Map<String, dynamic>;
-          }
-        } catch (_) {}
-      }
       throw _handleError(e);
     }
   }

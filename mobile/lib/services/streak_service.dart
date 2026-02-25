@@ -13,14 +13,14 @@ class StreakService {
   /// Vérifie et met à jour le streak au lancement de l'app
   static Future<StreakData> checkStreak() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     final lastVisitStr = prefs.getString(_lastVisitKey);
     final currentStreak = prefs.getInt(_streakCountKey) ?? 0;
     final totalReward = prefs.getInt(_totalRewardKey) ?? 0;
-    
+
     if (lastVisitStr == null) {
       // Première visite
       await prefs.setString(_lastVisitKey, today.toIso8601String());
@@ -32,11 +32,12 @@ class StreakService {
         isNewStreak: true,
       );
     }
-    
+
     final lastVisit = DateTime.parse(lastVisitStr);
-    final lastVisitDate = DateTime(lastVisit.year, lastVisit.month, lastVisit.day);
+    final lastVisitDate =
+        DateTime(lastVisit.year, lastVisit.month, lastVisit.day);
     final daysDifference = today.difference(lastVisitDate).inDays;
-    
+
     if (daysDifference == 0) {
       // Déjà visité aujourd'hui
       return StreakData(
@@ -50,11 +51,11 @@ class StreakService {
       final newStreak = currentStreak + 1;
       final reward = _calculateReward(newStreak);
       final newTotalReward = totalReward + reward;
-      
+
       await prefs.setString(_lastVisitKey, today.toIso8601String());
       await prefs.setInt(_streakCountKey, newStreak);
       await prefs.setInt(_totalRewardKey, newTotalReward);
-      
+
       return StreakData(
         currentStreak: newStreak,
         totalReward: newTotalReward,
@@ -66,7 +67,7 @@ class StreakService {
       // Streak cassé
       await prefs.setString(_lastVisitKey, today.toIso8601String());
       await prefs.setInt(_streakCountKey, 1);
-      
+
       return StreakData(
         currentStreak: 1,
         totalReward: totalReward,
@@ -123,7 +124,7 @@ class StreakDialog extends StatelessWidget {
 
   static void show(BuildContext context, StreakData data) {
     if (!data.showDialog) return;
-    
+
     HapticHelper.success();
     showDialog(
       context: context,
@@ -158,7 +159,10 @@ class StreakDialog extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: data.streakBroken
                             ? [Colors.grey, Colors.grey.shade300]
-                            : [const Color(0xFFFF6B00), const Color(0xFFFFD700)],
+                            : [
+                                const Color(0xFFFF6B00),
+                                const Color(0xFFFFD700)
+                              ],
                       ),
                       shape: BoxShape.circle,
                     ),
@@ -173,7 +177,7 @@ class StreakDialog extends StatelessWidget {
               },
             ),
             const SizedBox(height: AppSpacing.lg),
-            
+
             // Title
             Text(
               data.streakBroken
@@ -187,7 +191,7 @@ class StreakDialog extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
-            
+
             // Streak count
             if (!data.streakBroken) ...[
               Row(
@@ -204,7 +208,7 @@ class StreakDialog extends StatelessWidget {
                   Text(
                     data.currentStreak == 1 ? 'jour' : 'jours',
                     style: AppTextStyles.h3.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: AppColors.gray,
                     ),
                   ),
                 ],
@@ -221,7 +225,7 @@ class StreakDialog extends StatelessWidget {
               Text(
                 'Tu avais ${data.previousStreak} jours',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: AppColors.gray,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -232,9 +236,9 @@ class StreakDialog extends StatelessWidget {
                 ),
               ),
             ],
-            
+
             const SizedBox(height: AppSpacing.lg),
-            
+
             // Reward
             if (data.todayReward != null && !data.streakBroken)
               Container(
@@ -261,9 +265,9 @@ class StreakDialog extends StatelessWidget {
                   ],
                 ),
               ),
-            
+
             const SizedBox(height: AppSpacing.lg),
-            
+
             // Close button
             SizedBox(
               width: double.infinity,
@@ -282,7 +286,7 @@ class StreakDialog extends StatelessWidget {
                 child: Text(
                   'Continuer',
                   style: AppTextStyles.button.copyWith(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: AppColors.white,
                   ),
                 ),
               ),
@@ -321,7 +325,7 @@ class StreakWidget extends StatelessWidget {
           Text(
             '$streak jours',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.surface,
+              color: AppColors.white,
               fontWeight: FontWeight.w600,
             ),
           ),

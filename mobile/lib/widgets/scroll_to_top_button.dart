@@ -74,7 +74,7 @@ class _ScrollToTopButtonState extends State<ScrollToTopButton>
         child: FloatingActionButton(
           onPressed: _scrollToTop,
           backgroundColor: AppColors.primary,
-          child: Icon(Icons.arrow_upward, color: Theme.of(context).colorScheme.surface),
+          child: const Icon(Icons.arrow_upward, color: AppColors.white),
         ),
       ),
     );

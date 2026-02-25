@@ -297,7 +297,7 @@ class BadgeWidget extends StatelessWidget {
                     end: Alignment.bottomRight,
                   )
                 : null,
-            color: isUnlocked ? null : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+            color: isUnlocked ? null : AppColors.gray.withValues(alpha: 0.2),
             shape: BoxShape.circle,
             boxShadow: isUnlocked
                 ? [
@@ -314,8 +314,8 @@ class BadgeWidget extends StatelessWidget {
               badge.icon,
               size: size * 0.5,
               color: isUnlocked
-                  ? Theme.of(context).colorScheme.surface
-                  : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ? AppColors.white
+                  : AppColors.gray.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -324,7 +324,7 @@ class BadgeWidget extends StatelessWidget {
           badge.name,
           style: AppTextStyles.bodySmall.copyWith(
             fontWeight: FontWeight.w600,
-            color: isUnlocked ? null : Theme.of(context).colorScheme.onSurfaceVariant,
+            color: isUnlocked ? null : AppColors.gray,
           ),
           textAlign: TextAlign.center,
         ),
@@ -379,7 +379,7 @@ class BadgeUnlockedDialog extends StatelessWidget {
             Text(
               badge.description,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppColors.gray,
               ),
               textAlign: TextAlign.center,
             ),
@@ -398,7 +398,7 @@ class BadgeUnlockedDialog extends StatelessWidget {
                 child: Text(
                   'Génial !',
                   style: AppTextStyles.button.copyWith(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: AppColors.white,
                   ),
                 ),
               ),

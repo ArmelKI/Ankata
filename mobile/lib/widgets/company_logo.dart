@@ -54,7 +54,7 @@ class CompanyLogo extends StatelessWidget {
         borderRadius: AppRadius.radiusMd,
         border: showBorder
             ? Border.all(
-                color: Theme.of(context).colorScheme.surface,
+                color: AppColors.white,
                 width: 3,
               )
             : null,
@@ -72,7 +72,7 @@ class CompanyLogo extends StatelessWidget {
           style: TextStyle(
             fontSize: size * 0.4,
             fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.surface,
+            color: AppColors.white,
             letterSpacing: 0,
           ),
         ),
@@ -98,7 +98,7 @@ class UserAvatar extends StatelessWidget {
 
   String _getInitials(String? name) {
     if (name == null || name.isEmpty) return '?';
-    
+
     final parts = name.split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
@@ -108,7 +108,7 @@ class UserAvatar extends StatelessWidget {
 
   Color _getColorFromName(String? name) {
     if (name == null || name.isEmpty) return AppColors.primary;
-    
+
     final hash = name.hashCode;
     final hue = (hash % 360).toDouble();
     return HSLColor.fromAHSL(1.0, hue, 0.6, 0.5).toColor();
@@ -139,7 +139,7 @@ class UserAvatar extends StatelessWidget {
         style: TextStyle(
           fontSize: size * 0.4,
           fontWeight: FontWeight.w600,
-          color: Theme.of(context).colorScheme.surface,
+          color: AppColors.white,
         ),
       ),
     );
@@ -163,7 +163,7 @@ class VerifiedBadge extends StatelessWidget {
       child: Icon(
         Icons.check,
         size: size,
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
       ),
     );
   }
