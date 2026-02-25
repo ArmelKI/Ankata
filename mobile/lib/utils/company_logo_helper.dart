@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../config/app_constants.dart';
-import '../config/app_theme.dart';
 
 /// Helper centralisé pour afficher les logos des compagnies de transport
 class CompanyLogoHelper {
@@ -129,7 +128,7 @@ class CompanyLogoHelper {
           style: TextStyle(
             fontSize: size * 0.4,
             fontWeight: FontWeight.w700,
-            color: AppColors.white,
+            color: Colors.white,
           ),
         ),
       ),

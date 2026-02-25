@@ -54,7 +54,7 @@ class CompanyLogo extends StatelessWidget {
         borderRadius: AppRadius.radiusMd,
         border: showBorder
             ? Border.all(
-                color: AppColors.white,
+                color: Theme.of(context).colorScheme.surface,
                 width: 3,
               )
             : null,
@@ -72,7 +72,7 @@ class CompanyLogo extends StatelessWidget {
           style: TextStyle(
             fontSize: size * 0.4,
             fontWeight: FontWeight.w700,
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surface,
             letterSpacing: 0,
           ),
         ),
@@ -139,7 +139,7 @@ class UserAvatar extends StatelessWidget {
         style: TextStyle(
           fontSize: size * 0.4,
           fontWeight: FontWeight.w600,
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
         ),
       ),
     );
@@ -163,7 +163,7 @@ class VerifiedBadge extends StatelessWidget {
       child: Icon(
         Icons.check,
         size: size,
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
       ),
     );
   }

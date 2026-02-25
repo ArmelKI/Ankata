@@ -61,9 +61,9 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 1,
         title: Text('Compagnies', style: AppTextStyles.h3),
       ),
@@ -99,7 +99,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -145,14 +145,14 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
             Container(
               width: 120,
               height: 120,
-              decoration: const BoxDecoration(
-                color: AppColors.lightGray,
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.business,
                 size: 60,
-                color: AppColors.gray,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -164,7 +164,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Essayez de modifier vos filtres',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+              style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
           ],
@@ -188,7 +188,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
@@ -263,7 +263,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                     Text(
                       company['fullName'],
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -284,15 +284,15 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                         Text(
                           ' (${company['reviews']} avis)',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.gray,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Container(
                           width: 4,
                           height: 4,
-                          decoration: const BoxDecoration(
-                            color: AppColors.gray,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -300,7 +300,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                         Text(
                           '${company['totalTrips']} trajets',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.gray,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -309,7 +309,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                 ),
               ),
 
-              const Icon(Icons.chevron_right, color: AppColors.gray),
+              Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ],
           ),
         ),

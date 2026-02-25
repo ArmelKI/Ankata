@@ -19,13 +19,13 @@ class SkeletonLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppColors.gray.withValues(alpha: 0.3),
-      highlightColor: AppColors.white.withValues(alpha: 0.8),
+      baseColor: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+      highlightColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: AppColors.gray.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
           borderRadius: borderRadius ?? AppRadius.radiusSm,
         ),
       ),
@@ -46,11 +46,11 @@ class TripCardSkeleton extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -99,7 +99,7 @@ class CompanyCardSkeleton extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
       ),
       child: const Row(

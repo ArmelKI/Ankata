@@ -94,7 +94,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
           decoration: BoxDecoration(
             color: isEnabled
                 ? (widget.backgroundColor ?? AppColors.primary)
-                : AppColors.gray.withValues(alpha: 0.3),
+                : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             borderRadius: AppRadius.radiusMd,
             boxShadow: isEnabled && _isPressed
                 ? [
@@ -107,7 +107,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
                   ]
                 : [
                     BoxShadow(
-                      color: AppColors.charcoal.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -121,7 +121,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        widget.textColor ?? AppColors.white,
+                        widget.textColor ?? Theme.of(context).colorScheme.surface,
                       ),
                     ),
                   )
@@ -132,7 +132,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
                       if (widget.icon != null) ...[
                         Icon(
                           widget.icon,
-                          color: widget.textColor ?? AppColors.white,
+                          color: widget.textColor ?? Theme.of(context).colorScheme.surface,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -140,7 +140,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
                       Text(
                         widget.text,
                         style: AppTextStyles.button.copyWith(
-                          color: widget.textColor ?? AppColors.white,
+                          color: widget.textColor ?? Theme.of(context).colorScheme.surface,
                         ),
                       ),
                     ],
@@ -174,7 +174,7 @@ class SecondaryButton extends StatelessWidget {
       onPressed: onPressed,
       isLoading: isLoading,
       icon: icon,
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       textColor: AppColors.primary,
     );
   }
