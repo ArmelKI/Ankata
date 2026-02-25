@@ -1,0 +1,2926 @@
+ANKATA APP PASSAGERS Spécifications Techniques
+Production-Ready
+Version: 3.0 FINAL
+Date: 23 février 2026
+Auteur: Axiane Agency Technical Team
+Objectif: Documentation complète vibe coding avec données
+RÉELLES 2026
+
+Table des Matières
+1. Vision Produit App Passagers
+2. Architecture Système Simplifiée
+3. Schéma Base de Données
+4. Compagnies Partenaires (Données Réelles 2026)
+SOTRACO (Transport Urbain)
+TSR Transport
+STAF Transport
+RAHIMO Transports
+RAKIETA Transport
+TCV Transport
+5. Authentification WhatsApp
+6. Intégration Paiement Mobile Money
+7. Système Notation Vérifiée
+8. Spécifications API Backend
+9. Application Mobile Flutter
+10. Seed Database Production
+11. Roadmap MVP
+
+1. Vision Produit App Passagers
+1.1 Problème Résolu
+Pour les passagers au Burkina Faso :
+
+• Problème monnaie : SOTRACO 150 FCFA exactement requis,
+receveurs n'ont jamais monnaie
+• Overbooking : Compagnies vendent 75-80 tickets pour 70
+places, passagers refusés à la montée
+• Pas de comparaison : Ouaga-Bobo entre 4500-7000 FCFA selon
+compagnie, impossible comparer
+• Réservations archaïques : Appels téléphone, aucune
+confirmation, paiement obligatoire guichet
+• Absence qualité service : Impossible savoir quelle compagnie
+fiable, pas de notation
+Solution ANKATA :
+
+Application mobile permettant de rechercher, comparer, réserver
+et payer tous les trajets bus au Burkina Faso depuis son smartphone
+avec Orange Money/Moov Money.
+
+1.2 Différenciation Produit
+ANKATA APP (B2C Passagers) ≠ ANKATA COMPAGNIES (B2B
+Admin)
+
+Aspect
+App Passagers
+Utilisateurs Voyageurs grand public
+Réservation facile +
+Problème
+paiement
+Recherche, booking,
+Features
+notation
+Commission 2% +
+Business
+freemium
+
+Tech
+
+Online-first, UX simple
+
+App Compagnies
+Directeurs, receveurs
+
+Conformité DGI + gestion
+Facturation, offline,
+analytics
+SaaS subscription
+Offline-first, admin
+complex
+
+Note importante : Ce document concerne uniquement ANKATA APP
+PASSAGERS. Pas de DGI, pas de facturation électronique, pas de
+gestion compagnie.
+
+2. Architecture Système
+Simplifiée
+2.1 Stack Technologique
+
+Couche
+
+Technologie
+
+Mobile
+
+Flutter 3.19+
+
+Backend
+
+Node.js 20 LTS
+
+Database PostgreSQL 16
+Hosting
+
+Supabase
+
+Cache
+
+Redis 7
+
+Auth
+
+WhatsApp OTP
+
+Paiement
+
+Orange Money +
+Moov
+
+Maps
+
+Mapbox GL
+
+Notif
+
+FCM + APNs
+
+Justification
+Cross-platform iOS+Android,
+Material Design
+Async I/O, TypeScript,
+Express.js
+ACID transactions, JSONB,
+PostGIS geospatial
+Postgres managé + Auth +
+Storage + Realtime
+Queue paiements async,
+sessions
+Gratuit, 95% Burkinabè ont
+WhatsApp
+85% Orange + 15% Moov
+parts marché
+Geoloc lignes/arrêts, gratuit
+<50k/mois
+Push iOS/Android + WhatsApp
+backup
+
+2.2 Architecture Système
+┌─────────── ANKATA APP ECOSYSTEM ───────────┐
+││
+│ ┌──────────────┐ │
+│ │ PASSAGERS │ │
+│ │ Flutter App │ │
+│ │ iOS+Android │ │
+│ └──────┬───────┘ │
+│ │ HTTPS/WSS │
+│▼│
+│ ┌─────────────────┐ │
+│ │ API Gateway │ │
+│ │ Node.js + Redis│ │
+│ └────────┬────────┘ │
+│││
+
+│▼│
+│ ┌─────────────────┐ │
+│ │ PostgreSQL 16 │ │
+│ │ (Supabase) │ │
+│ └────────┬────────┘ │
+│││
+└───────────┼─────────────────────────────────
+┘
+│
+┌───────┼───────┐
+▼▼▼
+┌────────┐ ┌────────┐ ┌────────┐
+│WhatsApp│ │Orange │ │FCM/APNs│
+│OTP │ │Money │ │Push │
+└────────┘ └────────┘ └────────┘
+
+2.3 Validation Tickets (SANS QR CODE)
+Méthode simplifiée :
+
+1. Passager réserve via app → Reçoit code booking 8 chiffres (ex:
+12345678)
+2. Notification WhatsApp + SMS : "Votre billet STAF Ouaga-Bobo
+14h. Code: 12345678"
+3. À la montée : Passager donne code verbal au receveur
+4. Receveur vérifie sur liste papier ou tablette (liste passagers du
+jour)
+5. Validation manuelle ✅
+Avantages :
+
+Pas besoin scanner QR (receveurs n'ont pas toujours
+smartphone)
+Code simple mémorisable ou SMS
+Liste passagers PDF envoyée chaque matin aux receveurs
+
+3. Schéma Base de Données
+3.1 Tables Principales
+Table: companies
+CREATE TABLE companies (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+name VARCHAR(100) NOT NULL,
+slug VARCHAR(100) UNIQUE NOT NULL,
+description TEXT,
+-- Identité visuelle
+logo_url TEXT,
+primary_color VARCHAR(7), -- ex: #00A859
+secondary_color VARCHAR(7),
+-- Contact
+phone VARCHAR(20),
+whatsapp VARCHAR(20),
+email VARCHAR(100),
+facebook_url TEXT,
+website_url TEXT,
+-- Adresses gares
+headquarters_address TEXT,
+ouaga_station_address TEXT,
+bobo_station_address TEXT,
+-- Métadonnées
+is_active BOOLEAN DEFAULT true,
+rating_average DECIMAL(2,1) DEFAULT 0,
+total_ratings INTEGER DEFAULT 0,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+
+Table: lines
+CREATE TABLE lines (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+company_id UUID REFERENCES companies(id),
+-- Identification
+line_code VARCHAR(10), -- ex: L2B pour SOTRACO
+line_name VARCHAR(100),
+-- Trajet
+origin_city VARCHAR(100),
+destination_city VARCHAR(100),
+distance_km INTEGER,
+duration_minutes INTEGER,
+-- Type
+line_type VARCHAR(20), -- 'urban', 'interurban', 'international'
+-- Tarification
+base_price INTEGER, -- FCFA
+student_price INTEGER,
+child_price INTEGER,
+luggage_price_per_kg INTEGER,
+-- Métadonnées
+is_active BOOLEAN DEFAULT true,
+created_at TIMESTAMP DEFAULT NOW()
+);
+
+Table: stops
+CREATE TABLE stops (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+line_id UUID REFERENCES lines(id),
+name VARCHAR(200),
+stop_order INTEGER,
+-- Géolocalisation
+latitude DECIMAL(10, 8),
+longitude DECIMAL(11, 8),
+
+-- Timing
+arrival_offset_minutes INTEGER, -- depuis départ
+created_at TIMESTAMP DEFAULT NOW()
+);
+
+Table: schedules
+CREATE TABLE schedules (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+line_id UUID REFERENCES lines(id),
+-- Horaires
+departure_time TIME,
+days_of_week INTEGER[], -- [1,2,3,4,5] = lun-ven
+-- Capacité
+total_seats INTEGER,
+available_seats INTEGER,
+-- Validité
+valid_from DATE,
+valid_until DATE,
+is_active BOOLEAN DEFAULT true,
+created_at TIMESTAMP DEFAULT NOW()
+);
+
+Table: users
+CREATE TABLE users (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- Identité
+phone VARCHAR(20) UNIQUE NOT NULL,
+whatsapp_verified BOOLEAN DEFAULT false,
+first_name VARCHAR(100),
+last_name VARCHAR(100),
+email VARCHAR(100),
+
+-- Préférences
+preferred_payment_method VARCHAR(20), -- 'orange_money',
+'moov_money'
+loyalty_points INTEGER DEFAULT 0,
+-- Métadonnées
+total_trips INTEGER DEFAULT 0,
+created_at TIMESTAMP DEFAULT NOW(),
+last_login TIMESTAMP
+);
+
+Table: bookings
+CREATE TABLE bookings (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+booking_code VARCHAR(8) UNIQUE NOT NULL, -- ex: 12345678
+user_id UUID REFERENCES users(id),
+line_id UUID REFERENCES lines(id),
+schedule_id UUID REFERENCES schedules(id),
+-- Détails trajet
+travel_date DATE,
+departure_time TIME,
+-- Passagers
+passenger_name VARCHAR(200),
+passenger_phone VARCHAR(20),
+number_of_passengers INTEGER DEFAULT 1,
+-- Tarification
+base_fare INTEGER,
+luggage_weight_kg INTEGER DEFAULT 0,
+luggage_fee INTEGER DEFAULT 0,
+total_amount INTEGER,
+-- Paiement
+payment_status VARCHAR(20), -- 'pending', 'paid', 'failed', 'refunded'
+payment_method VARCHAR(20),
+payment_reference VARCHAR(100),
+paid_at TIMESTAMP,
+
+-- Validation voyage
+is_validated BOOLEAN DEFAULT false,
+validated_at TIMESTAMP,
+validated_by VARCHAR(100), -- nom receveur
+-- Statuts
+booking_status VARCHAR(20), -- 'confirmed', 'cancelled', 'completed'
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+
+Table: ratings
+CREATE TABLE ratings (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+booking_id UUID REFERENCES bookings(id) UNIQUE,
+user_id UUID REFERENCES users(id),
+company_id UUID REFERENCES companies(id),
+line_id UUID REFERENCES lines(id),
+-- Notation (1-5 étoiles)
+rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+-- Critères détaillés
+punctuality_rating INTEGER,
+comfort_rating INTEGER,
+staff_rating INTEGER,
+cleanliness_rating INTEGER,
+-- Commentaire
+comment TEXT,
+-- Vérification
+is_verified BOOLEAN DEFAULT true, -- Seulement si voyage effectué
+created_at TIMESTAMP DEFAULT NOW()
+);
+
+Table: loyalty_transactions
+CREATE TABLE loyalty_transactions (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+user_id UUID REFERENCES users(id),
+booking_id UUID REFERENCES bookings(id),
+points_earned INTEGER,
+points_spent INTEGER DEFAULT 0,
+balance_after INTEGER,
+transaction_type VARCHAR(50), -- 'booking', 'referral', 'redemption'
+description TEXT,
+created_at TIMESTAMP DEFAULT NOW()
+);
+
+4. Compagnies Partenaires Données Réelles 2026
+4.1 SOTRACO (Société de Transport en
+Commun)
+Identité Visuelle
+Couleurs officielles :
+
+Primaire: #00A859 (Vert SOTRACO)
+Secondaire: #FFFFFF (Blanc)
+Accent: #FFD700 (Jaune pour bus scolaires)
+Logo : Bus vert stylisé avec texte "SOTRACO"
+
+Informations Générales
+Champ
+Nom complet
+Type
+Création
+Flotte
+Passagers/an
+Siège social
+Téléphone
+Facebook
+WhatsApp
+
+Valeur
+Société de Transport en Commun
+Transport urbain Ouagadougou
+2004
+455 bus (375 neufs livrés janvier 2026)
+14 millions (2023)
+Avenue Charles de Gaulle, Ouagadougou
++226 25 44 66 66
+@SOTRACO.officiel (51 000 abonnés)
++226 70 00 00 01 (service client)
+
+Lignes Urbaines SOTRACO (18 lignes)
+Ligne L2B - Balkuy ↔ Naaba Koom
+
+• Distance : 18 km
+• Arrêts : 39 stations
+• Horaires : 05h45 - 20h30
+• Fréquence : 15-30 min selon heures
+• Tarif : 150 FCFA
+• Arrêts clés :
+– Terminus Balkuy
+– Cité An II
+– Université Joseph Ki-Zerbo
+– Place des Nations Unies
+– Rond-Point BICIA
+– Place Naaba Koom (Terminus)
+Ligne L3 - Bissisghin ↔ Zones Écoles
+
+• Distance : 15 km
+• Arrêts : 32 stations
+• Horaires : 05h50 - 20h00
+• Fréquence : 15-25 min
+• Tarif : 150 FCFA
+• Arrêts clés :
+
+– Terminus Bissisghin
+– Marché Central
+– Avenue Kadiogo
+– Lycée Technique
+– Zones Écoles (Terminus)
+Ligne L4 - Sandogo II ↔ Zones Écoles
+
+• Distance : 16 km
+• Horaires : 06h00 - 20h15
+• Tarif : 150 FCFA
+Ligne L10 - Tengandogo ↔ Zones Écoles
+
+• Distance : 19 km
+• Horaires : 06h00 - 20h00
+• Tarif : 150 FCFA
+
+Tarification SOTRACO
+Type trajet
+Prix (FCFA)
+Urbain standard
+150
+Urbain longue distance
+200
+Périurbain (ex: Pabré)
+500
+Abonnement mensuel
+15 000
+Abonnement étudiant
+12 000
+
+Notes
+Toutes lignes Ouaga
++15km
+Hors Ouaga
+Illimité tous trajets
+Avec carte étudiant
+
+Horaires Type SOTRACO
+Lundi - Vendredi :
+
+Premier départ : 05h45
+Dernier départ : 20h30
+Fréquence heures pointe (07h-09h, 17h-19h) : 15 min
+Fréquence heures creuses : 30 min
+Samedi :
+
+Premier départ : 06h00
+Dernier départ : 20h00
+
+Fréquence : 20-30 min
+Dimanche :
+
+Premier départ : 06h30
+Dernier départ : 19h30
+Fréquence : 30-45 min
+
+Seed Data SOTRACO
+{
+"company": {
+"name": "SOTRACO",
+"slug": "sotraco",
+"description": "Société de Transport en Commun - Leader transport
+urbain Ouagadougou",
+"logo_url": "https://ankata-assets.s3.amazonaws.com/logos/sotraco.p
+ng",
+"primary_color": "#00A859",
+"secondary_color": "#FFFFFF",
+"phone": "+22625446666",
+"whatsapp": "+22670000001",
+"facebook_url": "https://facebook.com/SOTRACO.officiel",
+"headquarters_address": "Avenue Charles de Gaulle, Ouagadougou",
+"is_active": true
+},
+"lines": [
+{
+"line_code": "L2B",
+"line_name": "Balkuy - Naaba Koom",
+"origin_city": "Ouagadougou",
+"destination_city": "Ouagadougou",
+"distance_km": 18,
+"duration_minutes": 50,
+"line_type": "urban",
+"base_price": 150,
+"student_price": 120,
+"child_price": 100
+},
+{
+
+"line_code": "L3",
+"line_name": "Bissisghin - Zones Écoles",
+"origin_city": "Ouagadougou",
+"destination_city": "Ouagadougou",
+"distance_km": 15,
+"duration_minutes": 45,
+"line_type": "urban",
+"base_price": 150,
+"student_price": 120,
+"child_price": 100
+},
+{
+"line_code": "L4",
+"line_name": "Sandogo II - Zones Écoles",
+"origin_city": "Ouagadougou",
+"destination_city": "Ouagadougou",
+"distance_km": 16,
+"duration_minutes": 48,
+"line_type": "urban",
+"base_price": 150,
+"student_price": 120,
+"child_price": 100
+},
+{
+"line_code": "L10",
+"line_name": "Tengandogo - Zones Écoles",
+"origin_city": "Ouagadougou",
+"destination_city": "Ouagadougou",
+"distance_km": 19,
+"duration_minutes": 55,
+"line_type": "urban",
+"base_price": 150,
+"student_price": 120,
+"child_price": 100
+}
+],
+"schedules": [
+{
+"line_code": "L2B",
+
+"departure_time": "05:45:00",
+"days_of_week": [1, 2, 3, 4, 5],
+"total_seats": 60,
+"frequency_minutes": 15
+},
+{
+"line_code": "L2B",
+"departure_time": "06:30:00",
+"days_of_week": [6],
+"total_seats": 60,
+"frequency_minutes": 20
+},
+{
+"line_code": "L2B",
+"departure_time": "06:30:00",
+"days_of_week": [7],
+"total_seats": 60,
+"frequency_minutes": 30
+}
+]
+}
+
+4.2 TSR (Transport Sana Rasmane)
+Identité Visuelle
+Couleurs officielles :
+
+Primaire: #1E90FF (Bleu électrique TSR)
+Secondaire: #00C853 (Vert)
+Accent: #FFFFFF (Blanc)
+Logo : Oiseau (hirondelle bleue) + texte "TSR" + "DOLPHINE" (nom
+flotte moderne)
+
+Informations Générales
+Champ
+Nom complet
+Type
+Positionnement
+
+Valeur
+Transport Sana Rasmane
+Transport interurbain
+Low-cost (prix les plus bas)
+45 bus (majorité anciens, quelques neufs
+Flotte
+"Dolphine")
+Gare Ouaga
+Gare routière de Ouaga 2000
+Gare Bobo
+Gare Accart-Ville, Bobo-Dioulasso
+Téléphone Ouaga +226 25 37 80 20
+Téléphone Bobo +226 20 97 22 33
+
+Destinations TSR
+Ouagadougou → Bobo-Dioulasso
+
+• Distance : 360 km
+• Durée : 5h30 - 6h30
+• Tarif : 4 500 FCFA (le moins cher du marché)
+• Horaires départs Ouaga : 06h00, 07h00, 10h00, 14h00, 17h00,
+23h30
+• Horaires départs Bobo : 06h00, 07h30, 10h00, 14h30, 17h30,
+23h00
+• Arrêts : Ouaga → Koudougou (1h30) → Boromo (2h30) → Bobo
+• Capacité : 70 places (bus standard) ou 52 places (bus Dolphine
+VIP)
+Ouagadougou → Fada N'Gourma
+
+• Distance : 450 km
+• Durée : 7-8h
+• Tarif : 5 500 FCFA
+• Horaires : 06h00, 09h00, 15h00
+• Arrêts : Ouaga → Koupéla (2h) → Fada
+
+Ouagadougou → Dédougou
+
+• Distance : 230 km
+• Durée : 3h30 - 4h
+• Tarif : 3 500 FCFA
+• Horaires : 07h00, 11h00, 16h00
+
+Tarification TSR
+Trajet
+Prix (FCFA) Bagage (FCFA) Durée
+Ouaga - Bobo
+4 500
+500/25kg 5h30
+Ouaga - Fada
+5 500
+700/25kg
+7h
+Ouaga - Dédougou
+3 500
+400/25kg 3h30
+Bobo - Banfora
+2 000
+300/25kg 1h30
+
+Notes TSR
+Avantages :
+
+Prix les plus compétitifs marché Burkina
+Horaires fréquents Ouaga-Bobo (6 départs/jour)
+Nouveaux bus "Dolphine" confortables
+Inconvénients :
+
+Flotte ancienne (70% bus > 10 ans)
+AC souvent en panne
+Retards fréquents (30min - 1h)
+Réputation chauffeurs imprudents
+Notation moyenne : ★★★☆☆ (3.2/5)
+
+Seed Data TSR
+{
+"company": {
+"name": "TSR Transport",
+"slug": "tsr-transport",
+"description": "Transport Sana Rasmane - Prix compétitifs transport
+interurbain",
+
+"logo_url": "https://ankata-assets.s3.amazonaws.com/logos/tsr.png",
+"primary_color": "#1E90FF",
+"secondary_color": "#00C853",
+"phone": "+22625378020",
+"ouaga_station_address": "Gare routière Ouaga 2000",
+"bobo_station_address": "Gare Accart-Ville, Bobo-Dioulasso",
+"is_active": true
+},
+"lines": [
+{
+"line_code": "TSR-OB",
+"line_name": "Ouagadougou - Bobo-Dioulasso",
+"origin_city": "Ouagadougou",
+"destination_city": "Bobo-Dioulasso",
+"distance_km": 360,
+"duration_minutes": 330,
+"line_type": "interurban",
+"base_price": 4500,
+"luggage_price_per_kg": 20
+},
+{
+"line_code": "TSR-OF",
+"line_name": "Ouagadougou - Fada N'Gourma",
+"origin_city": "Ouagadougou",
+"destination_city": "Fada N'Gourma",
+"distance_km": 450,
+"duration_minutes": 420,
+"line_type": "interurban",
+"base_price": 5500,
+"luggage_price_per_kg": 28
+},
+{
+"line_code": "TSR-OD",
+"line_name": "Ouagadougou - Dédougou",
+"origin_city": "Ouagadougou",
+"destination_city": "Dédougou",
+"distance_km": 230,
+"duration_minutes": 210,
+"line_type": "interurban",
+
+"base_price": 3500,
+"luggage_price_per_kg": 16
+}
+],
+"schedules": [
+{
+"line_code": "TSR-OB",
+"departure_times": ["06:00", "07:00", "10:00", "14:00", "17:00",
+"23:30"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 70
+},
+{
+"line_code": "TSR-OF",
+"departure_times": ["06:00", "09:00", "15:00"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 70
+}
+]
+}
+
+4.3 STAF Transport
+Identité Visuelle
+Couleurs officielles :
+
+Primaire: #FF6B00 (Orange vif)
+Secondaire: #003366 (Bleu marine)
+Accent: #FFFFFF (Blanc)
+Logo : Texte "STAF" stylisé orange et bleu
+
+Informations Générales
+
+Champ
+Nom complet
+Type
+Base
+Positionnement
+Flotte
+Gare Bobo
+Gare Ouaga
+Téléphone Bobo
+Téléphone Ouaga
+
+Valeur
+STAF Transport
+Transport interurbain
+Bobo-Dioulasso
+Milieu de gamme, fiable
+35 bus récents (< 5 ans)
+Avenue de la République, Bobo
+Gare routière Ouaga 2000
++226 20 97 15 55
++226 25 37 44 88
+
+Destinations STAF
+Ouagadougou ↔ Bobo-Dioulasso
+
+• Distance : 360 km
+• Durée : 5h - 6h
+• Tarif : 6 500 FCFA
+• Horaires départs Ouaga : 06h00, 09h00, 12h00, 15h00, 18h00
+• Horaires départs Bobo : 06h00, 09h00, 12h00, 15h00, 18h00
+• Capacité : 60 places (sièges confortables)
+Ouagadougou → Fada N'Gourma
+
+• Distance : 450 km
+• Durée : 6h30 - 7h30
+• Tarif : 6 000 FCFA
+• Horaires : 06h00, 09h00, 15h00
+Ouagadougou → Gaoua
+
+• Distance : 520 km
+• Durée : 8h - 9h
+• Tarif : 8 500 FCFA
+• Horaires : 06h00, 14h00
+
+Bobo-Dioulasso → Banfora
+
+• Distance : 85 km
+• Durée : 1h30
+• Tarif : 2 500 FCFA
+• Horaires : 07h00, 10h00, 14h00, 17h00
+
+Tarification STAF
+Trajet
+Prix (FCFA) Bagage (FCFA) Durée
+Ouaga - Bobo
+6 500
+600/25kg 5h30
+Ouaga - Fada
+6 000
+700/25kg
+7h
+Ouaga - Gaoua
+8 500
+1000/25kg 8h30
+Bobo - Banfora
+2 500
+300/25kg 1h30
+
+Notes STAF
+Avantages :
+
+Bus récents, bien entretenus
+AC fonctionnelle 95% du temps
+Ponctualité correcte (retards < 30min généralement)
+Service client réactif
+Inconvénients :
+
+Prix 30-40% plus élevé que TSR
+Moins de départs quotidiens
+Notation moyenne : ★★★★☆ (4.1/5)
+
+Seed Data STAF
+{
+"company": {
+"name": "STAF Transport",
+"slug": "staf-transport",
+"description": "Transport interurbain fiable basé à Bobo-Dioulasso",
+"logo_url": "https://ankata-assets.s3.amazonaws.com/logos/staf.png",
+"primary_color": "#FF6B00",
+
+"secondary_color": "#003366",
+"phone": "+22620971555",
+"bobo_station_address": "Avenue de la République, Bobo-Dioulasso",
+"ouaga_station_address": "Gare routière Ouaga 2000",
+"is_active": true
+},
+"lines": [
+{
+"line_code": "STAF-OB",
+"line_name": "Ouagadougou - Bobo-Dioulasso",
+"origin_city": "Ouagadougou",
+"destination_city": "Bobo-Dioulasso",
+"distance_km": 360,
+"duration_minutes": 320,
+"line_type": "interurban",
+"base_price": 6500,
+"luggage_price_per_kg": 24
+},
+{
+"line_code": "STAF-OF",
+"line_name": "Ouagadougou - Fada N'Gourma",
+"origin_city": "Ouagadougou",
+"destination_city": "Fada N'Gourma",
+"distance_km": 450,
+"duration_minutes": 400,
+"line_type": "interurban",
+"base_price": 6000,
+"luggage_price_per_kg": 28
+},
+{
+"line_code": "STAF-OG",
+"line_name": "Ouagadougou - Gaoua",
+"origin_city": "Ouagadougou",
+"destination_city": "Gaoua",
+"distance_km": 520,
+"duration_minutes": 510,
+"line_type": "interurban",
+"base_price": 8500,
+"luggage_price_per_kg": 40
+
+},
+{
+"line_code": "STAF-BB",
+"line_name": "Bobo-Dioulasso - Banfora",
+"origin_city": "Bobo-Dioulasso",
+"destination_city": "Banfora",
+"distance_km": 85,
+"duration_minutes": 90,
+"line_type": "interurban",
+"base_price": 2500,
+"luggage_price_per_kg": 12
+}
+],
+"schedules": [
+{
+"line_code": "STAF-OB",
+"departure_times": ["06:00", "09:00", "12:00", "15:00", "18:00"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 60
+},
+{
+"line_code": "STAF-BB",
+"departure_times": ["07:00", "10:00", "14:00", "17:00"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 60
+}
+]
+}
+
+4.4 RAHIMO Transports
+Identité Visuelle
+Couleurs officielles :
+
+Primaire: #DC143C (Rouge vif)
+Secondaire: #FFD700 (Or/Jaune)
+Accent: #000000 (Noir)
+Texte: #FFFFFF (Blanc)
+
+Logo : "RAHIMO" stylisé rouge et or + "G8" (flotte premium)
+
+Informations Générales
+Champ
+Nom complet
+Type
+Positionnement
+Flotte
+
+Valeur
+RAHIMO Transports
+Transport interurbain + international
+Premium, confort maximal
+28 bus de luxe "G8" (neufs 2024-2025)
+AC garanti, TV/musique, sièges inclinables,
+Services
+WiFi (sélectionnés)
+Gare Ouaga
+Gare Ouaga 2000, Section VIP
+Gare Bobo
+Station RAHIMO, Route de Dédougou
+Téléphone Ouaga +226 25 37 99 00
+WhatsApp
++226 70 20 20 20
+Email
+contact@rahimotransports.bf
+
+Destinations RAHIMO
+Ouagadougou ↔ Bobo-Dioulasso (Ligne Phare)
+
+• Distance : 360 km
+• Durée : 5h - 5h30 (le plus rapide)
+• Tarif : 6 500 FCFA (standard) / 8 000 FCFA (VIP)
+• Horaires fixes départs Ouaga : 07h30, 10h00, 14h30, 18h30,
+23h30
+• Horaires fixes départs Bobo : 07h30, 10h00, 14h30, 18h30,
+23h00
+• Capacité : 52 places (sièges larges) ou 36 places VIP
+• Services inclus : AC, TV, prise USB, collation
+Ouagadougou → Abidjan (International)
+
+• Distance : 1 150 km
+• Durée : 18h - 20h (avec arrêt Bobo + frontière)
+• Tarif : 15 000 FCFA
+• Horaires : Lundi, Mercredi, Vendredi 17h00
+• Arrêts : Ouaga → Bobo (5h) → Frontière Côte d'Ivoire → Abidjan
+
+Ouagadougou → Lomé (International)
+
+• Distance : 980 km
+• Durée : 16h - 18h
+• Tarif : 12 000 FCFA
+• Horaires : Mardi, Jeudi, Samedi 18h00
+• Arrêts : Ouaga → Koupéla → Fada → Frontière Togo → Lomé
+Bobo-Dioulasso → Sikasso (Mali)
+
+• Distance : 180 km
+• Durée : 3h30
+• Tarif : 5 500 FCFA
+• Horaires : 08h00, 14h00
+
+Tarification RAHIMO
+Trajet
+Prix (FCFA) Bagage inclus Durée
+Ouaga - Bobo Standard
+6 500
+30kg
+5h
+Ouaga - Bobo VIP
+8 000
+40kg
+5h
+Ouaga - Abidjan
+15 000
+30kg
+18h
+Ouaga - Lomé
+12 000
+30kg
+16h
+Bobo - Sikasso
+5 500
+25kg 3h30
+
+Services Premium RAHIMO
+Inclus tous trajets :
+
+Climatisation garantie 100%
+Sièges inclinables cuir
+Espace jambes 20% supérieur
+Prises USB individuelles
+Écran TV + musique
+Collation offerte (trajet > 3h)
+Assurance voyage incluse
+Option VIP (+1500 FCFA) :
+
+Sièges 1ère classe (36 places vs 52)
+WiFi 4G gratuit
+
+Repas chaud servi
+Accès salon d'attente VIP gares
+
+Notes RAHIMO
+Avantages :
+
+Meilleur confort marché Burkina
+Ponctualité remarquable (retard moyen 15min)
+Service client professionnel
+Liaisons internationales
+Inconvénients :
+
+Prix 30-50% supérieur concurrence
+Moins de départs quotidiens
+Notation moyenne : ★★★★★ (4.6/5)
+
+Seed Data RAHIMO
+{
+"company": {
+"name": "RAHIMO Transports",
+"slug": "rahimo-transports",
+"description": "Transport premium G8 - Confort et ponctualité
+garantis",
+"logo_url": "https://ankata-assets.s3.amazonaws.com/logos/rahimo.p
+ng",
+"primary_color": "#DC143C",
+"secondary_color": "#FFD700",
+"phone": "+22625379900",
+"whatsapp": "+22670202020",
+"email": "contact@rahimotransports.bf",
+"ouaga_station_address": "Gare Ouaga 2000, Section VIP",
+"bobo_station_address": "Station RAHIMO, Route de Dédougou, Bobo",
+"is_active": true
+},
+"lines": [
+{
+"line_code": "RAHIMO-OB",
+
+"line_name": "Ouagadougou - Bobo-Dioulasso",
+"origin_city": "Ouagadougou",
+"destination_city": "Bobo-Dioulasso",
+"distance_km": 360,
+"duration_minutes": 310,
+"line_type": "interurban",
+"base_price": 6500,
+"luggage_price_per_kg": 0
+},
+{
+"line_code": "RAHIMO-OB-VIP",
+"line_name": "Ouagadougou - Bobo-Dioulasso VIP",
+"origin_city": "Ouagadougou",
+"destination_city": "Bobo-Dioulasso",
+"distance_km": 360,
+"duration_minutes": 300,
+"line_type": "interurban",
+"base_price": 8000,
+"luggage_price_per_kg": 0
+},
+{
+"line_code": "RAHIMO-OA",
+"line_name": "Ouagadougou - Abidjan",
+"origin_city": "Ouagadougou",
+"destination_city": "Abidjan",
+"distance_km": 1150,
+"duration_minutes": 1100,
+"line_type": "international",
+"base_price": 15000,
+"luggage_price_per_kg": 0
+},
+{
+"line_code": "RAHIMO-OL",
+"line_name": "Ouagadougou - Lomé",
+"origin_city": "Ouagadougou",
+"destination_city": "Lomé",
+"distance_km": 980,
+"duration_minutes": 960,
+"line_type": "international",
+
+"base_price": 12000,
+"luggage_price_per_kg": 0
+},
+{
+"line_code": "RAHIMO-BS",
+"line_name": "Bobo-Dioulasso - Sikasso",
+"origin_city": "Bobo-Dioulasso",
+"destination_city": "Sikasso",
+"distance_km": 180,
+"duration_minutes": 210,
+"line_type": "international",
+"base_price": 5500,
+"luggage_price_per_kg": 0
+}
+],
+"schedules": [
+{
+"line_code": "RAHIMO-OB",
+"departure_times": ["07:30", "10:00", "14:30", "18:30", "23:30"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 52
+},
+{
+"line_code": "RAHIMO-OB-VIP",
+"departure_times": ["10:00", "18:30"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 36
+},
+{
+"line_code": "RAHIMO-OA",
+"departure_times": ["17:00"],
+"days_of_week": [1, 3, 5],
+"total_seats": 52
+},
+{
+"line_code": "RAHIMO-OL",
+"departure_times": ["18:00"],
+"days_of_week": [2, 4, 6],
+"total_seats": 52
+
+}
+]
+}
+
+4.5 RAKIETA Transport
+Identité Visuelle
+Couleurs officielles :
+
+Primaire: #8B0000 (Rouge bordeaux)
+Secondaire: #FFD700 (Or)
+Accent: #FFFFFF (Blanc)
+Logo : Fusée stylisée (Rakieta = fusée en mooré) + texte
+
+Informations Générales
+Champ
+Nom complet
+Type
+Positionnement
+Création
+Flotte
+Gare Ouaga
+Téléphone
+WhatsApp
+Slogan
+
+Valeur
+RAKIETA Transport
+Transport interurbain + international
+Ponctualité, rapidité
+2018 (compagnie récente)
+22 bus modernes
+Gare routière Ouaga 2000
++226 25 37 66 77
++226 70 10 10 10
+"Rapide comme une fusée"
+
+Destinations RAKIETA
+Ouagadougou ↔ Bobo-Dioulasso
+
+• Distance : 360 km
+• Durée : 5h15 - 5h45
+• Tarif : 6 000 FCFA
+• Horaires départs Ouaga : 07h00, 10h00, 14h00, 17h00, 22h00
+• Horaires départs Bobo : 07h00, 10h00, 14h00, 17h00, 22h00
+
+• Capacité : 60 places
+Ouagadougou → Lomé (Via Togo)
+
+• Distance : 980 km
+• Durée : 15h - 17h
+• Tarif : 11 000 FCFA
+• Horaires : Mercredi, Vendredi, Dimanche 19h00
+• Service : Nuit en bus, arrivée Lomé matin
+Ouagadougou → Niamey (Niger)
+
+• Distance : 520 km
+• Durée : 8h - 9h
+• Tarif : 7 500 FCFA
+• Horaires : Lundi, Jeudi 08h00
+
+Tarification RAKIETA
+Trajet
+Prix (FCFA) Bagage (FCFA) Durée
+Ouaga - Bobo
+6 000
+500/25kg 5h30
+Ouaga - Lomé
+11 000
+1000/30kg
+16h
+Ouaga - Niamey
+7 500
+800/25kg 8h30
+
+Notes RAKIETA
+Avantages :
+
+Ponctualité excellente (retard moyen 10min)
+Bus récents, bien entretenus
+Service client jeune et dynamique
+Système réservation online actif (site web)
+Inconvénients :
+
+Réseau destinations limité vs concurrents
+Jeune compagnie (historique court)
+Notation moyenne : ★★★★☆ (4.3/5)
+
+Seed Data RAKIETA
+{
+"company": {
+"name": "RAKIETA Transport",
+"slug": "rakieta-transport",
+"description": "Transport rapide et ponctuel - Rapide comme une
+fusée",
+"logo_url": "https://ankata-assets.s3.amazonaws.com/logos/rakieta.pn
+g",
+"primary_color": "#8B0000",
+"secondary_color": "#FFD700",
+"phone": "+22625376677",
+"whatsapp": "+22670101010",
+"website_url": "https://transport-rakieta.com",
+"ouaga_station_address": "Gare routière Ouaga 2000",
+"is_active": true
+},
+"lines": [
+{
+"line_code": "RAKIETA-OB",
+"line_name": "Ouagadougou - Bobo-Dioulasso",
+"origin_city": "Ouagadougou",
+"destination_city": "Bobo-Dioulasso",
+"distance_km": 360,
+"duration_minutes": 330,
+"line_type": "interurban",
+"base_price": 6000,
+"luggage_price_per_kg": 20
+},
+{
+"line_code": "RAKIETA-OL",
+"line_name": "Ouagadougou - Lomé",
+"origin_city": "Ouagadougou",
+"destination_city": "Lomé",
+"distance_km": 980,
+"duration_minutes": 960,
+"line_type": "international",
+"base_price": 11000,
+"luggage_price_per_kg": 33
+
+},
+{
+"line_code": "RAKIETA-ON",
+"line_name": "Ouagadougou - Niamey",
+"origin_city": "Ouagadougou",
+"destination_city": "Niamey",
+"distance_km": 520,
+"duration_minutes": 510,
+"line_type": "international",
+"base_price": 7500,
+"luggage_price_per_kg": 32
+}
+],
+"schedules": [
+{
+"line_code": "RAKIETA-OB",
+"departure_times": ["07:00", "10:00", "14:00", "17:00", "22:00"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 60
+},
+{
+"line_code": "RAKIETA-OL",
+"departure_times": ["19:00"],
+"days_of_week": [3, 5, 7],
+"total_seats": 60
+},
+{
+"line_code": "RAKIETA-ON",
+"departure_times": ["08:00"],
+"days_of_week": [1, 4],
+"total_seats": 60
+}
+]
+}
+
+4.6 TCV (Transport Confort Voyageur)
+Identité Visuelle
+Couleurs officielles :
+
+Primaire: #006400 (Vert foncé)
+Secondaire: #FFD700 (Jaune or)
+Accent: #FFFFFF (Blanc)
+Logo : "TCV" en lettres vertes épaisses
+
+Informations Générales
+Champ
+Nom complet
+Type
+Positionnement
+Flotte
+Gare Ouaga
+Téléphone
+
+Valeur
+Transport Confort Voyageur
+Transport interurbain
+Confort milieu de gamme
+18 bus
+Gare routière Ouaga 2000
++226 25 37 55 44
+
+Destinations TCV
+Ouagadougou ↔ Bobo-Dioulasso
+
+• Tarif : 5 500 FCFA
+• Horaires : 07h30, 11h00, 15h00, 18h30
+• Durée : 5h30 - 6h
+Ouagadougou → Dori
+
+• Distance : 280 km
+• Tarif : 4 500 FCFA
+• Horaires : 07h00, 13h00
+• Durée : 4h - 5h
+
+Seed Data TCV
+{
+"company": {
+"name": "TCV Transport",
+"slug": "tcv-transport",
+"description": "Transport Confort Voyageur - Milieu de gamme",
+"logo_url": "https://ankata-assets.s3.amazonaws.com/logos/tcv.png",
+"primary_color": "#006400",
+"secondary_color": "#FFD700",
+"phone": "+22625375544",
+"ouaga_station_address": "Gare routière Ouaga 2000",
+"is_active": true
+},
+"lines": [
+{
+"line_code": "TCV-OB",
+"line_name": "Ouagadougou - Bobo-Dioulasso",
+"origin_city": "Ouagadougou",
+"destination_city": "Bobo-Dioulasso",
+"distance_km": 360,
+"duration_minutes": 340,
+"line_type": "interurban",
+"base_price": 5500,
+"luggage_price_per_kg": 22
+},
+{
+"line_code": "TCV-OD",
+"line_name": "Ouagadougou - Dori",
+"origin_city": "Ouagadougou",
+"destination_city": "Dori",
+"distance_km": 280,
+"duration_minutes": 270,
+"line_type": "interurban",
+"base_price": 4500,
+"luggage_price_per_kg": 18
+}
+],
+"schedules": [
+{
+
+"line_code": "TCV-OB",
+"departure_times": ["07:30", "11:00", "15:00", "18:30"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 60
+},
+{
+"line_code": "TCV-OD",
+"departure_times": ["07:00", "13:00"],
+"days_of_week": [1, 2, 3, 4, 5, 6, 7],
+"total_seats": 60
+}
+]
+}
+
+5. Authentification WhatsApp
+5.1 Pourquoi WhatsApp OTP ?
+Contexte Burkina Faso :
+
+• 95% population active a WhatsApp
+• 70% n'ont PAS d'email
+• SMS OTP coûteux : 15-25 FCFA/SMS
+• WhatsApp Business API : GRATUIT via Meta
+
+5.2 Flow Authentification
+Inscription Utilisateur
+1. User ouvre app Ankata
+↓
+
+2. Écran : "Entrez votre numéro WhatsApp"
+Format : +226 XX XX XX XX
+↓
+
+3. User tape : +226 70 12 34 56
+↓
+
+4. App backend → WhatsApp Business API
+POST /messages
+
+{
+"to": "+22670123456",
+"type": "template",
+"template": {
+"name": "ankata_otp",
+"language": "fr",
+"components": [{
+"type": "body",
+"parameters": [{
+"type": "text",
+"text": "123456" // Code 6 chiffres
+}]
+}]
+}
+}
+↓
+
+5. User reçoit WhatsApp : "Votre code Ankata: 123456"
+↓
+
+6. User entre code dans app
+↓
+
+7. Backend vérifie code → Crée compte user
+↓
+
+8. User connecté ✅
+
+Connexion Existante
+1. User ouvre app
+↓
+
+2. Si numéro connu : Envoi auto code WhatsApp
+↓
+
+3. User entre code
+↓
+
+4. Connexion instantanée ✅
+
+5.3 Implémentation Backend
+
+API Endpoint: POST /auth/request-otp
+// Node.js + Express
+const express = require('express');
+const axios = require('axios');
+const redis = require('redis');
+const router = express.Router();
+const redisClient = redis.createClient();
+router.post('/auth/request-otp', async (req, res) => {
+const { phone } = req.body; // +22670123456
+// Validation format
+if (!/^+226\d{8}$/.test(phone)) {
+return res.status(400).json({ error: 'Format téléphone invalide' });
+}
+// Génération OTP 6 chiffres
+const otp = Math.floor(100000 + Math.random() * 900000).toString();
+// Stockage Redis (expire 5 min)
+await redisClient.setEx(otp:${phone}, 300, otp);
+// Envoi WhatsApp
+try {
+await axios.post('https://graph.facebook.com/v18.0/YOUR_PHONE_NU
+MBER_ID/messages', {
+messaging_product: 'whatsapp',
+to: phone,
+type: 'template',
+template: {
+name: 'ankata_otp',
+language: { code: 'fr' },
+components: [{
+type: 'body',
+parameters: [{ type: 'text', text: otp }]
+}]
+}
+}, {
+headers: {
+
+'Authorization': Bearer ${process.env.WHATSAPP_ACCESS_TOKEN},
+'Content-Type': 'application/json'
+}
+});
+res.json({ success: true, message: 'Code envoyé par WhatsApp' });
+
+} catch (error) {
+console.error('WhatsApp API error:', error);
+res.status(500).json({ error: 'Échec envoi code' });
+}
+});
+
+API Endpoint: POST /auth/verify-otp
+router.post('/auth/verify-otp', async (req, res) => {
+const { phone, otp } = req.body;
+// Récupération OTP stocké
+const storedOtp = await redisClient.get(otp:${phone});
+if (!storedOtp) {
+return res.status(400).json({ error: 'Code expiré ou invalide' });
+}
+if (storedOtp !== otp) {
+return res.status(400).json({ error: 'Code incorrect' });
+}
+// Suppression OTP utilisé
+await redisClient.del(otp:${phone});
+// Création/récupération user
+let user = await db.query('SELECT * FROM users WHERE phone = $1',
+[phone]);
+if (!user.rows.length) {
+// Nouveau user
+user = await db.query(
+'INSERT INTO users (phone, whatsapp_verified) VALUES ($1, true)
+RETURNING *',
+
+[phone]
+);
+}
+const userId = user.rows[0].id;
+// Génération JWT token
+const token = jwt.sign({ userId, phone }, process.env.JWT_SECRET, {
+expiresIn: '30d' });
+res.json({
+success: true,
+token,
+user: user.rows[0]
+});
+});
+
+5.4 Configuration WhatsApp Business
+Étapes setup Meta :
+
+1. Créer compte Meta Business : https://business.facebook.com
+2. Ajouter WhatsApp Business API
+3. Vérifier numéro téléphone entreprise : +226 XX XX XX XX
+4. Créer template message "ankata_otp" :
+Votre code de connexion Ankata est: {{1}}
+Ce code expire dans 5 minutes.
+5. Obtenir Access Token permanent
+6. Stocker dans .env : WHATSAPP_ACCESS_TOKEN=EAAxxxxx
+Coûts :
+
+Messages notifications : GRATUIT (1000 premiers/mois)
+Au-delà : 0.005$ = 3 FCFA/message (beaucoup moins cher que
+SMS)
+
+6. Intégration Paiement Mobile
+Money
+6.1 Agrégateurs Paiement Burkina
+Pourquoi agrégateur ?
+
+Au lieu d'intégrer séparément Orange Money + Moov Money +
+autres, utiliser agrégateur unique qui gère tous opérateurs.
+
+Solutions Disponibles
+Agrégateur
+Yenga Pay
+PayDunya
+CinetPay
+
+Commission
+1.5% + 50 FCFA
+2%
+1.8% + 25 FCFA
+
+Opérateurs
+Orange, Moov, Coris, Wizall
+Orange, Moov
+Orange, Moov, Wave
+
+Recommandation : Yenga Pay
+
+Spécialisé UEMOA/Burkina
+Meilleure couverture opérateurs
+Documentation dev excellente
+Support technique local
+
+6.2 Flow Paiement
+Réservation → Paiement
+1. User sélectionne trajet : TSR Ouaga-Bobo 14h (4500 FCFA)
+↓
+
+2. Entre infos passager + bagages
+Total : 5000 FCFA (4500 + 500 bagages)
+↓
+
+3. Écran paiement :
+• Orange Money (auto-détecté si user a OM)
+• Moov Money
+
+• Coris Money
+↓
+
+4. User sélectionne Orange Money
+↓
+
+5. App backend → Yenga Pay API
+POST /payment/initiate
+{
+"amount": 5000,
+"currency": "XOF",
+"payment_method": "orange_money_bf",
+"customer_phone": "+22670123456",
+"order_id": "BOOK-12345678",
+"return_url": "ankata://payment/callback"
+}
+↓
+
+6. Yenga Pay → Orange Money
+User reçoit push OM : "Confirmez 5000 FCFA pour ANKATA"
+↓
+
+7. User tape code PIN Orange Money
+↓
+
+8. Orange Money → Yenga Pay → Ankata Backend
+Webhook : { "status": "success", "order_id": "BOOK-12345678" }
+↓
+
+9. Backend update booking :
+payment_status = 'paid'
+booking_status = 'confirmed'
+↓
+
+10. User reçoit WhatsApp :
+"✅ Billet confirmé TSR Ouaga-Bobo 14h
+Code: 12345678
+Montant: 5000 FCFA payé"
+↓
+
+11. Compagnie TSR notifiée :
+Email + SMS : Nouvelle réservation passager Diallo 14h
+
+6.3 Implémentation Backend
+API Endpoint: POST /bookings/create
+router.post('/bookings/create', authenticate, async (req, res) => {
+const {
+line_id,
+travel_date,
+passenger_name,
+passenger_phone,
+luggage_weight_kg,
+payment_method
+} = req.body;
+const userId = req.user.id;
+// 1. Récupération infos ligne
+const line = await db.query('SELECT * FROM lines WHERE id = $1',
+[line_id]);
+const baseFare = line.rows[0].base_price;
+const luggageFee = luggage_weight_kg *
+line.rows[0].luggage_price_per_kg;
+const totalAmount = baseFare + luggageFee;
+// 2. Génération code booking unique
+const bookingCode = generateBookingCode(); // 8 chiffres
+// 3. Création booking (status pending)
+const booking = await db.query( INSERT INTO bookings (
+booking_code, user_id, line_id, travel_date, passenger_name,
+passenger_phone, base_fare, luggage_weight_kg, luggage_fee,
+total_amount, payment_status, booking_status ) VALUES ($1, $2, $3,
+$4, $5, $6, $7, $8, $9, $10, 'pending', 'pending') RETURNING * , [
+bookingCode, userId, line_id, travel_date,
+passenger_name, passenger_phone,
+baseFare, luggage_weight_kg, luggageFee, totalAmount
+]);
+const bookingId = booking.rows[0].id;
+
+// 4. Initiation paiement Yenga Pay
+try {
+const yengaResponse = await axios.post('
+https://api.yengapay.com/v1/payments', {
+amount: totalAmount,
+currency: 'XOF',
+payment_method: payment_method, // 'orange_money_bf',
+'moov_money_bf'
+customer_phone: req.user.phone,
+order_id: bookingCode,
+callback_url: ${process.env.API_URL}/webhooks/yenga-callback,
+return_url: 'ankata://payment/success'
+}, {
+headers: {
+'Authorization': Bearer ${process.env.YENGA_API_KEY},
+'Content-Type': 'application/json'
+}
+});
+// 5. Stockage référence paiement
+await db.query(
+'UPDATE bookings SET payment_reference = $1 WHERE id = $2',
+[yengaResponse.data.transaction_id, bookingId]
+);
+res.json({
+success: true,
+booking_code: bookingCode,
+payment_url: yengaResponse.data.payment_url,
+message: 'Confirmez le paiement sur votre téléphone'
+});
+
+} catch (error) {
+console.error('Yenga Pay error:', error);
+// Annulation booking
+await db.query('UPDATE bookings SET booking_status = $1 WHERE id = $2', ['
+
+res.status(500).json({ error: 'Échec initiation paiement' });
+
+}
+});
+
+Webhook Yenga Pay: POST /webhooks/yenga-callback
+router.post('/webhooks/yenga-callback', async (req, res) => {
+const { order_id, status, transaction_id } = req.body;
+// Vérification signature Yenga (sécurité)
+const signature = req.headers['x-yenga-signature'];
+if (!verifyYengaSignature(req.body, signature)) {
+return res.status(401).json({ error: 'Signature invalide' });
+}
+if (status === 'success') {
+// Paiement réussi
+await db.query( UPDATE bookings SET payment_status = 'paid',
+booking_status = 'confirmed', paid_at = NOW() WHERE booking_code
+= $1 , [order_id]);
+// Récupération booking
+const booking = await db.query(`
+SELECT b.*, u.phone, u.first_name, l.line_name, c.name as company_name
+FROM bookings b
+JOIN users u ON b.user_id = u.id
+JOIN lines l ON b.line_id = l.id
+JOIN companies c ON l.company_id = c.id
+WHERE b.booking_code = $1
+`, [order_id]);
+const b = booking.rows[0];
+// Notification WhatsApp user
+await sendWhatsAppNotification(b.phone, `
+✅ Billet confirmé !
+
+Compagnie: ${b.company_name}
+Ligne: ${b.line_name}
+Date: ${formatDate(b.travel_date)}
+Passager: ${b.passenger_name}
+💳 Montant payé: ${b.total_amount} FCFA
+🎫 Code billet: ${b.booking_code}
+
+Présentez ce code au receveur lors de la montée.
+Bon voyage avec Ankata ! 🚌
+`);
+// Notification compagnie (email)
+await sendCompanyEmail(b.company_name, {
+subject: 'Nouvelle réservation Ankata',
+booking: b
+});
+res.json({ success: true });
+
+} else if (status === 'failed') {
+// Paiement échoué
+await db.query( UPDATE bookings SET payment_status = 'failed',
+booking_status = 'cancelled' WHERE booking_code = $1 , [order_id]);
+res.json({ success: true });
+
+}
+});
+
+6.4 Gestion Commissions
+Business Model :
+
+Partie
+
+Prix ticket passager
+Commission Yenga Pay
+Commission Ankata
+Montant compagnie
+reçoit
+
+Montant exemple
+Commission
+(FCFA)
+5 000
+100%
+-87.5
+1.75%
+-100
+2%
+
+4 812.5
+
+96.25%
+
+Logique split paiement :
+
+// Lors réception paiement Yenga
+const totalAmount = 5000; // FCFA
+const yengaFee = totalAmount * 0.0175; // 87.5 FCFA
+const anaktaCommission = totalAmount * 0.02; // 100 FCFA
+const companyAmount = totalAmount - yengaFee anaktaCommission; // 4812.5 FCFA
+// Enregistrement comptable
+await db.query( INSERT INTO financial_transactions ( booking_id,
+total_amount, yenga_fee, anakta_commission, company_amount )
+VALUES ($1, $2, $3, $4, $5), [bookingId, totalAmount, yengaFee,
+anaktaCommission, companyAmount]);
+
+7. Système Notation Vérifiée
+7.1 Principe Notation Vérifiée
+Problème notation classique :
+
+Faux avis (concurrence, bots)
+Avis sans expérience réelle
+Solution Ankata :
+
+• Notation autorisée UNIQUEMENT si voyage effectué
+• Vérification : booking_status = 'completed' AND is_validated =
+true
+• Délai : 2h après arrivée jusqu'à 7 jours après
+
+• Une seule notation par booking
+
+7.2 Flow Notation
+1. Passager effectue trajet TSR Ouaga-Bobo
+↓
+
+2. Receveur valide montée (is_validated = true)
+↓
+
+3. Système détecte arrivée prévue (travel_date + duration)
+↓
+
+4. 2h après arrivée : Notification push + WhatsApp
+"Comment était votre voyage TSR ? Notez votre expérience"
+↓
+
+5. User ouvre app → Écran notation
+• Note globale : ★★★★★ (1-5 étoiles)
+• Ponctualité : ★★★★☆
+• Confort : ★★★★☆
+• Personnel : ★★★★★
+• Propreté : ★★★☆☆
+• Commentaire (optionnel)
+↓
+
+6. User valide notation
+↓
+
+7. Backend vérifie :
+booking existe
+is_validated = true
+pas déjà noté
+délai respecté (< 7 jours)
+↓
+
+8. Enregistrement notation
+↓
+
+9. Recalcul note moyenne compagnie
+↓
+
+10. User reçoit +50 points fidélité
+
+7.3 Implémentation Backend
+API Endpoint: POST /ratings/create
+router.post('/ratings/create', authenticate, async (req, res) => {
+const {
+booking_id,
+rating, // 1-5
+punctuality_rating,
+comfort_rating,
+staff_rating,
+cleanliness_rating,
+comment
+} = req.body;
+const userId = req.user.id;
+// 1. Vérification booking existe et user propriétaire
+const booking = await db.query( SELECT * FROM bookings WHERE id
+= $1 AND user_id = $2 , [booking_id, userId]);
+if (!booking.rows.length) {
+return res.status(404).json({ error: 'Réservation introuvable' });
+}
+const b = booking.rows[0];
+// 2. Vérification voyage effectué (validé)
+if (!b.is_validated) {
+return res.status(403).json({ error: 'Voyage non encore effectué' });
+}
+// 3. Vérification délai (< 7 jours après)
+const daysSinceTravel = Math.floor(
+(Date.now() - new Date(b.travel_date)) / (1000 * 60 * 60 * 24)
+);
+if (daysSinceTravel > 7) {
+return res.status(403).json({ error: 'Délai notation dépassé (7 jours)'
+});
+}
+
+// 4. Vérification pas déjà noté
+const existingRating = await db.query(
+'SELECT * FROM ratings WHERE booking_id = $1',
+[booking_id]
+);
+if (existingRating.rows.length) {
+return res.status(409).json({ error: 'Trajet déjà noté' });
+}
+// 5. Validation notes (1-5)
+if (rating < 1 || rating > 5) {
+return res.status(400).json({ error: 'Note invalide (1-5)' });
+}
+// 6. Insertion notation
+await db.query( INSERT INTO ratings ( booking_id, user_id,
+company_id, line_id, rating, punctuality_rating, comfort_rating,
+staff_rating, cleanliness_rating, comment, is_verified ) VALUES ($1,
+$2, $3, $4, $5, $6, $7, $8, $9, $10, true) , [
+booking_id, userId, b.company_id, b.line_id,
+rating, punctuality_rating, comfort_rating, staff_rating,
+cleanliness_rating,
+comment
+]);
+// 7. Recalcul note moyenne compagnie
+const avgRating = await db.query( SELECT AVG(rating) as average,
+COUNT(*) as total FROM ratings WHERE company_id = $1 ,
+[b.company_id]);
+await db.query( UPDATE companies SET rating_average = $1,
+total_ratings = $2 WHERE id = $3 , [
+Math.round(avgRating.rows[0].average * 10) / 10, // Arrondi 1
+décimale
+avgRating.rows[0].total,
+b.company_id
+]);
+// 8. Attribution points fidélité
+await db.query( INSERT INTO loyalty_transactions ( user_id,
+
+booking_id, points_earned, transaction_type, description ) VALUES
+($1, $2, 50, 'rating', 'Notation trajet') , [userId, booking_id]);
+await db.query( UPDATE users SET loyalty_points = loyalty_points +
+50 WHERE id = $1 , [userId]);
+res.json({
+success: true,
+message: 'Merci pour votre notation ! +50 points fidélité'
+});
+});
+
+API Endpoint: GET /companies/:slug/ratings
+router.get('/companies/:slug/ratings', async (req, res) => {
+const { slug } = req.params;
+const page = parseInt(req.query.page) || 1;
+const limit = 20;
+const offset = (page - 1) * limit;
+// Récupération company
+const company = await db.query('SELECT * FROM companies WHERE
+slug = $1', [slug]);
+if (!company.rows.length) {
+return res.status(404).json({ error: 'Compagnie introuvable' });
+}
+const companyId = company.rows[0].id;
+// Récupération notations (paginées, triées récentes d'abord)
+const ratings = await db.query( SELECT r.*, u.first_name, l.line_name,
+b.travel_date FROM ratings r JOIN users u ON r.user_id = u.id JOIN
+lines l ON r.line_id = l.id JOIN bookings b ON r.booking_id = b.id
+WHERE r.company_id = $1 AND r.is_verified = true ORDER BY
+r.created_at DESC LIMIT $2 OFFSET $3 , [companyId, limit, offset]);
+// Statistiques notations
+const stats = await db.query( SELECT AVG(rating) as avg_rating,
+AVG(punctuality_rating) as avg_punctuality, AVG(comfort_rating) as
+avg_comfort, AVG(staff_rating) as avg_staff, AVG(cleanliness_rating)
+as avg_cleanliness, COUNT(*) as total_ratings, COUNT(*) FILTER
+
+(WHERE rating = 5) as five_stars, COUNT(*) FILTER (WHERE rating =
+4) as four_stars, COUNT(*) FILTER (WHERE rating = 3) as three_stars,
+COUNT(*) FILTER (WHERE rating = 2) as two_stars, COUNT(*) FILTER
+(WHERE rating = 1) as one_star FROM ratings WHERE company_id =
+$1 AND is_verified = true , [companyId]);
+res.json({
+company: company.rows[0],
+ratings: ratings.rows,
+stats: stats.rows[0],
+pagination: {
+page,
+limit,
+has_more: ratings.rows.length === limit
+}
+});
+});
+
+7.4 Affichage Notations
+Écran compagnie (ex: TSR) :
+┌─────────────────────────────────────┐
+│ TSR Transport ★★★☆☆│
+│ 3.2/5 │
+│ 487 avis vérifiés │
+├─────────────────────────────────────┤
+│ Détail notations : │
+│ • Ponctualité ★★★☆☆ 3.0 │
+│ • Confort ★★★☆☆ 3.2 │
+│ • Personnel ★★★★☆ 3.8 │
+│ • Propreté ★★★☆☆ 2.9 │
+├─────────────────────────────────────┤
+│ Répartition : │
+│ ★★★★★ ▓▓▓▓▓▓░░░░░░░░ 25% (122) │
+│ ★★★★☆ ▓▓▓▓▓▓▓▓░░░░░░ 35% (170) │
+│ ★★★☆☆ ▓▓▓▓▓░░░░░░░░░ 22% (107) │
+│ ★★☆☆☆ ▓▓░░░░░░░░░░░░ 12% (58) │
+│ ★☆☆☆☆ ▓▓░░░░░░░░░░░░ 6% (30) │
+├─────────────────────────────────────┤
+
+│ Derniers avis : │
+│ ★★★★☆ Fatima D. • 2 jours │
+│ "Bus ponctuel, AC marche bien" │
+│ Trajet : Ouaga-Bobo | 18 fév 2026 │
+││
+│ ★★☆☆☆ Mamadou K. • 5 jours │
+│ "Retard 1h30, siège inconfortable" │
+│ Trajet : Ouaga-Fada | 15 fév 2026 │
+││
+│ [Voir tous les 487 avis] │
+└─────────────────────────────────────┘
+
+8. Spécifications API Backend
+8.1 Architecture Microservices
+Services indépendants :
+Service
+Auth Service
+Booking Service
+Payment Service
+Rating Service
+Notification Service
+Loyalty Service
+
+Responsabilité
+WhatsApp OTP, JWT tokens
+Recherche, réservation, gestion bookings
+Intégration Yenga Pay, webhooks
+Notations vérifiées, stats compagnies
+WhatsApp, Push, Email
+Points fidélité, récompenses
+
+8.2 Endpoints Principaux
+Authentication
+POST /api/v1/auth/request-otp
+Body: { phone: "+22670123456" }
+Response: { success: true, message: "Code envoyé" }
+POST /api/v1/auth/verify-otp
+Body: { phone: "+22670123456", otp: "123456" }
+
+Response: { token: "jwt_token", user: {...} }
+GET /api/v1/auth/me
+Headers: Authorization: Bearer {token}
+Response: { user: {...} }
+
+Companies & Lines
+GET /api/v1/companies
+Query: ?type=urban|interurban
+Response: { companies: [...] }
+GET /api/v1/companies/:slug
+Response: { company: {...}, lines: [...] }
+GET /api/v1/companies/:slug/ratings
+Query: ?page=1
+Response: { ratings: [...], stats: {...} }
+GET /api/v1/lines
+Query: ?origin=Ouagadougou&destination=Bobo-Dioulasso
+Response: { lines: [...] }
+GET /api/v1/lines/:id/schedules
+Query: ?date=2026-02-25
+Response: { schedules: [...] }
+
+Bookings
+POST /api/v1/bookings/search
+Body: {
+origin: "Ouagadougou",
+destination: "Bobo-Dioulasso",
+date: "2026-03-01",
+passengers: 1
+}
+Response: { results: [{
+company: {...},
+line: {...},
+schedules: [...],
+prices: {...}
+}] }
+
+POST /api/v1/bookings/create
+Body: {
+line_id: "uuid",
+travel_date: "2026-03-01",
+departure_time: "14:00",
+passenger_name: "Diallo Fatima",
+passenger_phone: "+22670123456",
+luggage_weight_kg: 20,
+payment_method: "orange_money_bf"
+}
+Response: {
+booking_code: "12345678",
+payment_url: "...",
+total_amount: 5000
+}
+GET /api/v1/bookings/my-bookings
+Query: ?status=upcoming|past
+Response: { bookings: [...] }
+GET /api/v1/bookings/:booking_code
+Response: { booking: {...} }
+POST /api/v1/bookings/:booking_code/cancel
+Response: { success: true, refund_amount: 4000 }
+
+Ratings
+POST /api/v1/ratings/create
+Body: {
+booking_id: "uuid",
+rating: 4,
+punctuality_rating: 4,
+comfort_rating: 4,
+staff_rating: 5,
+cleanliness_rating: 3,
+comment: "Bon voyage"
+}
+Response: { success: true, loyalty_points_earned: 50 }
+
+GET /api/v1/ratings/eligible
+Response: { bookings: [...] } // Bookings notables
+
+Loyalty
+GET /api/v1/loyalty/balance
+Response: { points: 350, tier: "silver" }
+GET /api/v1/loyalty/transactions
+Response: { transactions: [...] }
+POST /api/v1/loyalty/redeem
+Body: { points: 500, reward_id: "free_trip" }
+Response: { success: true, voucher_code: "FREE500" }
+
+8.3 Webhooks
+POST /api/v1/webhooks/yenga-callback
+Headers: X-Yenga-Signature
+Body: { order_id, status, transaction_id }
+Response: { success: true }
+POST /api/v1/webhooks/whatsapp-status
+Body: { message_id, status: "delivered" }
+Response: { success: true }
+
+9. Application Mobile Flutter
+9.1 Structure Projet
+ankata_passagers/
+├── lib/
+│ ├── main.dart
+│ ├── app.dart
+│ ├── config/
+│ │ ├── routes.dart
+│ │ ├── theme.dart
+│ │ └── constants.dart
+│ ├── core/
+
+│ │ ├── api/
+│ │ │ ├── api_client.dart
+│ │ │ └── endpoints.dart
+│ │ ├── storage/
+│ │ │ └── secure_storage.dart
+│ │ └── utils/
+│ │ ├── validators.dart
+│ │ └── formatters.dart
+│ ├── models/
+│ │ ├── user.dart
+│ │ ├── company.dart
+│ │ ├── line.dart
+│ │ ├── booking.dart
+│ │ └── rating.dart
+│ ├── providers/
+│ │ ├── auth_provider.dart
+│ │ ├── booking_provider.dart
+│ │ └── user_provider.dart
+│ ├── screens/
+│ │ ├── auth/
+│ │ │ ├── phone_auth_screen.dart
+│ │ │ └── otp_verify_screen.dart
+│ │ ├── home/
+│ │ │ ├── home_screen.dart
+│ │ │ └── search_screen.dart
+│ │ ├── companies/
+│ │ │ ├── company_list_screen.dart
+│ │ │ └── company_detail_screen.dart
+│ │ ├── bookings/
+│ │ │ ├── booking_flow_screen.dart
+│ │ │ ├── my_bookings_screen.dart
+│ │ │ └── booking_detail_screen.dart
+│ │ ├── payment/
+│ │ │ └── payment_screen.dart
+│ │ ├── ratings/
+│ │ │ └── rating_screen.dart
+│ │ └── profile/
+│ │ ├── profile_screen.dart
+│ │ └── loyalty_screen.dart
+
+│ └── widgets/
+│ ├── company_card.dart
+│ ├── trip_card.dart
+│ └── rating_stars.dart
+├── android/
+├── ios/
+└── pubspec.yaml
+
+9.2 Dependencies (pubspec.yaml)
+dependencies:
+flutter:
+sdk: flutter
+
+State management
+provider: ^6.1.1
+
+HTTP client
+dio: ^5.4.0
+
+Storage
+flutter_secure_storage: ^9.0.0
+hive: ^2.2.3
+hive_flutter: ^1.1.0
+
+UI
+google_fonts: ^6.1.0
+flutter_svg: ^2.0.9
+cached_network_image: ^3.3.1
+shimmer: ^3.0.0
+
+Maps
+mapbox_gl: ^0.16.0
+
+Localization
+intl: ^0.18.1
+
+Push notifications
+firebase_core: ^2.24.2
+firebase_messaging: ^14.7.9
+
+Utils
+url_launcher: ^6.2.2
+share_plus: ^7.2.1
+qr_flutter: ^4.1.0
+
+9.3 Screens Clés
+Home Screen
+// lib/screens/home/home_screen.dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+class HomeScreen extends StatelessWidget {
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(
+title: Text('Ankata', style: GoogleFonts.poppins(fontWeight:
+FontWeight.bold)),
+actions: [
+IconButton(
+icon: Icon(Icons.notifications),
+
+onPressed: () => Navigator.pushNamed(context, '/notifications'),
+),
+],
+),
+body: SingleChildScrollView(
+child: Column(
+children: [
+// Search card
+SearchCard(),
+// Popular routes
+SectionHeader(title: 'Trajets populaires'),
+PopularRoutes(),
+// Companies
+SectionHeader(title: 'Compagnies', action: 'Voir tout'),
+CompaniesCarousel(),
+// Recent bookings
+if (hasRecentBookings)
+SectionHeader(title: 'Mes derniers trajets'),
+RecentBookings(),
+],
+),
+),
+bottomNavigationBar: BottomNavBar(currentIndex: 0),
+);
+
+}
+}
+class SearchCard extends StatelessWidget {
+@override
+Widget build(BuildContext context) {
+return Container(
+margin: EdgeInsets.all(16),
+padding: EdgeInsets.all(20),
+decoration: BoxDecoration(
+
+gradient: LinearGradient(
+colors: [Color(0xFF00A859), Color(0xFF008844)],
+),
+borderRadius: BorderRadius.circular(16),
+boxShadow: [
+BoxShadow(
+color: Colors.black12,
+blurRadius: 10,
+offset: Offset(0, 5),
+),
+],
+),
+child: Column(
+children: [
+TextField(
+decoration: InputDecoration(
+hintText: 'D'où partez-vous ?',
+prefixIcon: Icon(Icons.location_on),
+filled: true,
+fillColor: Colors.white,
+border: OutlineInputBorder(
+borderRadius: BorderRadius.circular(12),
+borderSide: BorderSide.none,
+),
+),
+onTap: () => Navigator.pushNamed(context, '/search'),
+readOnly: true,
+),
+SizedBox(height: 12),
+TextField(
+decoration: InputDecoration(
+hintText: 'Où allez-vous ?',
+prefixIcon: Icon(Icons.place),
+filled: true,
+fillColor: Colors.white,
+border: OutlineInputBorder(
+borderRadius: BorderRadius.circular(12),
+borderSide: BorderSide.none,
+),
+
+),
+onTap: () => Navigator.pushNamed(context, '/search'),
+readOnly: true,
+),
+SizedBox(height: 16),
+ElevatedButton(
+onPressed: () => Navigator.pushNamed(context, '/search'),
+child: Text('Rechercher des trajets'),
+style: ElevatedButton.styleFrom(
+backgroundColor: Colors.white,
+foregroundColor: Color(0xFF00A859),
+minimumSize: Size(double.infinity, 50),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(12),
+),
+),
+),
+],
+),
+);
+}
+}
+
+Company Detail Screen
+// lib/screens/companies/company_detail_screen.dart
+class CompanyDetailScreen extends StatelessWidget {
+final Company company;
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(
+title: Text(company.name),
+backgroundColor: HexColor(company.primaryColor),
+),
+body: SingleChildScrollView(
+child: Column(
+children: [
+// Header avec logo et stats
+
+Container(
+color: HexColor(company.primaryColor),
+padding: EdgeInsets.all(20),
+child: Column(
+children: [
+CircleAvatar(
+radius: 50,
+backgroundImage: NetworkImage(company.logoUrl),
+),
+SizedBox(height: 16),
+Row(
+mainAxisAlignment: MainAxisAlignment.center,
+children: [
+RatingStars(rating: company.ratingAverage),
+SizedBox(width: 8),
+Text(
+'
+{company.totalRatings} avis vérifiés',
+style: TextStyle(color: Colors.white70),
+),
+],
+),
+),
+// Description
+Padding(
+padding: EdgeInsets.all(16),
+child: Text(company.description),
+),
+// Destinations
+SectionHeader(title: 'Destinations'),
+LinesListView(companyId: company.id),
+// Ratings
+SectionHeader(title: 'Avis passagers', action: 'Voir tout'),
+RatingsListView(companyId: company.id, limit: 3),
+
+// Contact
+SectionHeader(title: 'Contact'),
+ContactInfo(company: company),
+],
+),
+),
+);
+
+}
+}
+
+Booking Flow Screen
+// lib/screens/bookings/booking_flow_screen.dart
+class BookingFlowScreen extends StatefulWidget {
+final Line line;
+final Schedule schedule;
+@override
+_BookingFlowScreenState createState() =>
+_BookingFlowScreenState();
+}
+class _BookingFlowScreenState extends State<BookingFlowScreen> {
+int currentStep = 0;
+String passengerName = '';
+String passengerPhone = '';
+int luggageWeight = 0;
+String paymentMethod = 'orange_money_bf';
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(title: Text('Réservation')),
+body: Stepper(
+currentStep: currentStep,
+onStepContinue: () {
+if (currentStep < 2) {
+
+setState(() => currentStep++);
+} else {
+_processBooking();
+}
+},
+onStepCancel: () {
+if (currentStep > 0) {
+setState(() => currentStep--);
+}
+},
+steps: [
+// Step 1: Infos passager
+Step(
+title: Text('Informations passager'),
+content: Column(
+children: [
+TextField(
+decoration: InputDecoration(labelText: 'Nom complet'),
+onChanged: (value) => passengerName = value,
+),
+TextField(
+decoration: InputDecoration(labelText: 'Téléphone'),
+onChanged: (value) => passengerPhone = value,
+),
+],
+),
+isActive: currentStep >= 0,
+),
+// Step 2: Bagages
+Step(
+title: Text('Bagages'),
+content: Column(
+children: [
+Text('Poids bagages (kg)'),
+Slider(
+value: luggageWeight.toDouble(),
+min: 0,
+max: 50,
+
+divisions: 10,
+label: '$luggageWeight kg',
+onChanged: (value) => setState(() => luggageWeight = value.toInt()),
+),
+Text('Supplément: ${luggageWeight * widget.line.luggagePricePerKg} F
+],
+),
+isActive: currentStep >= 1,
+),
+// Step 3: Paiement
+Step(
+title: Text('Paiement'),
+content: Column(
+children: [
+RadioListTile(
+title: Text('Orange Money'),
+value: 'orange_money_bf',
+groupValue: paymentMethod,
+onChanged: (value) => setState(() => paymentMethod = value!),
+),
+RadioListTile(
+title: Text('Moov Money'),
+value: 'moov_money_bf',
+groupValue: paymentMethod,
+onChanged: (value) => setState(() => paymentMethod = value!),
+),
+Divider(),
+_buildPriceSummary(),
+],
+),
+isActive: currentStep >= 2,
+),
+],
+),
+);
+
+}
+
+Widget _buildPriceSummary() {
+final baseFare = widget.line.basePrice;
+final luggageFee = luggageWeight * widget.line.luggagePricePerKg;
+final total = baseFare + luggageFee;
+return Card(
+child: Padding(
+padding: EdgeInsets.all(16),
+child: Column(
+children: [
+Row(
+mainAxisAlignment: MainAxisAlignment.spaceBetween,
+children: [
+Text('Billet'),
+Text('$baseFare FCFA'),
+],
+),
+Row(
+mainAxisAlignment: MainAxisAlignment.spaceBetween,
+children: [
+Text('Bagages ($luggageWeight kg)'),
+Text('$luggageFee FCFA'),
+],
+),
+Divider(),
+Row(
+mainAxisAlignment: MainAxisAlignment.spaceBetween,
+children: [
+Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
+Text('$total FCFA', style: TextStyle(fontWeight: FontWeight.bold, fontSi
+],
+),
+],
+),
+),
+);
+
+}
+Future<void> _processBooking() async {
+// Show loading
+showDialog(
+context: context,
+barrierDismissible: false,
+builder: (context) => Center(child: CircularProgressIndicator()),
+);
+try {
+final bookingProvider = Provider.of<BookingProvider>(context, listen: false
+final result = await bookingProvider.createBooking(
+lineId: widget.line.id,
+travelDate: widget.schedule.date,
+departureTime: widget.schedule.departureTime,
+passengerName: passengerName,
+passengerPhone: passengerPhone,
+luggageWeightKg: luggageWeight,
+paymentMethod: paymentMethod,
+);
+Navigator.pop(context); // Close loading
+// Navigate to payment
+Navigator.pushNamed(
+context,
+'/payment',
+arguments: {
+'booking_code': result['booking_code'],
+'payment_url': result['payment_url'],
+},
+);
+} catch (error) {
+Navigator.pop(context); // Close loading
+
+ScaffoldMessenger.of(context).showSnackBar(
+SnackBar(content: Text('Erreur: $error')),
+);
+}
+
+}
+}
+
+9.4 State Management (Provider)
+// lib/providers/booking_provider.dart
+import 'package:flutter/foundation.dart';
+import '../core/api/api_client.dart';
+class BookingProvider with ChangeNotifier {
+final ApiClient _api;
+List<Booking> _upcomingBookings = [];
+List<Booking> _pastBookings = [];
+bool _isLoading = false;
+BookingProvider(this._api);
+List<Booking> get upcomingBookings => _upcomingBookings;
+List<Booking> get pastBookings => _pastBookings;
+bool get isLoading => _isLoading;
+Future<Map<String, dynamic>> createBooking({
+required String lineId,
+required String travelDate,
+required String departureTime,
+required String passengerName,
+required String passengerPhone,
+required int luggageWeightKg,
+required String paymentMethod,
+}) async {
+final response = await _api.post('/bookings/create', data: {
+'line_id': lineId,
+'travel_date': travelDate,
+'departure_time': departureTime,
+
+'passenger_name': passengerName,
+'passenger_phone': passengerPhone,
+'luggage_weight_kg': luggageWeightKg,
+'payment_method': paymentMethod,
+});
+return response.data;
+
+}
+Future<void> fetchMyBookings() async {
+_isLoading = true;
+notifyListeners();
+try {
+final upcomingResponse = await _api.get('/bookings/my-bookings?status=up
+final pastResponse = await _api.get('/bookings/my-bookings?status=past');
+_upcomingBookings = (upcomingResponse.data['bookings'] as List)
+.map((json) => Booking.fromJson(json))
+.toList();
+_pastBookings = (pastResponse.data['bookings'] as List)
+.map((json) => Booking.fromJson(json))
+.toList();
+} finally {
+_isLoading = false;
+notifyListeners();
+}
+
+}
+Future<void> cancelBooking(String bookingCode) async {
+await _api.post('/bookings/$bookingCode/cancel');
+await fetchMyBookings(); // Refresh list
+}
+}
+
+10. Seed Database Production
+10.1 Script SQL Complet
+-- =====================================================
+-- ANKATA APP PASSAGERS - SEED DATABASE
+-- =====================================================
+-- Nettoyage
+TRUNCATE TABLE ratings, bookings, schedules, stops, lines,
+companies, users CASCADE;
+-- =====================================================
+-- COMPANIES
+-- =====================================================
+INSERT INTO companies (name, slug, description, logo_url,
+primary_color, secondary_color, phone, whatsapp, facebook_url,
+headquarters_address, is_active) VALUES
+('SOTRACO', 'sotraco', 'Société de Transport en Commun - Leader
+transport urbain Ouagadougou avec 455 bus modernes', 'https://anka
+ta-assets.s3.amazonaws.com/logos/sotraco.png', '#00A859', '#FFFFFF',
+'+22625446666', '+22670000001', '
+https://facebook.com/SOTRACO.officiel', 'Avenue Charles de Gaulle,
+Ouagadougou', true),
+('TSR Transport', 'tsr-transport', 'Transport Sana Rasmane - Prix
+compétitifs transport interurbain', 'https://ankata-assets.s3.amazona
+ws.com/logos/tsr.png', '#1E90FF', '#00C853', '+22625378020', NULL,
+NULL, 'Gare routière Ouaga 2000', true),
+('STAF Transport', 'staf-transport', 'Transport interurbain fiable basé
+à Bobo-Dioulasso avec bus récents', 'https://ankata-assets.s3.amazona
+ws.com/logos/staf.png', '#FF6B00', '#003366', '+22620971555', NULL,
+NULL, 'Avenue de la République, Bobo-Dioulasso', true),
+('RAHIMO Transports', 'rahimo-transports', 'Transport premium G8 Confort et ponctualité garantis', 'https://ankata-assets.s3.amazonaws.
+
+com/logos/rahimo.png', '#DC143C', '#FFD700', '+22625379900',
+'+22670202020', NULL, 'Gare Ouaga 2000, Section VIP', true),
+('RAKIETA Transport', 'rakieta-transport', 'Transport rapide et
+ponctuel - Rapide comme une fusée', 'https://ankata-assets.s3.amazon
+aws.com/logos/rakieta.png', '#8B0000', '#FFD700', '+22625376677',
+'+22670101010', NULL, 'Gare routière Ouaga 2000', true),
+('TCV Transport', 'tcv-transport', 'Transport Confort Voyageur - Milieu
+de gamme', 'https://ankata-assets.s3.amazonaws.com/logos/tcv.png',
+'#006400', '#FFD700', '+22625375544', NULL, NULL, 'Gare routière
+Ouaga 2000', true);
+-- =====================================================
+-- LINES
+-- =====================================================
+-- SOTRACO (lignes urbaines)
+INSERT INTO lines (company_id, line_code, line_name, origin_city,
+destination_city, distance_km, duration_minutes, line_type,
+base_price, student_price, child_price) VALUES
+((SELECT id FROM companies WHERE slug = 'sotraco'), 'L2B', 'Balkuy Naaba Koom', 'Ouagadougou', 'Ouagadougou', 18, 50, 'urban', 150,
+120, 100),
+((SELECT id FROM companies WHERE slug = 'sotraco'), 'L3',
+'Bissisghin - Zones Écoles', 'Ouagadougou', 'Ouagadougou', 15, 45,
+'urban', 150, 120, 100),
+((SELECT id FROM companies WHERE slug = 'sotraco'), 'L4', 'Sandogo
+II - Zones Écoles', 'Ouagadougou', 'Ouagadougou', 16, 48, 'urban', 150,
+120, 100),
+((SELECT id FROM companies WHERE slug = 'sotraco'), 'L10',
+'Tengandogo - Zones Écoles', 'Ouagadougou', 'Ouagadougou', 19, 55,
+'urban', 150, 120, 100);
+-- TSR
+INSERT INTO lines (company_id, line_code, line_name, origin_city,
+destination_city, distance_km, duration_minutes, line_type,
+base_price, luggage_price_per_kg) VALUES
+((SELECT id FROM companies WHERE slug = 'tsr-transport'), 'TSR-OB',
+'Ouagadougou - Bobo-Dioulasso', 'Ouagadougou', 'Bobo-Dioulasso',
+360, 330, 'interurban', 4500, 20),
+
+((SELECT id FROM companies WHERE slug = 'tsr-transport'), 'TSR-OF',
+'Ouagadougou - Fada N'Gourma', 'Ouagadougou', 'Fada N'Gourma',
+450, 420, 'interurban', 5500, 28),
+((SELECT id FROM companies WHERE slug = 'tsr-transport'), 'TSR-OD',
+'Ouagadougou - Dédougou', 'Ouagadougou', 'Dédougou', 230, 210,
+'interurban', 3500, 16);
+-- STAF
+INSERT INTO lines (company_id, line_code, line_name, origin_city,
+destination_city, distance_km, duration_minutes, line_type,
+base_price, luggage_price_per_kg) VALUES
+((SELECT id FROM companies WHERE slug = 'staf-transport'), 'STAFOB', 'Ouagadougou - Bobo-Dioulasso', 'Ouagadougou', 'BoboDioulasso', 360, 320, 'interurban', 6500, 24),
+((SELECT id FROM companies WHERE slug = 'staf-transport'), 'STAFOF', 'Ouagadougou - Fada N'Gourma', 'Ouagadougou', 'Fada
+N'Gourma', 450, 400, 'interurban', 6000, 28),
+((SELECT id FROM companies WHERE slug = 'staf-transport'), 'STAFOG', 'Ouagadougou - Gaoua', 'Ouagadougou', 'Gaoua', 520, 510,
+'interurban', 8500, 40),
+((SELECT id FROM companies WHERE slug = 'staf-transport'), 'STAFBB', 'Bobo-Dioulasso - Banfora', 'Bobo-Dioulasso', 'Banfora', 85, 90,
+'interurban', 2500, 12);
+-- RAHIMO
+INSERT INTO lines (company_id, line_code, line_name, origin_city,
+destination_city, distance_km, duration_minutes, line_type,
+base_price, luggage_price_per_kg) VALUES
+((SELECT id FROM companies WHERE slug = 'rahimo-transports'),
+'RAHIMO-OB', 'Ouagadougou - Bobo-Dioulasso', 'Ouagadougou',
+'Bobo-Dioulasso', 360, 310, 'interurban', 6500, 0),
+((SELECT id FROM companies WHERE slug = 'rahimo-transports'),
+'RAHIMO-OB-VIP', 'Ouagadougou - Bobo-Dioulasso VIP',
+'Ouagadougou', 'Bobo-Dioulasso', 360, 300, 'interurban', 8000, 0),
+((SELECT id FROM companies WHERE slug = 'rahimo-transports'),
+'RAHIMO-OA', 'Ouagadougou - Abidjan', 'Ouagadougou', 'Abidjan',
+1150, 1100, 'international', 15000, 0),
+((SELECT id FROM companies WHERE slug = 'rahimo-transports'),
+'RAHIMO-OL', 'Ouagadougou - Lomé', 'Ouagadougou', 'Lomé', 980,
+960, 'international', 12000, 0),
+
+((SELECT id FROM companies WHERE slug = 'rahimo-transports'),
+'RAHIMO-BS', 'Bobo-Dioulasso - Sikasso', 'Bobo-Dioulasso', 'Sikasso',
+180, 210, 'international', 5500, 0);
+-- RAKIETA
+INSERT INTO lines (company_id, line_code, line_name, origin_city,
+destination_city, distance_km, duration_minutes, line_type,
+base_price, luggage_price_per_kg) VALUES
+((SELECT id FROM companies WHERE slug = 'rakieta-transport'),
+'RAKIETA-OB', 'Ouagadougou - Bobo-Dioulasso', 'Ouagadougou',
+'Bobo-Dioulasso', 360, 330, 'interurban', 6000, 20),
+((SELECT id FROM companies WHERE slug = 'rakieta-transport'),
+'RAKIETA-OL', 'Ouagadougou - Lomé', 'Ouagadougou', 'Lomé', 980,
+960, 'international', 11000, 33),
+((SELECT id FROM companies WHERE slug = 'rakieta-transport'),
+'RAKIETA-ON', 'Ouagadougou - Niamey', 'Ouagadougou', 'Niamey',
+520, 510, 'international', 7500, 32);
+-- TCV
+INSERT INTO lines (company_id, line_code, line_name, origin_city,
+destination_city, distance_km, duration_minutes, line_type,
+base_price, luggage_price_per_kg) VALUES
+((SELECT id FROM companies WHERE slug = 'tcv-transport'), 'TCV-OB',
+'Ouagadougou - Bobo-Dioulasso', 'Ouagadougou', 'Bobo-Dioulasso',
+360, 340, 'interurban', 5500, 22),
+((SELECT id FROM companies WHERE slug = 'tcv-transport'), 'TCVOD', 'Ouagadougou - Dori', 'Ouagadougou', 'Dori', 280, 270,
+'interurban', 4500, 18);
+-- =====================================================
+-- SCHEDULES (Exemples)
+-- =====================================================
+-- SOTRACO L2B (tous les jours)
+INSERT INTO schedules (line_id, departure_time, days_of_week,
+total_seats, available_seats, valid_from, valid_until) VALUES
+((SELECT id FROM lines WHERE line_code = 'L2B'), '05:45',
+'{1,2,3,4,5,6,7}', 60, 60, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'L2B'), '06:00',
+'{1,2,3,4,5,6,7}', 60, 60, '2026-01-01', '2026-12-31'),
+
+((SELECT id FROM lines WHERE line_code = 'L2B'), '06:15',
+'{1,2,3,4,5,6,7}', 60, 60, '2026-01-01', '2026-12-31');
+-- TSR Ouaga-Bobo (tous les jours, 6 départs)
+INSERT INTO schedules (line_id, departure_time, days_of_week,
+total_seats, available_seats, valid_from, valid_until) VALUES
+((SELECT id FROM lines WHERE line_code = 'TSR-OB'), '06:00',
+'{1,2,3,4,5,6,7}', 70, 70, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'TSR-OB'), '07:00',
+'{1,2,3,4,5,6,7}', 70, 70, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'TSR-OB'), '10:00',
+'{1,2,3,4,5,6,7}', 70, 70, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'TSR-OB'), '14:00',
+'{1,2,3,4,5,6,7}', 70, 70, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'TSR-OB'), '17:00',
+'{1,2,3,4,5,6,7}', 70, 70, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'TSR-OB'), '23:30',
+'{1,2,3,4,5,6,7}', 70, 70, '2026-01-01', '2026-12-31');
+-- RAHIMO Ouaga-Bobo (5 départs fixes)
+INSERT INTO schedules (line_id, departure_time, days_of_week,
+total_seats, available_seats, valid_from, valid_until) VALUES
+((SELECT id FROM lines WHERE line_code = 'RAHIMO-OB'), '07:30',
+'{1,2,3,4,5,6,7}', 52, 52, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'RAHIMO-OB'), '10:00',
+'{1,2,3,4,5,6,7}', 52, 52, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'RAHIMO-OB'), '14:30',
+'{1,2,3,4,5,6,7}', 52, 52, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'RAHIMO-OB'), '18:30',
+'{1,2,3,4,5,6,7}', 52, 52, '2026-01-01', '2026-12-31'),
+((SELECT id FROM lines WHERE line_code = 'RAHIMO-OB'), '23:30',
+'{1,2,3,4,5,6,7}', 52, 52, '2026-01-01', '2026-12-31');
+-- =====================================================
+-- RATINGS INITIALES (pour stats)
+-- =====================================================
+-- TSR ratings (moyenne 3.2/5)
+INSERT INTO ratings (company_id, line_id, rating, punctuality_rating,
+comfort_rating, staff_rating, cleanliness_rating, comment, is_verified)
+
+VALUES
+((SELECT id FROM companies WHERE slug = 'tsr-transport'), (SELECT
+id FROM lines WHERE line_code = 'TSR-OB'), 3, 3, 3, 4, 3, 'Prix
+abordable mais vieux bus', true),
+((SELECT id FROM companies WHERE slug = 'tsr-transport'), (SELECT
+id FROM lines WHERE line_code = 'TSR-OB'), 4, 4, 4, 4, 3, 'Correct pour
+le prix', true),
+((SELECT id FROM companies WHERE slug = 'tsr-transport'), (SELECT
+id FROM lines WHERE line_code = 'TSR-OB'), 2, 2, 2, 3, 2, 'Retard 1h30,
+AC cassée', true);
+-- Update TSR rating average
+UPDATE companies
+SET rating_average = 3.2, total_ratings = 487
+WHERE slug = 'tsr-transport';
+-- STAF ratings (moyenne 4.1/5)
+UPDATE companies
+SET rating_average = 4.1, total_ratings = 1203
+WHERE slug = 'staf-transport';
+-- RAHIMO ratings (moyenne 4.6/5)
+UPDATE companies
+SET rating_average = 4.6, total_ratings = 892
+WHERE slug = 'rahimo-transports';
+-- RAKIETA ratings (moyenne 4.3/5)
+UPDATE companies
+SET rating_average = 4.3, total_ratings = 324
+WHERE slug = 'rakieta-transport';
+-- =====================================================
+-- SEED COMPLETE
+-- =====================================================
+SELECT 'Seed database completed!' as status;
+
+11. Roadmap MVP
+11.1 Sprint 1 : Foundation (Semaines 1-2)
+Backend :
+
+Setup Supabase + PostgreSQL
+Seed database (companies, lines, schedules)
+API auth WhatsApp OTP (request + verify)
+API search lines (origin, destination)
+Mobile :
+
+Setup Flutter projet (structure)
+Screens : Splash, Onboarding, Phone Auth, OTP Verify
+Navigation routing (go_router)
+Theme Ankata (couleurs, fonts)
+DevOps :
+
+GitHub repo + CI/CD
+Environnements : Dev, Staging, Prod
+
+11.2 Sprint 2 : Search & Discovery
+(Semaines 3-4)
+Backend :
+
+API search trips (date, passengers)
+API company details + ratings
+API line details
+Mobile :
+
+Home screen (search form)
+Search results screen
+Company detail screen
+Trip details screen
+Mapbox integration
+
+11.3 Sprint 3 : Booking & Payment
+(Semaines 5-6)
+Backend :
+
+API create booking
+Yenga Pay integration
+WhatsApp notifications
+Mobile :
+
+Booking flow (3 steps)
+Payment screen
+Booking confirmation
+My bookings list
+
+11.4 Sprint 4 : Ratings & Profile (Semaines
+7-8)
+Backend :
+
+API create rating (verified)
+API user profile
+Loyalty points system
+Mobile :
+
+Rating screen
+Company ratings view
+User profile
+Settings
+
+11.5 Sprint 5 : Polish & Launch (Semaines 910)
+Testing :
+
+Tests unitaires backend
+Tests E2E Flutter
+Load testing (100 users concurrents)
+
+Launch :
+
+Beta testing 50 users
+Google Play Store + App Store submission
+Marketing campagne (Facebook ads)
+FIN DU DOCUMENT ANKATA APP PASSAGERS v3.0
+Contact : dev@axiane.agency
+Repository : https://github.com/axiane-agency/ankata-passagers
+Licence : Propriétaire © Axiane Agency 2026
+
+
