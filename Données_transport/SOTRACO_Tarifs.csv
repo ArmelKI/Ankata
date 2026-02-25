@@ -1,0 +1,73 @@
+﻿Ville,Catégorie,Type_tarif,Montant
+Ouagadougou,Élèves & Étudiants,Ticket à la course,200 F CFA
+Ouagadougou,Élèves & Étudiants,Abonnement hebdomadaire,1 000 F CFA
+Ouagadougou,Élèves & Étudiants,Abonnement mensuel,3 000 F CFA
+Ouagadougou,Élèves & Étudiants,Abonnement annuel,35 000 F CFA
+Ouagadougou,Autres usagers,Ticket à la course,200 F CFA
+Ouagadougou,Autres usagers,Abonnement hebdomadaire,2 500 F CFA
+Ouagadougou,Autres usagers,Abonnement mensuel,7 000 F CFA
+Ouagadougou,Autres usagers,Abonnement trimestriel,20 000 F CFA
+Ouagadougou,Lignes intercommunales,Ouaga → Koubri,400 F CFA
+Ouagadougou,Lignes intercommunales,Ouaga → Kouba,200 F CFA
+Ouagadougou,Lignes intercommunales,Kouba → Koubri,200 F CFA
+Ouagadougou,Lignes intercommunales,Ouaga → Ziniaré,700 F CFA
+Ouagadougou,Lignes intercommunales,Ouaga → Nomgana,400 F CFA
+Ouagadougou,Lignes intercommunales,Nomgana → Ziniaré,300 F CFA
+Ouagadougou,Lignes intercommunales,Ouaga → Pabré,500 F CFA
+Ouagadougou,Lignes intercommunales,Abonnement mensuel Ziniaré,15 000 F CFA
+Ouagadougou,Lignes intercommunales,Abonnement mensuel Koubri,10 000 F CFA
+Ouagadougou,Lignes intercommunales,Abonnement mensuel Pabré,12 000 F CFA
+Bobo-Dioulasso,Élèves & Étudiants,Ticket à la course,150 F CFA
+Bobo-Dioulasso,Élèves & Étudiants,Abonnement hebdomadaire,1 000 F CFA
+Bobo-Dioulasso,Élèves & Étudiants,Abonnement mensuel,3 000 F CFA
+Bobo-Dioulasso,Élèves & Étudiants,Abonnement annuel,35 000 F CFA
+Bobo-Dioulasso,Autres usagers,Ticket à la course,150 F CFA
+Bobo-Dioulasso,Autres usagers,Abonnement hebdomadaire,2 000 F CFA
+Bobo-Dioulasso,Autres usagers,Abonnement mensuel,6 000 F CFA
+Bobo-Dioulasso,Autres usagers,Abonnement trimestriel,16 000 F CFA
+Bobo-Dioulasso,Lignes intercommunales,Bobo Dsso → Banakélédaga,250 F CFA
+Bobo-Dioulasso,Lignes intercommunales,Banakélédaga → Bama,250 F CFA
+Bobo-Dioulasso,Lignes intercommunales,Bobo Dsso → Bama,500 F CFA
+Bobo-Dioulasso,Lignes intercommunales,Abonnement mensuel Bama,13 000 F CFA
+Koudougou,Élèves & Étudiants,Ticket à la course,150 F CFA
+Koudougou,Élèves & Étudiants,Abonnement hebdomadaire,1 000 F CFA
+Koudougou,Élèves & Étudiants,Abonnement mensuel,3 000 F CFA
+Koudougou,Élèves & Étudiants,Abonnement annuel,35 000 F CFA
+Koudougou,Autres usagers,Ticket à la course,150 F CFA
+Koudougou,Autres usagers,Abonnement hebdomadaire,1 500 F CFA
+Koudougou,Autres usagers,Abonnement mensuel,5 000 F CFA
+Koudougou,Autres usagers,Abonnement trimestriel,13 000 F CFA
+Koudougou,Lignes intercommunales,Koudougou → Réo,200 F CFA
+Koudougou,Lignes intercommunales,Koudougou → Sabou,500 F CFA
+Koudougou,Lignes intercommunales,Koudougou → Tenado,500 F CFA
+Koudougou,Lignes intercommunales,Koudougou → Ramongo,200 F CFA
+Koudougou,Lignes intercommunales,Koudougou → Tiguindela,250 F CFA
+Koudougou,Lignes intercommunales,Koudougou → Poa,500 F CFA
+Koudougou,Lignes intercommunales,Abonnement mensuel Poa,12 000 F CFA
+Koudougou,Lignes intercommunales,Abonnement mensuel Réo,12 000 F CFA
+Koudougou,Lignes intercommunales,Abonnement mensuel Sabou,12 000 F CFA
+Koudougou,Lignes intercommunales,Abonnement mensuel Tenado,12 000 F CFA
+Ouahigouya,Élèves & Étudiants,Ticket à la course,150 F CFA
+Ouahigouya,Élèves & Étudiants,Abonnement hebdomadaire,1 000 F CFA
+Ouahigouya,Élèves & Étudiants,Abonnement mensuel,3 000 F CFA
+Ouahigouya,Élèves & Étudiants,Abonnement annuel,35 000 F CFA
+Ouahigouya,Autres usagers,Ticket à la course,150 F CFA
+Ouahigouya,Autres usagers,Abonnement hebdomadaire,1 500 F CFA
+Ouahigouya,Autres usagers,Abonnement mensuel,5 000 F CFA
+Ouahigouya,Autres usagers,Abonnement trimestriel,13 000 F CFA
+Dédougou,Élèves & Étudiants,Ticket à la course,150 F CFA
+Dédougou,Élèves & Étudiants,Abonnement hebdomadaire,1 000 F CFA
+Dédougou,Élèves & Étudiants,Abonnement mensuel,3 000 F CFA
+Dédougou,Élèves & Étudiants,Abonnement annuel,35 000 F CFA
+Dédougou,Autres usagers,Ticket à la course,150 F CFA
+Dédougou,Autres usagers,Abonnement hebdomadaire,1 500 F CFA
+Dédougou,Autres usagers,Abonnement mensuel,5 000 F CFA
+Dédougou,Autres usagers,Abonnement trimestriel,13 000 F CFA
+Banfora,Élèves & Étudiants,Ticket à la course,150 F CFA
+Banfora,Élèves & Étudiants,Abonnement hebdomadaire,1 000 F CFA
+Banfora,Élèves & Étudiants,Abonnement mensuel,3 000 F CFA
+Banfora,Élèves & Étudiants,Abonnement annuel,35 000 F CFA
+Banfora,Autres usagers,Ticket à la course,150 F CFA
+Banfora,Autres usagers,Abonnement hebdomadaire,1 500 F CFA
+Banfora,Autres usagers,Abonnement mensuel,5 000 F CFA
+Banfora,Autres usagers,Abonnement trimestriel,13 000 F CFA

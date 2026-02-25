@@ -1,0 +1,2660 @@
+ANKATA - Application Passagers
+Spécifications Techniques Complètes Réservation Billets Transport Burkina Faso
+Version: 2.0 (App Passagers)
+Date: 23 février 2026
+Auteur: Axiane Agency Technical Team
+Objectif: Documentation vibe coding production-ready pour app
+client final
+
+Table des Matières
+1. Vision & Contexte Produit App Passagers
+2. Différenciation Ankata Compagnies vs Ankata App
+3. Personas Utilisateurs Passagers
+4. Architecture Système App Client
+5. Schéma Base de Données Passagers
+6. Spécifications API Backend Passagers
+7. Application Mobile Flutter (Passagers)
+8. Authentification WhatsApp OTP
+9. Intégration Paiement Orange Money
+10. Système Notation Vérifiée Post-Voyage
+11. Sécurité & Conformité GDPR
+12. Monétisation & Business Model
+13. Roadmap Développement MVP
+14. Références & Données Marché
+
+1. Vision & Contexte Produit App
+Passagers
+1.1 Problématique Passagers Burkina Faso
+Pain Points Actuels Voyageurs
+1. Problème monnaie transport urbain
+• Ticket SOTRACO : 150 FCFA exactement requis
+• Passagers : 70% ont Orange Money, mais receveurs
+acceptent seulement cash
+• Situation quotidienne : "J'ai billet 1000 FCFA, receveur n'a
+pas monnaie, je descends sans payer ou paye 1000 sans
+retour"
+• Impact : Files guichets gares, conflits receveurs, temps
+perdu
+2. Overbooking transport interurbain
+• Pratique courante : Compagnies vendent 75-80 tickets pour
+70 places
+• Conséquence : 5-15 passagers refusés montée, violence
+verbale/physique
+• Cas réels : TSR Ouaga-Bobo 18h (dernier départ) → 12
+passagers bloqués gare jusqu'au lendemain
+• Aucune visibilité temps réel places disponibles
+3. Absence informations fiables
+• Horaires : Sites web compagnies obsolètes ou inexistants
+• Prix : Variations selon guichet, négociation informelle
+• Comparaison impossible : Ouaga-Bobo entre 4500-7000
+FCFA selon compagnie (TSR, STAF, RAHIMO)
+• Contacts : Numéros téléphone gares souvent occupés ou ne
+répondent pas
+4. Réservations téléphoniques archaïques
+• Process actuel : Appeler guichet gare → Attente 5-20 min →
+Réserver oral → Aucune confirmation
+• Risques : Double booking, oubli réservation, aucune preuve
+• Paiement : Obligatoire en personne gare 2h avant départ
+(sinon annulation)
+
+• Problème diaspora : Impossible réserver pour famille au
+pays depuis étranger
+5. Bagages litiges fréquents
+• Étiquettes manuscrites illisibles
+• Échanges bagages fréquents (même couleur/taille)
+• Pertes non tracées : Compagnie nie responsabilité
+• Dédommagements : Procédures longues, preuves
+inexistantes
+6. Aucune notion qualité service
+• Retards fréquents : Bus part 1-3h après horaire annoncé
+• État véhicules : Variable (AC cassée, sièges sales, sécurité
+douteuse)
+• Impossible choisir compagnie fiable : Aucun système
+notation/avis
+• Bouche-à-oreille seule source (biaisée, obsolète)
+
+Gap Solutions Existantes
+YikiShop (2017-2019) :
+
+Première tentative app réservation billets Burkina
+Problèmes : Android seulement, UX complexe, paiement Orange
+Money instable
+Abandon 2019 : Faible adoption compagnies (5 partenaires max)
+Faso Car Express (2024) :
+
+Site web réservation basique
+Limites : Desktop only, pas mobile app, 3 compagnies partenaires
+Process : Réservation online → Paiement guichet obligatoire
+Moovit App :
+
+Horaires théoriques SOTRACO affichés
+Problème : Données non actualisées, aucune réservation, aucun
+paiement
+Opportunité ANKATA App Passagers :
+
+App mobile-first iOS + Android (Flutter)
+Paiement intégré (Orange Money + Moov Money + WhatsApp
+Pay)
+
+Réservation temps réel toutes compagnies (SOTRACO, STAF, TSR,
+RAHIMO)
+Notation vérifiée post-voyage (seulement utilisateurs ayant
+voyagé)
+Comparateur prix/horaires/notations
+
+1.2 Données Marché Vérifiées
+SOTRACO (Transport Urbain Ouagadougou)
+Flotte & Capacité :
+
+375 nouveaux bus livrés janvier 2026 (total 455 véhicules)
+18 lignes urbaines Ouagadougou
+Ligne L2B exemple : 18km, 39 arrêts, Terminus Balkuy → Place
+Naaba Koom
+Horaires : 05h45-20h30, fréquence 15-30min selon heures
+14 millions passagers transportés 2023
+Tarification :
+
+Urbain Ouagadougou : 150-200 FCFA selon distance
+Périurbain (ex: Ouaga-Pabré) : 500 FCFA
+Abonnement mensuel : 15 000 FCFA (illimité)
+Paiement actuel : 100% cash (pas de mobile money accepté)
+Contacts :
+
+Siège : +226 25 44 66 66
+Facebook : @SOTRACO.officiel (51k followers, actif)
+
+STAF (Transport Interurbain)
+Destinations & Tarifs :
+
+Ouagadougou → Fada N'Gourma : 6000 FCFA (450km, 7h)
+Ouagadougou → Bobo-Dioulasso : 7000 FCFA (360km, 6h)
+Ouagadougou → Gaoua : 8500 FCFA (520km, 9h)
+Horaires :
+
+Départs quotidiens : 06h00, 09h00, 15h00
+
+Réservation : Téléphone +226 XX XX XX XX ou guichet
+
+TSR (Transport Sana Rasmane)
+Principales Liaisons :
+
+Ouagadougou ↔ Bobo-Dioulasso : 5000 FCFA (le moins cher)
+Flotte : Bus vieillissants, AC souvent en panne
+Réputation : Prix bas mais confort limité
+Horaires : Départs 07h, 10h, 14h, 17h (variables selon
+remplissage)
+
+RAHIMO Transport
+Positionnement Premium :
+
+Ouagadougou → Bobo-Dioulasso : 6500 FCFA
+Horaires fixes : 07h30, 10h00, 14h30, 18h30, 23h30
+Confort : AC garanti, sièges inclinables, TV/musique
+International : Ouagadougou → Abidjan 15 000 FCFA
+Contact : +226 25 XX XX XX (Gare Ouaga 2000)
+
+Marché Total Estimé
+Passagers annuels :
+
+SOTRACO urbain : 14M (2023)
+Transport interurbain : 8-10M estimés
+Total : 22-24M trajets/an Burkina Faso
+Potentiel Ankata :
+
+Objectif Année 1 : 100k utilisateurs app
+Taux adoption : 5% passagers urbains (700k SOTRACO)
+GMV Année 1 : 150-200M FCFA (tickets + commissions)
+
+2. Différenciation Ankata
+Compagnies vs Ankata App
+2.1 Deux Produits Distincts
+ANKATA COMPAGNIES (Produit 1 - B2B)
+Utilisateurs : Directeurs exploitation, comptables, receveurs
+compagnies transport
+Problème résolu : Conformité Facture Électronique Certifiée (FEC)
+DGI + Gestion flotte
+Features clés :
+
+Gestion trajets multiples quotidiens (80 trajets/jour SOTRACO)
+Facturation bulk passagers (30-70 factures/trajet)
+Offline-first zones rurales (80km sans réseau Ouaga-Bobo)
+Analytics rentabilité par ligne
+Alertes maintenance véhicules
+Business Model : Subscription SaaS
+
+FREE : 50 factures/mois
+PRO : 15k FCFA/mois (factures illimitées)
+ENTERPRISE : 50k FCFA/mois (multi-compagnies, API)
+État actuel : Document specs complet existant (version actuelle
+canvas)
+
+ANKATA APP PASSAGERS (Produit 2 - B2C)
+Utilisateurs : Voyageurs urbains, étudiants, diaspora, familles
+Problème résolu : Réservation facile + Paiement mobile money +
+Comparaison compagnies
+Features clés :
+
+Recherche lignes/horaires temps réel (géolocalisation)
+
+Réservation en 30 secondes
+Paiement Orange Money/Moov/WhatsApp
+QR code billet (scan bus)
+Notations vérifiées post-voyage (seulement si voyagé)
+Comparateur prix/avis compagnies
+Business Model : Commission + Freemium
+
+Commission : 2% par ticket (3 FCFA sur 150 FCFA, 100 FCFA sur
+5000 FCFA)
+Abonnements premium : 2000 FCFA/mois (illimité SOTRACO +
+réductions)
+Pub locale : Stations Orange, garages (10k FCFA/spot)
+État actuel : Specs à créer (ce document)
+
+2.2 Synergie Produits
+Données partagées :
+
+Compagnies partenaires Ankata Compagnies alimentent
+catalogue Ankata App
+Trajets créés côté compagnies → Visibles temps réel côté
+passagers
+Places disponibles → Sync bidirectionnelle
+Workflow intégré :
+
+1. Compagnie crée trajet via Ankata Compagnies (ex: TSR OuagaBobo 14h, 70 places, 5000 FCFA)
+2. Trajet apparaît instantanément Ankata App Passagers
+3. Passager réserve via app → Place bloquée temps réel
+4. Passager paie Orange Money → Compagnie notifiée + QR code
+généré
+5. Passager présente QR → Receveur scan via Ankata Compagnies
+→ Validation montée
+6. Fin trajet → Passager invité noter (unlock feature)
+Pourquoi deux apps séparées ? :
+
+UX radicalement différentes (compagnie = backend admin,
+passager = consumer simple)
+
+App stores : Ciblage distinct (business vs grand public)
+Marketing : Messages différents (compliance FEC vs voyage
+facile)
+Techniques : Ankata Compagnies offline-first critiques, Ankata
+App online-first acceptable
+
+3. Personas Utilisateurs
+Passagers
+3.1 Persona 1 : Fatima, Étudiante Université
+Ouaga
+Profil :
+
+22 ans, étudiante en économie Université Joseph Ki-Zerbo
+Trajet quotidien : Cité An II (domicile) → Campus (Ligne L2B
+SOTRACO, 8km)
+Budget serré : 150 FCFA × 2 trajets/jour = 9000 FCFA/mois
+Smartphone : Samsung A14 (Android), Orange Money actif
+Pain Points :
+
+"Chaque matin je rate premier bus L2B car file guichet trop
+longue, j'arrive cours en retard"
+"J'ai toujours billets 1000 FCFA, receveurs n'ont jamais monnaie
+850 FCFA retour"
+"Mon crédit Orange Money dort, mais je ne peux pas payer bus
+avec"
+"Parfois L2B ne passe pas (panne), j'attends 1h sans savoir si
+autre bus arrive"
+Jobs-to-be-Done :
+
+Acheter ticket SOTRACO depuis smartphone avant monter bus
+Payer 150 FCFA directement Orange Money (solde 2000 FCFA)
+Voir en temps réel prochain L2B (13h18, 5 places restantes)
+Économiser : Abonnement mensuel 15000 FCFA (vs 18000 cash)
+via app
+
+User Story Ankata :
+
+1. Fatima ouvre app Ankata 07h05 (départ cours 07h30)
+2. Géolocalisation auto → "Cité An II" détecté
+3. Tape "Campus" destination → Ligne L2B apparaît (150 FCFA,
+prochain 07h12, 12 places)
+4. Tap "Réserver" → Orange Money auto-détecté (solde 2000 FCFA)
+5. Confirmation biométrique → Ticket acheté (solde 1850 FCFA)
+6. QR code affiché → Screenshot + sauvegarde auto Wallet
+7. 07h12 bus arrive → Montre QR receveur → Scan validé ✅ →
+Assise
+8. Trajet sans stress, arrivée cours 07h25
+Adoption :
+
+Découverte : Pub Facebook "Fini files SOTRACO, paye ton ticket
+Orange Money"
+Onboarding : Télécharge app → Inscription WhatsApp (OTP
+auto) → Premier trajet gratuit (promo)
+Fidélisation : Après 20 trajets (3000 FCFA dépensés), suggestion
+abonnement mensuel 15000 FCFA
+
+3.2 Persona 2 : Mamadou, Commerçant
+Bobo-Dioulasso
+Profil :
+
+38 ans, vendeur pagnes Marché central Bobo
+Voyage Bobo → Ouaga : 2 fois/mois (achats fournisseurs
+grossistes)
+Budget trajet : 10 000 FCFA (billet 5000-7000 + bagages +
+imprévus)
+Smartphone : Tecno Spark 10 Pro (Android), Moov Money +
+Orange Money
+Pain Points :
+
+"Je dois appeler 5 compagnies (TSR, STAF, RAHIMO...) pour
+comparer prix Bobo-Ouaga, souvent occupé"
+"Une fois TSR m'a overbooké, j'ai raté rendez-vous fournisseur
+Ouaga, perdu 200k FCFA contrat"
+
+"Mes 3 cartons pagnes (35kg) ont été échangés arrivée Ouaga,
+litige 6 mois, rien récupéré"
+"Je ne sais jamais quelle compagnie fiable : TSR pas cher mais
+vieux bus, RAHIMO cher mais AC marche"
+Jobs-to-be-Done :
+
+Comparer TSR (5000 FCFA) vs STAF (7000 FCFA) vs RAHIMO
+(6500 FCFA) en 1 écran
+Voir avis voyageurs vérifiés : TSR ★★★☆☆ (3.2/5 "AC souvent
+cassée") vs RAHIMO ★★★★☆ (4.5/5 "Ponctuel, propre")
+Réserver place garantie 7 jours avant (éviter overbooking)
+Payer Moov Money (son opérateur principal) depuis Bobo
+Tracker bagages : Photos + QR code → Preuve tribunal si perte
+User Story Ankata :
+
+1. Mamadou ouvre app 5 jours avant voyage
+2. "Bobo → Ouaga, 18 mars" → Liste compagnies :
+TSR : 5000 FCFA, 07h, ★★★☆☆ (3.2/5, 487 avis) "Bus vieux,
+AC 50/50"
+STAF : 7000 FCFA, 09h, ★★★★☆ (4.1/5, 1203 avis) "Fiable,
+propre"
+RAHIMO : 6500 FCFA, 10h, ★★★★★ (4.6/5, 892 avis)
+"Meilleur confort"
+3. Choisit RAHIMO (compromis prix/qualité) → Réserve siège 12A
+(fenêtre)
+4. Ajoute 3 bagages (35kg) → Supplément 1500 FCFA (calculé auto
+app)
+5. Total : 8000 FCFA → Paye Moov Money
+6. Confirmation WhatsApp : QR code billet + QR codes 3 bagages
+7. 18 mars 09h30 gare Bobo : Enregistre bagages → Photos prises
+agent RAHIMO → QR imprimés étiquettes
+8. Montée bus : Scan QR billet → Siège 12A validé
+9. Arrivée Ouaga 15h45 : Récupère 3 bagages (scan QR
+concordance) → OK ✅
+10. Lendemain : Notification app "Note ton trajet RAHIMO" → 5★
+"Parfait, je recommande"
+Adoption :
+
+Découverte : Bouche-à-oreille commerçants marché Bobo
+Onboarding : Ami montre app → Télécharge → Essaye première
+réservation
+Fidélisation : Points fidélité 100 FCFA/trajet → 10 trajets = 1
+gratuit
+
+3.3 Persona 3 : Aminata, Diaspora France
+Profil :
+
+45 ans, infirmière Paris depuis 20 ans
+Famille au Burkina : Mère (Ouaga), frère (Bobo), sœur (Fada)
+Envoie 50-100k FCFA/mois via Orange Money
+Smartphone : iPhone 13, WhatsApp principal contact famille
+Pain Points :
+
+"Quand je veux que ma mère aille Bobo voir ma sœur malade, je
+dois appeler TSR Ouaga, ligne toujours occupée"
+"Je paie ticket ma mère par Orange Money à un ami Ouaga, il
+achète guichet, mais aucune preuve, j'ai déjà perdu 10k FCFA
+arnaque"
+"Ma mère 70 ans ne sait pas réserver, elle attend gare 4h avant
+départ pour être sûre avoir place"
+"Je ne peux pas vérifier si elle est bien montée bus, elle n'a pas
+smartphone"
+Jobs-to-be-Done :
+
+Réserver billet Ouaga→Bobo pour ma mère depuis Paris
+(WhatsApp Pay ou carte bancaire)
+Recevoir confirmation + QR code → Envoyer ma mère par
+WhatsApp
+Suivre trajet temps réel : "Maman montée bus 09h03 ✅, arrivée
+prévue Bobo 15h30"
+Notification arrivée : "Maman descendue Bobo 15h42 ✅"
+User Story Ankata :
+
+1. Aminata Paris 23h (17h Ouaga) : Ouvre app Ankata (compte
+France)
+
+2. "Réserver pour quelqu'un d'autre" → Entre nom mère + tél mère
+3. Recherche : Ouaga → Bobo, demain 09h → RAHIMO 6500 FCFA,
+★★★★★
+
+4. Réserve siège 5B (proche sortie pour mère âgée)
+5. Paye carte Visa (6500 FCFA = 10€) → Conversion auto
+6. QR code envoyé WhatsApp mère : "Maman, ton billet bus
+demain 9h gare Ouaga 2000, montre ce code"
+7. Lendemain 08h50 Ouaga : Mère montre QR téléphone basique
+(screenshot reçu) → Agent scan OK ✅
+8. 09h03 : Aminata reçoit notif Paris "Votre mère Fatoumata
+montée bus RAHIMO, trajet en cours"
+9. 15h42 : Notif "Votre mère arrivée Bobo, trajet terminé" →
+Aminata appelle mère vérifier
+Adoption :
+
+Découverte : Pub Facebook ciblée diaspora "Réserve bus ta
+famille Burkina depuis France"
+Onboarding : Interface multilingue (français France vs français
+Burkina)
+Fidélisation : Historique famille (réserve souvent pour mère,
+frère, nièces)
+
+4. Architecture Système App
+Client
+4.1 Vue Ensemble Architecture
+┌─────────────────── ANKATA APP ECOSYSTEM
+────────────────────┐
+││
+│ ┌──────────────────┐ ┌──────────────────┐ │
+│ │ PASSAGERS │ │ COMPAGNIES │ │
+│ │ Flutter App │ │ Flutter App │ │
+│ │ (iOS + Android) │ │ (Admin) │ │
+│ └────────┬─────────┘ └────────┬─────────┘ │
+││││
+│ │ HTTPS/WSS │ HTTPS │
+
+││││
+│ └──────────┬───────────────────┘ │
+│││
+│▼│
+│ ┌─────────────────────┐ │
+│ │ API Gateway │ │
+│ │ (Node.js Express) │ │
+│ │ Rate Limit 100/min│ │
+│ └──────────┬──────────┘ │
+│││
+│ ┌───────────┼───────────┐ │
+│││││
+│▼▼▼│
+│ ┌────────┐ ┌────────┐ ┌────────┐ │
+│ │Bookings│ │Users │ │Ratings │ │
+│ │Service │ │Service │ │Service │ │
+│ └───┬────┘ └───┬────┘ └───┬────┘ │
+│││││
+│ └───────────┼───────────┘ │
+│││
+│▼│
+│ ┌─────────────────────┐ │
+│ │ PostgreSQL 16 │ │
+│ │ (Supabase) │ │
+│ │ + Redis Queue │ │
+│ │ + S3 QR/Photos │ │
+│ └─────────┬───────────┘ │
+│││
+└────────────────────┼────────────────────────
+────────────────┘
+│
+┌────────────┼────────────────┐
+│││
+▼▼▼
+┌──────────────┐ ┌──────────┐ ┌──────────────┐
+│WhatsApp │ │Orange │ │Notif Push │
+│Business API │ │Money API │ │(FCM/APNs) │
+│(Meta) │ │ │ │ │
+└──────────────┘ └──────────┘ └──────────────┘
+
+4.2 Stack Technologique
+Couche
+
+Techno
+
+Justification
+Cross-platform iOS+Android 1
+Mobile App Flutter 3.19+
+codebase, widgets Material
+Design, offline cache Hive
+Async I/O optimal APIs
+Backend
+Node.js 20 LTS
+externes (WhatsApp, Orange),
+TypeScript type-safety
+Léger, middleware mature,
+Framework Express.js
+WebSocket support
+ACID transactions
+Database
+PostgreSQL 16
+(réservations), JSONB flexible,
+geospatial PostGIS
+Postgres managé + Auth +
+Hosting DB
+Supabase
+Storage + Realtime intégré
+Queue paiements async,
+Cache
+Redis 7
+sessions, rate limiting
+QR codes, photos bagages,
+Storage
+Supabase Storage
+avatars users
+Pas email (70% users sans
+Auth
+WhatsApp OTP
+email BF), SMS coûteux,
+WhatsApp gratuit
+85% parts marché mobile
+Paiement
+Orange Money API
+money Burkina
+Push gratuits iOS/Android,
+Notifications FCM + APNs
+WhatsApp backup
+Geoloc lignes/arrêts, routing,
+Maps
+Mapbox GL
+gratuit <50k loads/mois
+Crash reports, performance
+Monitoring Sentry
+tracking
+Funnel conversions, retention
+Analytics
+Mixpanel
+cohorts
+
+5. Schéma Base de Données
+Passagers
+5.1 Tables Core
+Table companies (Compagnies Transport)
+CREATE TABLE companies (
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Identité
+name VARCHAR(100) NOT NULL, -- 'SOTRACO', 'TSR', 'STAF', 'RAHIMO'
+slug VARCHAR(50) UNIQUE NOT NULL, -- 'sotraco', 'tsr'
+logo_url TEXT,
+-- Contact
+phone VARCHAR(20), -- '+22625446666'
+email VARCHAR(100),
+website TEXT,
+-- Adresses
+hq_address TEXT, -- Siège social
+terminal_addresses JSONB, -- Gares routières
+-- [{"name":"Gare Ouaga 2000","lat":12.35,"lon":-1.52,"address":"..."}]
+-- Status
+approved BOOLEAN DEFAULT FALSE, -- Admin Ankata approval
+active BOOLEAN DEFAULT TRUE,
+-- Stats (cache calculé)
+total_lines INT DEFAULT 0,
+total_trips INT DEFAULT 0,
+avg_rating DECIMAL(3,2) DEFAULT 0.00, -- 4.25
+total_ratings INT DEFAULT 0,
+-- Metadata
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_companies_slug ON companies(slug);
+CREATE INDEX idx_companies_approved ON companies(approved,
+active);
+
+Table lines (Lignes Transport)
+CREATE TABLE lines (
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+company_id UUID NOT NULL REFERENCES companies(id) ON
+DELETE CASCADE,
+-- Identification
+name VARCHAR(50) NOT NULL, -- 'L2B', 'Ouaga-Bobo Express'
+code VARCHAR(20), -- Code interne compagnie
+-- Trajet
+origin VARCHAR(100) NOT NULL, -- 'Terminus Balkuy',
+'Ouagadougou'
+destination VARCHAR(100) NOT NULL, -- 'Place Naaba Koom', 'BoboDioulasso'
+-- Géographie
+origin_coords POINT, -- PostGIS (12.3692, -1.5217)
+destination_coords POINT,
+route_geojson JSONB, -- Tracé complet ligne
+distance_km INT,
+-- Arrêts (pour lignes urbaines)
+stops JSONB,
+/[
+{"name":"Balkuy Terminus","lat":12.40,"lon":-1.48,"order":1},
+{"name":"Rond-Point Boulmiougou","lat":12.39,"lon":-1.50,"order":2},
+...39 total
+]/
+-- Tarification
+price_fcfa INT NOT NULL, -- 150 (urbain), 5000 (interurbain)
+price_currency VARCHAR(10) DEFAULT 'XOF',
+luggage_free_kg INT DEFAULT 20, -- Franchise bagages
+luggage_extra_fee_per_kg INT DEFAULT 50, -- 50 FCFA/kg
+supplémentaire
+
+-- Horaires
+schedule_type VARCHAR(20) NOT NULL, -- 'FREQUENCY' (urbain) |
+'FIXED' (interurbain)
+schedule JSONB NOT NULL,
+/* Frequency:
+{"start":"05:45","end":"20:30","frequency_minutes":15,"peak_hours":
+[{"start":"07:00","end":"09:00","freq":10}]}
+Fixed:
+{"departures":["07:30","10:00","14:30","18:30","23:30"]}
+*/
+-- Durée
+estimated_duration_minutes INT, -- 30 (urbain), 360 (Ouaga-Bobo)
+-- Type
+line_type VARCHAR(20) DEFAULT 'URBAN', -- URBAN | INTERURBAN
+| INTERNATIONAL
+-- Status
+active BOOLEAN DEFAULT TRUE,
+-- Stats
+avg_rating DECIMAL(3,2) DEFAULT 0.00,
+total_ratings INT DEFAULT 0,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_lines_company ON lines(company_id);
+CREATE INDEX idx_lines_origin_dest ON lines(origin, destination);
+CREATE INDEX idx_lines_type ON lines(line_type);
+CREATE INDEX idx_lines_active ON lines(active) WHERE active =
+TRUE;
+CREATE INDEX idx_lines_geog ON lines USING GIST(origin_coords,
+destination_coords);
+
+Table trips (Trajets Programmés)
+CREATE TABLE trips (
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+line_id UUID NOT NULL REFERENCES lines(id) ON DELETE CASCADE,
+company_id UUID NOT NULL REFERENCES companies(id),
+-- Horaire
+departure_scheduled TIMESTAMP NOT NULL,
+departure_actual TIMESTAMP,
+arrival_scheduled TIMESTAMP,
+arrival_actual TIMESTAMP,
+-- Véhicule
+vehicle_number VARCHAR(30), -- 'BF-1234-AB' (si compagnie partage)
+vehicle_type VARCHAR(30), -- 'BUS_AC', 'MINIBUS', 'BUS_STANDARD'
+-- Capacité
+seats_total INT NOT NULL, -- 70
+seats_booked INT DEFAULT 0,
+seats_available INT GENERATED ALWAYS AS (seats_total seats_booked) STORED,
+-- Status
+status VARCHAR(20) DEFAULT 'SCHEDULED',
+-- SCHEDULED | BOARDING | DEPARTED | ARRIVED | CANCELLED
+-- Prix (peut varier vs ligne base)
+price_fcfa INT NOT NULL,
+-- Tracking temps réel (si compagnie partage GPS)
+current_location POINT,
+last_location_update TIMESTAMP,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_trips_line ON trips(line_id);
+CREATE INDEX idx_trips_company ON trips(company_id);
+CREATE INDEX idx_trips_departure ON trips(departure_scheduled
+DESC);
+
+CREATE INDEX idx_trips_status ON trips(status);
+CREATE INDEX idx_trips_available ON trips(seats_available) WHERE
+status = 'SCHEDULED' AND seats_available > 0;
+
+Table users (Passagers)
+CREATE TABLE users (
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Identité
+phone VARCHAR(20) UNIQUE NOT NULL, -- '+22670123456'
+phone_country_code VARCHAR(5) DEFAULT '+226',
+whatsapp_verified BOOLEAN DEFAULT FALSE,
+-- Profil
+first_name VARCHAR(100),
+last_name VARCHAR(100),
+email VARCHAR(255), -- Optionnel
+avatar_url TEXT,
+-- Préférences
+preferred_language VARCHAR(10) DEFAULT 'fr', -- fr, en, dioula
+preferred_payment_method VARCHAR(30), -- 'ORANGE_MONEY',
+'MOOV_MONEY'
+-- Wallet mobile money (cache pour quick pay)
+orange_money_number VARCHAR(20),
+moov_money_number VARCHAR(20),
+-- Programme fidélité
+loyalty_points INT DEFAULT 0,
+loyalty_tier VARCHAR(20) DEFAULT 'BRONZE', -- BRONZE | SILVER |
+GOLD | PLATINUM
+-- Stats usage
+total_bookings INT DEFAULT 0,
+total_trips_completed INT DEFAULT 0,
+total_spent_fcfa DECIMAL(12,2) DEFAULT 0,
+-- Notifications
+push_token TEXT, -- FCM/APNs
+notifications_enabled BOOLEAN DEFAULT TRUE,
+
+-- Status
+account_status VARCHAR(20) DEFAULT 'ACTIVE', -- ACTIVE |
+SUSPENDED | BANNED
+-- Metadata
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW(),
+last_login_at TIMESTAMP
+);
+CREATE INDEX idx_users_phone ON users(phone);
+CREATE INDEX idx_users_whatsapp ON users(whatsapp_verified)
+WHERE whatsapp_verified = TRUE;
+CREATE INDEX idx_users_loyalty ON users(loyalty_tier,
+loyalty_points DESC);
+
+Table bookings (Réservations)
+CREATE TABLE bookings (
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Relations
+user_id UUID NOT NULL REFERENCES users(id) ON DELETE
+CASCADE,
+trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE RESTRICT,
+line_id UUID NOT NULL REFERENCES lines(id),
+company_id UUID NOT NULL REFERENCES companies(id),
+-- Passenger info (peut différer user si réservation pour tiers)
+passenger_name VARCHAR(200),
+passenger_phone VARCHAR(20),
+-- Siège
+seat_number VARCHAR(10), -- '12A', NULL si non attribué
+-- Codes
+booking_code VARCHAR(20) UNIQUE NOT NULL, -- 'ANK-20260223A7B3'
+qr_code_data TEXT UNIQUE NOT NULL, -- Contenu QR scanné bus
+qr_code_url TEXT, -- Image QR (Supabase Storage)
+
+-- Bagages
+luggage_count INT DEFAULT 0,
+luggage_weight_total_kg DECIMAL(5,2) DEFAULT 0,
+luggage_fee_fcfa INT DEFAULT 0,
+luggage_qr_codes JSONB, -- ["QR1", "QR2", "QR3"]
+-- Pricing
+ticket_price_fcfa INT NOT NULL,
+total_amount_fcfa INT NOT NULL, -- ticket + luggage fees
+-- Paiement
+payment_method VARCHAR(30) NOT NULL, -- ORANGE_MONEY |
+MOOV_MONEY | CARD | FREE (promo)
+payment_status VARCHAR(20) DEFAULT 'PENDING',
+-- PENDING | PROCESSING | PAID | FAILED | REFUNDED
+payment_id VARCHAR(100), -- ID transaction Orange Money
+payment_reference VARCHAR(100), -- Numéro référence user
+paid_at TIMESTAMP,
+-- Status réservation
+booking_status VARCHAR(20) DEFAULT 'CONFIRMED',
+-- CONFIRMED | CHECKED_IN | BOARDED | COMPLETED |
+CANCELLED | NO_SHOW
+-- Check-in
+checked_in_at TIMESTAMP,
+checked_in_by VARCHAR(50), -- 'SELF_APP' | 'AGENT_SCAN'
+-- Boarding
+boarded_at TIMESTAMP,
+boarded_location POINT, -- GPS montée
+-- Completion
+completed_at TIMESTAMP,
+-- Annulation
+cancelled_at TIMESTAMP,
+cancellation_reason TEXT,
+cancellation_initiated_by VARCHAR(20), -- 'USER' | 'COMPANY' |
+'SYSTEM'
+
+refund_amount_fcfa INT DEFAULT 0,
+refund_status VARCHAR(20), -- PENDING | PROCESSED
+-- Notification
+notification_sent_whatsapp BOOLEAN DEFAULT FALSE,
+notification_sent_push BOOLEAN DEFAULT FALSE,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_bookings_user ON bookings(user_id);
+CREATE INDEX idx_bookings_trip ON bookings(trip_id);
+CREATE INDEX idx_bookings_code ON bookings(booking_code);
+CREATE INDEX idx_bookings_qr ON bookings(qr_code_data);
+CREATE INDEX idx_bookings_status ON bookings(booking_status);
+CREATE INDEX idx_bookings_payment ON bookings(payment_status)
+WHERE payment_status = 'PENDING';
+CREATE INDEX idx_bookings_date ON bookings(created_at DESC);
+
+Table ratings (Notations Trajets)
+CREATE TABLE ratings (
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Relations
+booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE
+CASCADE,
+user_id UUID NOT NULL REFERENCES users(id) ON DELETE
+CASCADE,
+trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+line_id UUID NOT NULL REFERENCES lines(id),
+company_id UUID NOT NULL REFERENCES companies(id),
+-- Note globale
+rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5), -- 1-5
+étoiles
+-- Notes détaillées (optionnelles)
+rating_punctuality INT CHECK (rating_punctuality >= 1 AND
+rating_punctuality <= 5),
+
+rating_cleanliness INT CHECK (rating_cleanliness >= 1 AND
+rating_cleanliness <= 5),
+rating_comfort INT CHECK (rating_comfort >= 1 AND rating_comfort
+<= 5),
+rating_staff INT CHECK (rating_staff >= 1 AND rating_staff <= 5),
+rating_safety INT CHECK (rating_safety >= 1 AND rating_safety <= 5),
+-- Commentaire
+comment TEXT,
+-- Vérification voyage effectué
+verified_trip BOOLEAN DEFAULT FALSE,
+-- TRUE seulement si booking_status = COMPLETED
+-- Modération
+flagged BOOLEAN DEFAULT FALSE,
+flagged_reason TEXT,
+moderation_status VARCHAR(20) DEFAULT 'APPROVED',
+-- APPROVED | PENDING | REJECTED
+-- Utilité
+helpful_count INT DEFAULT 0, -- Autres users cliquent "Utile"
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_ratings_booking ON ratings(booking_id);
+CREATE INDEX idx_ratings_user ON ratings(user_id);
+CREATE INDEX idx_ratings_trip ON ratings(trip_id);
+CREATE INDEX idx_ratings_line ON ratings(line_id);
+CREATE INDEX idx_ratings_company ON ratings(company_id);
+CREATE INDEX idx_ratings_verified ON ratings(verified_trip) WHERE
+verified_trip = TRUE;
+CREATE INDEX idx_ratings_moderation ON
+ratings(moderation_status);
+-- Contrainte : 1 seul rating par booking
+CREATE UNIQUE INDEX idx_ratings_unique_booking ON
+ratings(booking_id);
+
+6. Spécifications API Backend
+Passagers
+6.1 Architecture REST API
+Base URL : https://api.ankata.app/v1
+Authentication : Bearer JWT token (WhatsApp OTP)
+Rate Limiting :
+
+Anonymous : 10 req/min
+Authenticated : 100 req/min
+Premium users : 500 req/min
+
+6.2 Endpoints Auth
+POST /auth/whatsapp/request-otp
+Demander code OTP WhatsApp.
+Request :
+{
+"phone": "+22670123456"
+}
+Response 200 OK :
+{
+"success": true,
+"message": "Code OTP envoyé via WhatsApp",
+"expires_in_seconds": 300
+}
+
+POST /auth/whatsapp/verify-otp
+Vérifier code OTP + créer/login user.
+Request :
+{
+"phone": "+22670123456",
+
+"otp": "483920"
+}
+Response 200 OK :
+{
+"success": true,
+"user": {
+"id": "user-uuid",
+"phone": "+22670123456",
+"first_name": "Fatima",
+"whatsapp_verified": true,
+"loyalty_tier": "BRONZE",
+"loyalty_points": 1250
+},
+"access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+"refresh_token": "refresh-token-here",
+"expires_in": 86400
+}
+
+6.3 Endpoints Search
+GET /search/lines
+Rechercher lignes par origine/destination.
+Query Parameters :
+
+origin : Ville/lieu origine (ex: "Ouaga", "Cité An II")
+destination : Ville/lieu destination (ex: "Bobo", "Campus")
+date : Date trajet (ISO 8601, optionnel, default today)
+line_type : URBAN | INTERURBAN (optionnel)
+Request :
+GET /search/lines?
+origin=Cit%C3%A9%20An%20II&destination=Campus&date=202602-23
+Response 200 OK :
+{
+"results": [
+{
+
+"line_id": "line-uuid-l2b",
+"company": {
+"id": "company-sotraco",
+"name": "SOTRACO",
+"logo_url": "https://cdn.ankata.app/logos/sotraco.png",
+"avg_rating": 4.2,
+"total_ratings": 12487
+},
+"line": {
+"name": "L2B",
+"origin": "Terminus Balkuy",
+"destination": "Place Naaba Koom",
+"distance_km": 18,
+"stops_count": 39,
+"duration_minutes": 45
+},
+"price_fcfa": 150,
+"next_trips": [
+{
+"trip_id": "trip-uuid-1",
+"departure": "2026-02-23T07:12:00Z",
+"seats_available": 8,
+"vehicle_type": "BUS_STANDARD"
+},
+{
+"trip_id": "trip-uuid-2",
+"departure": "2026-02-23T07:27:00Z",
+"seats_available": 23,
+"vehicle_type": "BUS_AC"
+}
+],
+"schedule_type": "FREQUENCY",
+"frequency_minutes": 15,
+"avg_rating": 4.3,
+"total_ratings": 8921
+}
+],
+"total_results": 1
+}
+
+GET /search/trips
+Rechercher trajets disponibles (interurbain).
+Query Parameters :
+
+origin : Ville origine
+destination : Ville destination
+date : Date trajet (ISO 8601)
+passengers : Nombre passagers (default 1)
+Request :
+GET /search/trips?origin=Ouagadougou&destination=BoboDioulasso&date=2026-03-18&passengers=1
+Response 200 OK :
+{
+"trips": [
+{
+"trip_id": "trip-uuid-tsr",
+"company": {
+"id": "company-tsr",
+"name": "TSR",
+"logo_url": "https://cdn.ankata.app/logos/tsr.png",
+"avg_rating": 3.2,
+"total_ratings": 487
+},
+"line": {
+"name": "Ouaga-Bobo Express",
+"distance_km": 360,
+"duration_minutes": 360
+},
+"departure": "2026-03-18T07:00:00Z",
+"arrival_estimated": "2026-03-18T13:00:00Z",
+"price_fcfa": 5000,
+"vehicle_type": "BUS_STANDARD",
+"amenities": ["AC", "Toilet"],
+"seats_available": 12,
+"seats_total": 70,
+"rating_summary": {
+"avg": 3.2,
+
+"count": 487,
+"distribution": {"5": 120, "4": 150, "3": 140, "2": 50, "1": 27},
+"top_comments": ["Bus vieux", "AC 50/50", "Prix correct"]
+}
+},
+{
+"trip_id": "trip-uuid-rahimo",
+"company": {
+"id": "company-rahimo",
+"name": "RAHIMO",
+"logo_url": "https://cdn.ankata.app/logos/rahimo.png",
+"avg_rating": 4.6,
+"total_ratings": 892
+},
+"line": {
+"name": "Ouaga-Bobo Confort",
+"distance_km": 360,
+"duration_minutes": 330
+},
+"departure": "2026-03-18T10:00:00Z",
+"arrival_estimated": "2026-03-18T15:30:00Z",
+"price_fcfa": 6500,
+"vehicle_type": "BUS_AC_PREMIUM",
+"amenities": ["AC", "WiFi", "TV", "Toilet", "Snacks"],
+"seats_available": 8,
+"seats_total": 50,
+"rating_summary": {
+"avg": 4.6,
+"count": 892,
+"distribution": {"5": 620, "4": 220, "3": 40, "2": 10, "1": 2},
+"top_comments": ["Meilleur confort", "Ponctuel", "AC excellent"]
+}
+}
+],
+"total_results": 2
+}
+
+6.4 Endpoints Bookings
+POST /bookings
+Créer nouvelle réservation.
+Request :
+{
+"trip_id": "trip-uuid",
+"passenger": {
+"name": "Fatima Ouédraogo",
+"phone": "+22670123456"
+},
+"seat_preference": "WINDOW", // WINDOW | AISLE | ANY
+"luggage": {
+"count": 0,
+"weight_kg": 0
+},
+"payment_method": "ORANGE_MONEY"
+}
+Response 201 Created :
+{
+"booking": {
+"id": "booking-uuid",
+"booking_code": "ANK-20260223-A7B3",
+"trip": {
+"line_name": "L2B SOTRACO",
+"departure": "2026-02-23T07:12:00Z",
+"origin": "Terminus Balkuy",
+"destination": "Place Naaba Koom"
+},
+"seat_number": "15A",
+"pricing": {
+"ticket_price": 150,
+"luggage_fee": 0,
+"total": 150
+},
+"payment": {
+"method": "ORANGE_MONEY",
+
+"status": "PENDING",
+"orange_payment_url": "https://orangemoney.bf/pay?ref=ANK-A7B3",
+"expires_at": "2026-02-23T07:07:00Z"
+},
+"qr_code_url": null, // Généré après paiement
+"booking_status": "CONFIRMED"
+}
+}
+
+GET /bookings/:id
+Détails réservation.
+Response 200 OK :
+{
+"booking": {
+"id": "booking-uuid",
+"booking_code": "ANK-20260223-A7B3",
+"trip": {
+"line_name": "L2B SOTRACO",
+"company_name": "SOTRACO",
+"departure": "2026-02-23T07:12:00Z",
+"arrival_estimated": "2026-02-23T07:57:00Z",
+"origin": "Terminus Balkuy",
+"destination": "Place Naaba Koom",
+"status": "BOARDING" // Temps réel si disponible
+},
+"passenger": {
+"name": "Fatima Ouédraogo",
+"phone": "+22670123456"
+},
+"seat_number": "15A",
+"pricing": {
+"ticket_price": 150,
+"luggage_fee": 0,
+"total": 150
+},
+"payment": {
+"method": "ORANGE_MONEY",
+"status": "PAID",
+
+"paid_at": "2026-02-23T07:05:32Z",
+"reference": "OM-20260223-98765"
+},
+"qr_code_url": "https://cdn.ankata.app/qr/booking-uuid.png",
+"booking_status": "CONFIRMED",
+"can_cancel": true,
+"cancellation_deadline": "2026-02-23T06:42:00Z", // 30min avant
+départ
+"rating_eligible": false, // Devient true après COMPLETED
+"created_at": "2026-02-23T07:03:15Z"
+}
+}
+
+POST /bookings/:id/cancel
+Annuler réservation.
+Request :
+{
+"reason": "Changement plans"
+}
+Response 200 OK :
+{
+"success": true,
+"booking_status": "CANCELLED",
+"refund": {
+"amount_fcfa": 120, // 80% remboursement (20% frais)
+"method": "ORANGE_MONEY",
+"status": "PROCESSING",
+"expected_within_hours": 24
+}
+}
+
+GET /bookings/my
+Liste réservations utilisateur connecté.
+Query Parameters :
+
+status : ALL | UPCOMING | PAST | CANCELLED (default ALL)
+
+page : Pagination (default 1)
+limit : Items par page (default 20)
+Response 200 OK :
+{
+"bookings": [
+{
+"id": "booking-uuid-1",
+"booking_code": "ANK-20260223-A7B3",
+"trip": {
+"line_name": "L2B SOTRACO",
+"departure": "2026-02-23T07:12:00Z",
+"origin": "Terminus Balkuy",
+"destination": "Place Naaba Koom"
+},
+"total_fcfa": 150,
+"booking_status": "COMPLETED",
+"can_rate": true,
+"created_at": "2026-02-23T07:03:15Z"
+}
+],
+"pagination": {
+"page": 1,
+"total_pages": 5,
+"total_items": 87
+}
+}
+
+6.5 Endpoints Ratings
+POST /ratings
+Créer notation trajet (seulement après voyage effectué).
+Request :
+{
+"booking_id": "booking-uuid",
+"rating": 5,
+"rating_punctuality": 5,
+"rating_cleanliness": 4,
+
+"rating_comfort": 5,
+"rating_staff": 5,
+"rating_safety": 5,
+"comment": "Excellent service RAHIMO, très ponctuel, AC fonctionne
+parfaitement. Je recommande !"
+}
+Response 201 Created :
+{
+"rating": {
+"id": "rating-uuid",
+"booking_id": "booking-uuid",
+"rating": 5,
+"verified_trip": true,
+"moderation_status": "APPROVED",
+"created_at": "2026-03-18T16:30:00Z"
+},
+"loyalty_reward": {
+"points_earned": 50,
+"new_total_points": 1300
+}
+}
+
+GET /ratings/company/:company_id
+Notations compagnie.
+Query Parameters :
+
+sort : RECENT | HELPFUL | RATING_HIGH | RATING_LOW
+(default RECENT)
+min_rating : Filtrer >= note (1-5)
+verified_only : true | false (default false)
+Response 200 OK :
+{
+"company": {
+"id": "company-rahimo",
+"name": "RAHIMO",
+"avg_rating": 4.6,
+"total_ratings": 892,
+
+"rating_distribution": {
+"5": 620,
+"4": 220,
+"3": 40,
+"2": 10,
+"1": 2
+}
+},
+"ratings": [
+{
+"id": "rating-uuid",
+"user": {
+"name": "Mamadou S.",
+"loyalty_tier": "GOLD",
+"total_trips": 23
+},
+"trip": {
+"line_name": "Ouaga-Bobo Confort",
+"date": "2026-03-18"
+},
+"rating": 5,
+"rating_details": {
+"punctuality": 5,
+"cleanliness": 5,
+"comfort": 5,
+"staff": 5,
+"safety": 5
+},
+"comment": "Excellent service RAHIMO, très ponctuel, AC fonctionne
+parfaitement. Je recommande !",
+"verified_trip": true,
+"helpful_count": 12,
+"created_at": "2026-03-18T16:30:00Z"
+}
+],
+"pagination": {
+"page": 1,
+"total_pages": 45,
+"total_items": 892
+
+}
+}
+
+7. Application Mobile Flutter
+(Passagers)
+7.1 Écrans Principaux
+Écran Splash & Onboarding
+// lib/features/onboarding/presentation/screens/splash_screen.dart
+class SplashScreen extends StatefulWidget {
+@override
+_SplashScreenState createState() => _SplashScreenState();
+}
+class _SplashScreenState extends State<SplashScreen> {
+@override
+void initState() {
+super.initState();
+_checkAuthStatus();
+}
+Future<void> _checkAuthStatus() async {
+await Future.delayed(Duration(seconds: 2)); // Logo animation
+final hasSeenOnboarding = await _prefs.getBool('onboarding_completed') ??
+final authToken = await _secureStorage.read(key: 'auth_token');
+if (!hasSeenOnboarding) {
+context.go('/onboarding');
+} else if (authToken == null) {
+context.go('/auth/phone');
+} else {
+// Validate token
+try {
+await _authService.validateToken(authToken);
+
+context.go('/home');
+} catch (e) {
+context.go('/auth/phone');
+}
+}
+
+}
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+backgroundColor: Color(0xFF21808D), // Ankata teal
+body: Center(
+child: Column(
+mainAxisAlignment: MainAxisAlignment.center,
+children: [
+// Logo Ankata animated
+TweenAnimationBuilder(
+duration: Duration(seconds: 1),
+tween: Tween<double>(begin: 0, end: 1),
+builder: (context, double value, child) {
+return Opacity(
+opacity: value,
+child: Transform.scale(
+scale: value,
+child: Image.asset('assets/logo.png', width: 200),
+),
+);
+},
+),
+SizedBox(height: 24),
+Text(
+'ANKATA',
+style: TextStyle(
+fontSize: 48,
+fontWeight: FontWeight.bold,
+color: Colors.white,
+letterSpacing: 4,
+),
+
+),
+SizedBox(height: 8),
+Text(
+'Allons-y !',
+style: TextStyle(
+fontSize: 20,
+color: Colors.white70,
+fontStyle: FontStyle.italic,
+),
+),
+],
+),
+),
+);
+}
+}
+
+Écran Authentification WhatsApp
+// lib/features/auth/presentation/screens/phone_auth_screen.dart
+class PhoneAuthScreen extends StatefulWidget {
+@override
+_PhoneAuthScreenState createState() => _PhoneAuthScreenState();
+}
+class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
+final _phoneController = TextEditingController(text: '+226 ');
+bool _isLoading = false;
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+body: SafeArea(
+child: Padding(
+padding: EdgeInsets.all(24),
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+SizedBox(height: 40),
+// Back button
+
+IconButton(
+icon: Icon(Icons.arrow_back),
+onPressed: () => context.pop(),
+),
+SizedBox(height: 24),
+// Title
+Text(
+'Bienvenue sur Ankata',
+style: TextStyle(
+fontSize: 32,
+fontWeight: FontWeight.bold,
+),
+),
+SizedBox(height: 12),
+Text(
+'Entre ton numéro WhatsApp pour recevoir un code de connexion',
+style: TextStyle(
+fontSize: 16,
+color: Colors.grey[600],
+),
+),
+SizedBox(height: 48),
+// Phone input
+Text(
+'Numéro WhatsApp',
+style: TextStyle(
+fontSize: 14,
+fontWeight: FontWeight.w600,
+),
+),
+SizedBox(height: 8),
+
+TextField(
+controller: _phoneController,
+keyboardType: TextInputType.phone,
+decoration: InputDecoration(
+hintText: '+226 70 12 34 56',
+prefixIcon: Icon(Icons.phone),
+border: OutlineInputBorder(
+borderRadius: BorderRadius.circular(12),
+),
+filled: true,
+fillColor: Colors.grey[100],
+),
+),
+SizedBox(height: 16),
+// WhatsApp verification note
+Container(
+padding: EdgeInsets.all(12),
+decoration: BoxDecoration(
+color: Colors.green[50],
+borderRadius: BorderRadius.circular(8),
+border: Border.all(color: Colors.green[200]!),
+),
+child: Row(
+children: [
+Icon(Icons.info_outline, color: Colors.green[700], size: 20),
+SizedBox(width: 8),
+Expanded(
+child: Text(
+'Tu recevras un code à 6 chiffres sur WhatsApp (gratuit)',
+style: TextStyle(
+fontSize: 13,
+color: Colors.green[700],
+),
+),
+),
+
+],
+),
+),
+Spacer(),
+// Continue button
+SizedBox(
+width: double.infinity,
+height: 56,
+child: ElevatedButton(
+onPressed: _isLoading ? null : _requestOTP,
+style: ElevatedButton.styleFrom(
+backgroundColor: Color(0xFF21808D),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(16),
+),
+),
+child: _isLoading
+? CircularProgressIndicator(color: Colors.white)
+: Text(
+'Continuer',
+style: TextStyle(
+fontSize: 18,
+fontWeight: FontWeight.w600,
+),
+),
+),
+),
+],
+),
+),
+),
+);
+
+}
+
+Future<void> _requestOTP() async {
+final phone = _phoneController.text.trim();
+// Validation
+if (phone.length < 10) {
+_showError('Numéro invalide');
+return;
+}
+setState(() => _isLoading = true);
+try {
+await _authService.requestOTP(phone);
+// Navigate to OTP verification screen
+context.push('/auth/verify-otp', extra: {'phone': phone});
+} catch (e) {
+_showError('Erreur envoi code: $e');
+} finally {
+setState(() => _isLoading = false);
+}
+
+}
+void _showError(String message) {
+ScaffoldMessenger.of(context).showSnackBar(
+SnackBar(content: Text(message), backgroundColor: Colors.red),
+);
+}
+}
+
+Écran Home (Recherche)
+// lib/features/home/presentation/screens/home_screen.dart
+class HomeScreen extends StatefulWidget {
+@override
+_HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+final _originController = TextEditingController();
+final _destController = TextEditingController();
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+body: SafeArea(
+child: Column(
+children: [
+// Header with user info
+Container(
+padding: EdgeInsets.all(20),
+decoration: BoxDecoration(
+color: Color(0xFF21808D),
+borderRadius: BorderRadius.only(
+bottomLeft: Radius.circular(24),
+bottomRight: Radius.circular(24),
+),
+),
+child: Column(
+children: [
+Row(
+children: [
+// Avatar
+CircleAvatar(
+radius: 24,
+backgroundImage: NetworkImage(_user.avatarUrl ?? ''),
+child: _user.avatarUrl == null
+? Icon(Icons.person, size: 24)
+: null,
+),
+SizedBox(width: 12),
+// Greeting
+Expanded(
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+
+children: [
+Text(
+'Bonjour, ${_user.firstName ?? "Voyageur"}',
+style: TextStyle(
+fontSize: 18,
+fontWeight: FontWeight.w600,
+color: Colors.white,
+),
+),
+Text(
+'${_user.loyaltyPoints} points',
+style: TextStyle(
+fontSize: 14,
+color: Colors.white70,
+),
+),
+],
+),
+),
+// Notifications
+IconButton(
+icon: Icon(Icons.notifications_outlined, color: Colors.white),
+onPressed: () => context.push('/notifications'),
+),
+],
+),
+SizedBox(height: 24),
+// Search card
+Container(
+padding: EdgeInsets.all(20),
+decoration: BoxDecoration(
+color: Colors.white,
+borderRadius: BorderRadius.circular(16),
+boxShadow: [
+BoxShadow(
+
+color: Colors.black12,
+blurRadius: 10,
+offset: Offset(0, 5),
+),
+],
+),
+child: Column(
+children: [
+// Origin input
+TextField(
+controller: _originController,
+decoration: InputDecoration(
+hintText: 'D\'où pars-tu ?',
+prefixIcon: Icon(Icons.my_location, color: Color(0xFF21808D)),
+border: OutlineInputBorder(
+borderRadius: BorderRadius.circular(12),
+),
+),
+onTap: () => _selectLocation(context, 'origin'),
+),
+SizedBox(height: 12),
+// Destination input
+TextField(
+controller: _destController,
+decoration: InputDecoration(
+hintText: 'Où vas-tu ?',
+prefixIcon: Icon(Icons.location_on, color: Colors.red),
+border: OutlineInputBorder(
+borderRadius: BorderRadius.circular(12),
+),
+),
+onTap: () => _selectLocation(context, 'destination'),
+),
+SizedBox(height: 16),
+
+// Search button
+SizedBox(
+width: double.infinity,
+height: 50,
+child: ElevatedButton(
+onPressed: _searchTrips,
+style: ElevatedButton.styleFrom(
+backgroundColor: Color(0xFF21808D),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(12),
+),
+),
+child: Row(
+mainAxisAlignment: MainAxisAlignment.center,
+children: [
+Icon(Icons.search, size: 24),
+SizedBox(width: 8),
+Text(
+'Rechercher',
+style: TextStyle(fontSize: 18),
+),
+],
+),
+),
+),
+],
+),
+),
+],
+),
+),
+SizedBox(height: 24),
+// Quick access
+Padding(
+padding: EdgeInsets.symmetric(horizontal: 20),
+child: Column(
+
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(
+'Lignes populaires',
+style: TextStyle(
+fontSize: 20,
+fontWeight: FontWeight.bold,
+),
+),
+SizedBox(height: 12),
+// Popular lines grid
+GridView.count(
+shrinkWrap: true,
+physics: NeverScrollableScrollPhysics(),
+crossAxisCount: 2,
+mainAxisSpacing: 12,
+crossAxisSpacing: 12,
+childAspectRatio: 1.5,
+children: [
+_buildPopularLineCard(
+'SOTRACO L2B',
+'Balkuy → Naaba Koom',
+'150 FCFA',
+4.2,
+'assets/companies/sotraco.png',
+),
+_buildPopularLineCard(
+'RAHIMO',
+'Ouaga → Bobo',
+'6500 FCFA',
+4.6,
+'assets/companies/rahimo.png',
+),
+],
+),
+],
+
+),
+),
+],
+),
+),
+bottomNavigationBar: BottomNavigationBar(
+currentIndex: 0,
+selectedItemColor: Color(0xFF21808D),
+items: [
+BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
+BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Billets'),
+BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+],
+onTap: (index) {
+if (index == 1) context.go('/bookings');
+if (index == 2) context.go('/profile');
+},
+),
+);
+
+}
+}
+
+8. Authentification WhatsApp
+OTP
+8.1 Pourquoi WhatsApp OTP ?
+Avantages vs SMS :
+
+Gratuit (WhatsApp Business API offre 1000 messages
+gratuits/mois)
+Taux livraison 98% (vs 85% SMS Burkina)
+Pas besoin email (70% users BF sans email)
+Familier (90% Burkinabè actifs WhatsApp)
+Moins fraude (numéro vérifié Meta)
+
+Alternatives rejetées :
+
+SMS OTP : Coûteux (Twilio 0.05$/SMS = 30 FCFA), taux échec 15%
+Email OTP : 70% users sans email
+Google/Facebook OAuth : Faible adoption, complexe onboarding
+
+8.2 Implémentation WhatsApp Business API
+Setup :
+
+1. Créer compte Meta Business
+2. Activer WhatsApp Business API
+3. Créer template message OTP (approuvé Meta)
+4. Intégrer SDK Node.js
+Template message (approuvé Meta) :
+Ton code Ankata : {{1}}
+
+Ce code expire dans 5 minutes.
+Ankata - Allons-y ! 🚌
+Backend Node.js :
+// services/whatsapp.service.ts
+import { WhatsAppClient } from '@meta-platforms/whatsappbusiness-sdk';
+
+export class WhatsAppService {
+private client: WhatsAppClient;
+constructor() {
+this.client = new WhatsAppClient({
+accessToken: process.env.META_ACCESS_TOKEN,
+phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID,
+});
+}
+async sendOTP(phone: string, otp: string): Promise<void> {
+try {
+await this.client.sendTemplate({
+to: phone,
+template: {
+
+name: 'ankata_otp', // Template name registered Meta
+language: { code: 'fr' },
+components: [
+{
+type: 'body',
+parameters: [
+{ type: 'text', text: otp }
+]
+}
+]
+}
+});
+console.log(`OTP sent to ${phone}: ${otp}`);
+} catch (error) {
+console.error('WhatsApp OTP send error:', error);
+throw new Error('Failed to send OTP via WhatsApp');
+}
+
+}
+}
+API Endpoint :
+// routes/auth.routes.ts
+router.post('/auth/whatsapp/request-otp', async (req, res) => {
+const { phone } = req.body;
+
+// Validate phone
+if (!phone || !phone.startsWith('+226')) {
+return res.status(400).json({ error: 'Invalid Burkina Faso phone
+number' });
+}
+// Generate 6-digit OTP
+const otp = Math.floor(100000 + Math.random() * 900000).toString();
+// Store OTP in Redis (expires 5min)
+await redisClient.setex(otp:${phone}, 300, otp);
+
+// Send via WhatsApp
+await whatsappService.sendOTP(phone, otp);
+res.json({
+success: true,
+message: 'Code OTP envoyé via WhatsApp',
+expires_in_seconds: 300
+});
+});
+router.post('/auth/whatsapp/verify-otp', async (req, res) => {
+const { phone, otp } = req.body;
+// Get stored OTP
+const storedOTP = await redisClient.get(otp:${phone});
+if (!storedOTP || storedOTP !== otp) {
+return res.status(401).json({ error: 'Invalid or expired OTP' });
+}
+// Delete used OTP
+await redisClient.del(otp:${phone});
+// Find or create user
+let user = await User.findOne({ where: { phone } });
+if (!user) {
+user = await User.create({
+phone,
+whatsapp_verified: true,
+phone_country_code: '+226'
+});
+} else {
+await user.update({ whatsapp_verified: true });
+}
+// Generate JWT
+const accessToken = jwt.sign(
+{ userId: user.id, phone: user.phone },
+process.env.JWT_SECRET,
+{ expiresIn: '7d' }
+);
+
+const refreshToken = jwt.sign(
+{ userId: user.id },
+process.env.JWT_REFRESH_SECRET,
+{ expiresIn: '30d' }
+);
+res.json({
+success: true,
+user: {
+id: user.id,
+phone: user.phone,
+first_name: user.first_name,
+whatsapp_verified: true,
+loyalty_tier: user.loyalty_tier,
+loyalty_points: user.loyalty_points
+},
+access_token: accessToken,
+refresh_token: refreshToken,
+expires_in: 604800 // 7 days
+});
+});
+
+9. Intégration Paiement Orange
+Money
+9.1 Orange Money API Burkina Faso
+Endpoints :
+
+Base URL : https://api.orange.com/orange-money-webpay/bf/v1
+Auth : OAuth2 Client Credentials
+Setup :
+
+1. Créer compte Merchant Orange Money BF
+2. Obtenir credentials : client_id, client_secret, merchant_key
+3. Whitelister IPs backend Ankata
+4. Tester sandbox avant production
+
+Flux paiement :
+
+1. User choisit Orange Money
+2. Backend initie transaction → Obtient payment_url
+3. App ouvre webview payment_url
+4. User entre PIN Orange Money
+5. Orange redirige callback Ankata
+6. Backend vérifie status → Update booking
+
+9.2 Implémentation Backend
+// services/orange-money.service.ts
+import axios from 'axios';
+export class OrangeMoneyService {
+private baseURL = 'https://api.orange.com/orange-money-webpay/bf/
+v1';
+private clientId = process.env.ORANGE_CLIENT_ID;
+private clientSecret = process.env.ORANGE_CLIENT_SECRET;
+private merchantKey = process.env.ORANGE_MERCHANT_KEY;
+private accessToken: string | null = null;
+async getAccessToken(): Promise<string> {
+if (this.accessToken) return this.accessToken;
+const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base6
+const response = await axios.post(
+'https://api.orange.com/oauth/v3/token',
+'grant_type=client_credentials',
+{
+headers: {
+'Authorization': `Basic ${auth}`,
+'Content-Type': 'application/x-www-form-urlencoded'
+}
+}
+);
+
+this.accessToken = response.data.access_token;
+return this.accessToken;
+
+}
+async initiatePayment(params: {
+amount: number;
+currency: string;
+orderId: string;
+returnUrl: string;
+cancelUrl: string;
+notifyUrl: string;
+}): Promise<{ paymentUrl: string; paymentToken: string }> {
+const token = await this.getAccessToken();
+const response = await axios.post(
+`${this.baseURL}/webpayment`,
+{
+merchant_key: this.merchantKey,
+currency: params.currency,
+order_id: params.orderId,
+amount: params.amount,
+return_url: params.returnUrl,
+cancel_url: params.cancelUrl,
+notif_url: params.notifyUrl,
+lang: 'fr',
+reference: `ANKATA-${params.orderId}`
+},
+{
+headers: {
+'Authorization': `Bearer ${token}`,
+'Content-Type': 'application/json'
+}
+}
+);
+return {
+paymentUrl: response.data.payment_url,
+
+paymentToken: response.data.pay_token
+};
+
+}
+async checkPaymentStatus(payToken: string): Promise<{
+status: string;
+txnId: string;
+}> {
+const token = await this.getAccessToken();
+const response = await axios.get(
+`${this.baseURL}/webpayment/${payToken}`,
+{
+headers: {
+'Authorization': `Bearer ${token}`
+}
+}
+);
+return {
+status: response.data.status, // SUCCESS | PENDING | FAILED
+txnId: response.data.txn_id
+};
+
+}
+}
+API Routes :
+// routes/payments.routes.ts
+router.post('/payments/orange-money/init', authenticateJWT, async
+(req, res) => {
+const { booking_id } = req.body;
+const userId = req.user.userId;
+
+// Get booking
+const booking = await Booking.findOne({
+
+where: { id: booking_id, user_id: userId }
+});
+if (!booking) {
+return res.status(404).json({ error: 'Booking not found' });
+}
+if (booking.payment_status === 'PAID') {
+return res.status(400).json({ error: 'Already paid' });
+}
+// Initiate Orange Money payment
+const payment = await orangeMoneyService.initiatePayment({
+amount: booking.total_amount_fcfa,
+currency: 'XOF',
+orderId: booking.id,
+returnUrl: ${process.env.APP_URL}/payment/success?
+booking=${booking.id},
+cancelUrl: ${process.env.APP_URL}/payment/cancel?
+booking=${booking.id},
+notifyUrl: ${process.env.API_URL}/v1/payments/orangemoney/callback
+});
+// Update booking
+await booking.update({
+payment_method: 'ORANGE_MONEY',
+payment_status: 'PROCESSING',
+payment_id: payment.paymentToken
+});
+res.json({
+success: true,
+payment_url: payment.paymentUrl,
+payment_token: payment.paymentToken,
+expires_at: new Date(Date.now() + 15 * 60000).toISOString() // 15min
+});
+});
+// Callback Orange Money (webhook)
+router.post('/payments/orange-money/callback', async (req, res) => {
+
+const { order_id, pay_token, status, txn_id } = req.body;
+console.log('Orange Money callback:', req.body);
+// Find booking
+const booking = await Booking.findOne({
+where: { id: order_id, payment_id: pay_token }
+});
+if (!booking) {
+return res.status(404).json({ error: 'Booking not found' });
+}
+if (status === 'SUCCESS') {
+// Payment successful
+await booking.update({
+payment_status: 'PAID',
+payment_reference: txn_id,
+paid_at: new Date()
+});
+// Generate QR code
+const qrCode = await qrCodeService.generate(booking.id);
+await booking.update({ qr_code_url: qrCode.url });
+// Send WhatsApp confirmation
+await whatsappService.sendBookingConfirmation(
+booking.passenger_phone,
+{
+bookingCode: booking.booking_code,
+lineName: booking.line_name,
+departure: booking.departure_time,
+qrCodeUrl: qrCode.url
+}
+);
+res.json({ success: true });
+
+} else {
+// Payment failed
+await booking.update({
+payment_status: 'FAILED'
+});
+res.json({ success: false });
+
+}
+});
+
+10. Système Notation Vérifiée
+Post-Voyage
+10.1 Principe Notation Vérifiée
+Problème : Faux avis (concurrence déloyale, spam)
+Solution Ankata :
+
+Seulement passagers ayant effectivement voyagé peuvent
+noter
+Vérification : booking_status = 'COMPLETED' (QR scanné montée
++ trajet terminé)
+Unlock notification 24h après fin trajet
+Workflow :
+
+1. User réserve billet → Status CONFIRMED
+2. User monte bus → Receveur scan QR → Status BOARDED
+3. Bus arrive destination → Status COMPLETED (auto ou manual)
+4. 24h après arrivée → Push notif "Note ton trajet RAHIMO
+Ouaga→Bobo"
+5. User ouvre app → Modal notation apparaît
+6. User note 1-5★ + commentaire optionnel → Submit
+7. Rating visible immédiatement avec badge "Voyage vérifié ✓"
+
+10.2 Implémentation Mobile
+// lib/features/ratings/presentation/screens/rating_screen.dart
+class RatingScreen extends StatefulWidget {
+final Booking booking;
+const RatingScreen({required this.booking});
+@override
+_RatingScreenState createState() => _RatingScreenState();
+}
+class _RatingScreenState extends State<RatingScreen> {
+int _overallRating = 0;
+int _punctualityRating = 0;
+int _cleanlinessRating = 0;
+int _comfortRating = 0;
+int _staffRating = 0;
+int _safetyRating = 0;
+final _commentController = TextEditingController();
+bool _isSubmitting = false;
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(
+title: Text('Noter ton trajet'),
+backgroundColor: Color(0xFF21808D),
+),
+body: SingleChildScrollView(
+padding: EdgeInsets.all(20),
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+// Trip info card
+Container(
+padding: EdgeInsets.all(16),
+decoration: BoxDecoration(
+color: Colors.grey[100],
+borderRadius: BorderRadius.circular(12),
+
+),
+child: Row(
+children: [
+// Company logo
+CircleAvatar(
+radius: 30,
+backgroundImage: NetworkImage(widget.booking.company.logoUrl),
+),
+SizedBox(width: 16),
+Expanded(
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(
+widget.booking.company.name,
+style: TextStyle(
+fontSize: 18,
+fontWeight: FontWeight.bold,
+),
+),
+Text(
+widget.booking.lineName,
+style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+),
+Text(
+'${widget.booking.origin} → ${widget.booking.destination}',
+style: TextStyle(fontSize: 14),
+),
+Text(
+DateFormat('dd MMM yyyy').format(widget.booking.departureTim
+style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+),
+],
+),
+),
+],
+
+),
+),
+SizedBox(height: 32),
+// Overall rating
+Text(
+'Note globale',
+style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+),
+SizedBox(height: 12),
+Center(
+child: RatingBar.builder(
+initialRating: _overallRating.toDouble(),
+minRating: 1,
+direction: Axis.horizontal,
+allowHalfRating: false,
+itemCount: 5,
+itemSize: 50,
+itemBuilder: (context, _) => Icon(
+Icons.star,
+color: Colors.amber,
+),
+onRatingUpdate: (rating) {
+setState(() => _overallRating = rating.toInt());
+},
+),
+),
+SizedBox(height: 32),
+// Detailed ratings
+Text(
+'Notes détaillées (optionnel)',
+style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+),
+
+SizedBox(height: 16),
+_buildDetailedRating(
+'Ponctualité',
+Icons.schedule,
+_punctualityRating,
+(rating) => setState(() => _punctualityRating = rating),
+),
+_buildDetailedRating(
+'Propreté',
+Icons.cleaning_services,
+_cleanlinessRating,
+(rating) => setState(() => _cleanlinessRating = rating),
+),
+_buildDetailedRating(
+'Confort',
+Icons.airline_seat_recline_normal,
+_comfortRating,
+(rating) => setState(() => _comfortRating = rating),
+),
+_buildDetailedRating(
+'Personnel',
+Icons.people,
+_staffRating,
+(rating) => setState(() => _staffRating = rating),
+),
+_buildDetailedRating(
+'Sécurité',
+Icons.security,
+_safetyRating,
+(rating) => setState(() => _safetyRating = rating),
+),
+
+SizedBox(height: 32),
+// Comment
+Text(
+'Commentaire (optionnel)',
+style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+),
+SizedBox(height: 12),
+TextField(
+controller: _commentController,
+maxLines: 4,
+maxLength: 500,
+decoration: InputDecoration(
+hintText: 'Partage ton expérience pour aider d\'autres voyageurs...',
+border: OutlineInputBorder(
+borderRadius: BorderRadius.circular(12),
+),
+),
+),
+SizedBox(height: 32),
+// Submit button
+SizedBox(
+width: double.infinity,
+height: 56,
+child: ElevatedButton(
+onPressed: _overallRating == 0 || _isSubmitting ? null : _submitRating
+style: ElevatedButton.styleFrom(
+backgroundColor: Color(0xFF21808D),
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(16),
+),
+),
+child: _isSubmitting
+? CircularProgressIndicator(color: Colors.white)
+
+: Text(
+'Publier mon avis',
+style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+),
+),
+),
+SizedBox(height: 16),
+// Skip
+Center(
+child: TextButton(
+onPressed: () => context.pop(),
+child: Text(
+'Passer pour le moment',
+style: TextStyle(color: Colors.grey[600]),
+),
+),
+),
+],
+),
+),
+);
+
+}
+Widget _buildDetailedRating(
+String label,
+IconData icon,
+int rating,
+Function(int) onRatingUpdate,
+){
+return Padding(
+padding: EdgeInsets.only(bottom: 16),
+child: Row(
+children: [
+Icon(icon, size: 24, color: Color(0xFF21808D)),
+SizedBox(width: 12),
+
+Expanded(
+child: Text(
+label,
+style: TextStyle(fontSize: 16),
+),
+),
+RatingBar.builder(
+initialRating: rating.toDouble(),
+minRating: 0,
+direction: Axis.horizontal,
+allowHalfRating: false,
+itemCount: 5,
+itemSize: 32,
+unratedColor: Colors.grey[300],
+itemBuilder: (context, _) => Icon(
+Icons.star,
+color: Colors.amber,
+),
+onRatingUpdate: (r) => onRatingUpdate(r.toInt()),
+),
+],
+),
+);
+}
+Future<void> _submitRating() async {
+setState(() => _isSubmitting = true);
+try {
+final response = await _apiService.createRating(
+CreateRatingRequest(
+bookingId: widget.booking.id,
+rating: _overallRating,
+ratingPunctuality: _punctualityRating > 0 ? _punctualityRating : null,
+ratingCleanliness: _cleanlinessRating > 0 ? _cleanlinessRating : null,
+ratingComfort: _comfortRating > 0 ? _comfortRating : null,
+ratingStaff: _staffRating > 0 ? _staffRating : null,
+ratingSafety: _safetyRating > 0 ? _safetyRating : null,
+comment: _commentController.text.trim().isNotEmpty
+
+? _commentController.text.trim()
+: null,
+),
+);
+// Show success
+ScaffoldMessenger.of(context).showSnackBar(
+SnackBar(
+content: Text('✅ Merci pour ton avis ! +${response.loyaltyReward.pointsE
+backgroundColor: Colors.green,
+),
+);
+// Navigate back
+context.pop();
+} catch (e) {
+ScaffoldMessenger.of(context).showSnackBar(
+SnackBar(
+content: Text('Erreur: $e'),
+backgroundColor: Colors.red,
+),
+);
+} finally {
+setState(() => _isSubmitting = false);
+}
+
+}
+}
+
+11. Sécurité & Conformité GDPR
+
+11.1 Données Personnelles Traitées
+Données collectées :
+
+Identité : Nom, prénom, téléphone, photo (optionnel)
+Localisation : GPS montée/descente (anonymisé après 90 jours)
+Paiement : Numéros Orange/Moov Money (chiffré AES-256)
+Usage : Historique trajets, notations publiées
+Base légale :
+
+Consentement explicite (checkbox onboarding)
+Exécution contrat (réservation billet)
+Intérêt légitime (fraude prevention)
+
+11.2 Conformité RGPD
+Applicabilité :
+
+Burkina Faso : Pas RGPD local (loi protection données 2021
+basique)
+Diaspora UE : RGPD s'applique (utilisateurs France, Belgique,
+etc.)
+Mesures conformité :
+
+1. Consentement opt-in explicite
+2. Droit accès données (export JSON)
+3. Droit rectification (update profil)
+4. Droit suppression (delete compte)
+5. Droit portabilité (export historique)
+6. Chiffrement données sensibles (AES-256)
+7. Pseudonymisation GPS après 90j
+8. Politique confidentialité claire (français)
+9. DPO désigné (contact GDPR)
+10. Cookie banner (si web futur)
+API GDPR :
+// routes/gdpr.routes.ts
+router.get('/users/me/data-export', authenticateJWT, async (req, res)
+
+=> {
+const userId = req.user.userId;
+// Aggregate all user data
+const user = await User.findByPk(userId, {
+include: [
+{ model: Booking, include: [Trip, Line, Company] },
+{ model: Rating }
+]
+});
+const dataExport = {
+user: {
+id: user.id,
+phone: user.phone,
+name: ${user.first_name} ${user.last_name},
+email: user.email,
+created_at: user.created_at
+},
+bookings: user.bookings.map(b => ({
+booking_code: b.booking_code,
+trip: ${b.trip.origin} → ${b.trip.destination},
+company: b.company.name,
+date: b.created_at,
+amount: b.total_amount_fcfa
+})),
+ratings: user.ratings.map(r => ({
+company: r.company.name,
+rating: r.rating,
+comment: r.comment,
+date: r.created_at
+}))
+};
+res.json(dataExport);
+});
+router.delete('/users/me', authenticateJWT, async (req, res) => {
+const userId = req.user.userId;
+const { confirmation } = req.body;
+
+if (confirmation !== 'DELETE_MY_ACCOUNT') {
+return res.status(400).json({ error: 'Confirmation required' });
+}
+// Anonymize user (keep bookings for company records)
+await User.update(
+{
+phone: DELETED_${Date.now()},
+first_name: 'Utilisateur',
+last_name: 'Supprimé',
+email: null,
+avatar_url: null,
+account_status: 'DELETED'
+},
+{ where: { id: userId } }
+);
+// Delete auth tokens
+await redisClient.del(user:${userId}:tokens);
+res.json({ success: true, message: 'Compte supprimé' });
+});
+
+12. Monétisation & Business
+Model
+12.1 Revenus Ankata App Passagers
+Stream 1 : Commission Billets (2%)
+Mécanisme :
+
+Passager paie 150 FCFA ticket SOTRACO → Ankata prélève 3
+FCFA (2%)
+Compagnie reçoit 147 FCFA nette
+Commission invisible utilisateur (prix affiché = prix final)
+Projections Année 1 :
+
+Utilisateurs actifs : 10k mois 1 → 100k mois 12
+Taux utilisation : 4 trajets/mois/user
+Panier moyen : 800 FCFA (mix urbain 150 + interurbain 5000)
+Commission mois 12 : 100k users × 4 trajets × 800 FCFA × 2% =
+6,4M FCFA/mois
+Total Année 1 : 30M FCFA (croissance progressive)
+
+Stream 2 : Abonnements Premium Users (2000
+FCFA/mois)
+Features Premium :
+
+Trajets illimités SOTRACO (vs 150 FCFA/trajet)
+Réservations prioritaires (places garanties 7j avant)
+Support client prioritaire (WhatsApp 1h vs 4h)
+Réductions partenaires (stations Orange 5%, garages 10%)
+Projections :
+
+Taux conversion : 5% users actifs (voyageurs fréquents)
+Mois 12 : 100k users × 5% = 5000 premium × 2000 FCFA = 10M
+FCFA/mois
+Total Année 1 : 50M FCFA
+
+Stream 3 : Subscription Compagnies (B2B)
+Tiers :
+
+FREE : 50 bookings/mois (compagnies test)
+PRO : 15k FCFA/mois (factures illimitées via Ankata Compagnies)
+ENTERPRISE : 50k FCFA/mois (multi-compagnies, API, whitelabel)
+Projections :
+
+Année 1 : 50 compagnies (30 FREE, 15 PRO, 5 ENTERPRISE)
+Revenus : (15 × 15k) + (5 × 50k) = 225k + 250k = 475k FCFA/mois
+Total Année 1 : 6M FCFA
+
+Stream 4 : Publicité Locale
+Formats :
+
+Banner app home screen (stations Orange, garages, hôtels)
+Push notifications sponsorisées (1×/semaine max)
+Listing premium compagnies (top résultats recherche)
+Tarifs :
+
+Banner : 10k FCFA/jour
+Push : 50k FCFA/campagne (100k destinataires)
+Listing premium : 20k FCFA/mois/compagnie
+Projections :
+
+10 annonceurs mensuels moyens
+Total Année 1 : 12M FCFA
+
+Total Revenus Année 1
+Stream
+
+Montant Annuel
+
+Commissions billets
+
+30M FCFA
+
+Abonnements premium users
+
+50M FCFA
+
+Subscription compagnies
+
+6M FCFA
+
+Publicité locale
+
+12M FCFA
+
+TOTAL
+
+98M FCFA (~150k€)
+
+12.2 Coûts Opération Année 1
+Infrastructure :
+
+Supabase (Postgres + Storage) : 25$/mois × 12 = 180k FCFA
+Redis Cloud : 10$/mois × 12 = 72k FCFA
+Vercel hosting API : 20$/mois × 12 = 144k FCFA
+CDN Cloudflare : Gratuit
+Total infra : 396k FCFA
+APIs tierces :
+
+WhatsApp Business API : 1000 msg gratuits, puis 0.005$/msg
+Estimation 50k msg/mois × 0.005$ = 250$/mois × 12 = 1,8M
+FCFA
+Orange Money : 1% commission (déjà inclus revenus)
+Mapbox : Gratuit <50k loads/mois
+Total APIs : 1,8M FCFA
+Team :
+
+Dev backend (1 ETP) : 300k FCFA/mois × 12 = 3,6M FCFA
+Dev mobile (1 ETP) : 300k FCFA/mois × 12 = 3,6M FCFA
+Product manager (0,5 ETP) : 200k FCFA/mois × 12 = 2,4M FCFA
+Support client (1 ETP) : 150k FCFA/mois × 12 = 1,8M FCFA
+Total salaires : 11,4M FCFA
+Marketing :
+
+Pub Facebook/Instagram : 500k FCFA/mois × 12 = 6M FCFA
+Partenariats influenceurs : 2M FCFA/an
+Events gares routières : 1M FCFA/an
+Total marketing : 9M FCFA
+Total Coûts Année 1 : 22,6M FCFA
+
+12.3 P&L Année 1
+Ligne
+
+Montant
+
+Revenus
+
+98M FCFA
+
+Coûts
+
+-22,6M FCFA
+
+Profit brut
+
+75,4M FCFA
+
+Marge
+
+77%
+
+13. Roadmap Développement
+MVP
+13.1 Sprint 1 : Foundation (Semaines 1-2)
+Backend :
+
+[x] Setup Supabase Postgres + Auth
+[x] Schema tables core (companies, lines, trips, users, bookings)
+[x] API auth WhatsApp OTP (request + verify)
+[x] API search lines (origin/destination)
+Mobile :
+
+[x] Setup Flutter project (iOS + Android)
+[x] Screens : Splash, Onboarding, Phone Auth, OTP Verify
+[x] Navigation routing (go_router)
+[x] Theme design system Ankata (couleurs, fonts)
+DevOps :
+
+[x] GitHub repo + CI/CD (GitHub Actions)
+[x] Environnements : Dev, Staging, Prod
+[x] Sentry error tracking
+
+13.2 Sprint 2 : Search & Discovery
+(Semaines 3-4)
+Backend :
+
+[x] API search trips (date, passengers, filters)
+[x] API company details + ratings
+[x] API line details (stops, schedule)
+Mobile :
+
+[x] Home screen (search form + popular lines)
+[x] Search results screen (list trips)
+[x] Trip details screen (company info, ratings, schedule)
+
+[x] Mapbox integration (visualize route)
+Data :
+
+[x] Seed database : SOTRACO 18 lignes, STAF, TSR, RAHIMO
+[x] Import horaires réels depuis sources publiques
+
+13.3 Sprint 3 : Booking & Payment
+(Semaines 5-6)
+Backend :
+
+[x] API create booking
+[x] Orange Money integration (initiate payment, callback)
+[x] QR code generation (booking confirmation)
+[x] WhatsApp notifications (booking confirmation)
+Mobile :
+
+[x] Booking flow (passenger info, seat, luggage)
+[x] Payment screen (Orange Money webview)
+[x] Booking confirmation (QR code display)
+[x] My bookings list (upcoming, past)
+[x] Booking details (track, cancel)
+
+13.4 Sprint 4 : Ratings & Profile (Semaines
+7-8)
+Backend :
+
+[x] API create rating (verified trip check)
+[x] API get ratings (company, line)
+[x] API user profile (CRUD)
+[x] Loyalty points system
+Mobile :
+
+[x] Rating screen (post-trip notification)
+[x] Ratings list (company page)
+[x] Profile screen (edit info, loyalty points)
+[x] Settings (notifications, language, GDPR)
+
+13.5 Sprint 5 : Polish & Launch (Semaines 910)
+Backend :
+
+[x] API rate limiting
+[x] Caching optimization (Redis)
+[x] Load testing (1000 concurrent users)
+Mobile :
+
+[x] Offline handling (graceful degradation)
+[x] Push notifications (FCM + APNs)
+[x] App store assets (screenshots, descriptions)
+[x] Beta testing (50 users TestFlight + Play Console)
+Launch :
+
+[x] Submit Apple App Store + Google Play Store
+[x] Landing page web (ankata.app)
+[x] Launch campaign Facebook/Instagram
+[x] Partnerships (SOTRACO, RAHIMO pilot)
+
+14. Références & Données
+Marché
+14.1 Sources Vérifiées
+[1] Moovit. (2025). SOTRACO, Ouagadougou - Lignes, horaires et
+transporteurs. https://moovitapp.com/index/fr/transport_en_commun
+-lines-Ouagadougou-6058-1694397
+[2] Sidwaya. (2026). 375 nouveaux bus attendus à la SOTRACO. http
+s://www.sidwaya.info/societe-de-transport-en-commun-sotraco-une-q
+uinzaine-de-bus-attendue-a-fada-ngourma/
+[3] Transports.gov.bf. (2024). SOTRACO - Politique d'extension du
+réseau. https://www.transports.gov.bf/default-title
+
+[4] Burkina24. (2017). Une application pour payer en ligne son ticket
+de voyage. https://burkina24.com/2017/08/19/burkina-une-applicatio
+n-pour-payer-en-ligne-son-ticket-de-voyage/
+[5] Faso-TIC. (2017). Yikishop, l'application de vente de tickets qui
+séduit. https://www.faso-tic.net/spip.php?article434
+[6] Faso Car Express. (2024). Réservation de billet de bus en ligne au
+Burkina Faso. https://fasocarexpress.com
+[7] Voyagez.ci. (2024). RAHIMO Transport - Horaires Ouaga-Bobo. htt
+ps://www.voyagez.ci/destination/abidjan/ouagabf/rahimo/75/73/21
+[8] Petit Futé. (2024). TSR (Transport Sana Rasmane) - Ouagadougou.
+https://www.petitfute.com/v55613-ouagadougou
+[9] GoBusiness.bf. (2024). RAHIMO Transport - Annuaire. https://ww
+w.gobusiness.bf/annuaire/203-rahimo-transport-ouagadougou-burki
+na-faso
+[10] Busbud. (2024). Bus au Burkina Faso.
+https://www.busbud.com/fr/country/bf
+
+
