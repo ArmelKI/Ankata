@@ -1,10 +1,12 @@
 class AppConfig {
   // API Configuration
-  static const String apiBaseUrl = 'http://10.245.229.253:3000/api';
+  static const String apiBaseUrl =
+      'https://lynell-unreplaceable-anomaly.ngrok-free.dev/api';
   static const String apiTimeout = '30000'; // milliseconds
 
   // Environment
-  static const String environment = 'development'; // development, staging, production
+  static const String environment =
+      'development'; // development, staging, production
 
   // Feature Flags
   static const bool enableLogging = true;
