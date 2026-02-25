@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
 import '../../data/all_companies_data.dart';
 import '../../services/ratings_service.dart';
+import '../../utils/company_logo_helper.dart';
 
 class CompaniesScreen extends StatefulWidget {
   const CompaniesScreen({Key? key}) : super(key: key);
@@ -15,7 +15,6 @@ class CompaniesScreen extends StatefulWidget {
 class _CompaniesScreenState extends State<CompaniesScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _companies = [];
-  String _selectedFilter = 'all'; // all, urban, interurban
 
   @override
   void initState() {
@@ -25,10 +24,10 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
 
   Future<void> _loadCompanies() async {
     setState(() => _isLoading = true);
-    
+
     // Simulation du chargement depuis l'API
     await Future.delayed(const Duration(seconds: 1));
-    
+
     final companies = AllCompaniesData.getAllCompanies();
     final mapped = <Map<String, dynamic>>[];
 
@@ -40,24 +39,14 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
         'fullName': company.name,
         'rating': stats['average'] ?? 0.0,
         'reviews': stats['count'] ?? 0,
-        'totalTrips': company.stations.values.fold<int>(0, (sum, s) => sum + s.routes.length),
+        'totalTrips': company.stations.values
+            .fold<int>(0, (sum, s) => sum + s.routes.length),
         'verified': true,
-        'types': ['interurban'],
-        'description': company.services.isEmpty ? 'Compagnie interurbaine' : company.services.first,
+        'description': company.services.isEmpty
+            ? 'Compagnie interurbaine'
+            : company.services.first,
       });
     }
-
-    mapped.insert(0, {
-      'id': 'sotraco',
-      'name': 'SOTRACO',
-      'fullName': 'Société de Transport en Commun',
-      'rating': 0.0,
-      'reviews': 0,
-      'totalTrips': 0,
-      'verified': true,
-      'types': ['urban'],
-      'description': 'Transport urbain (bus de ville)',
-    });
 
     setState(() {
       _companies = mapped;
@@ -66,13 +55,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   }
 
   List<Map<String, dynamic>> get _filteredCompanies {
-    if (_selectedFilter == 'all') {
-      return _companies;
-    }
-    return _companies.where((company) {
-      final types = company['types'] as List<String>;
-      return types.contains(_selectedFilter);
-    }).toList();
+    return _companies;
   }
 
   @override
@@ -100,43 +83,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   }
 
   Widget _buildFilterChips() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      color: AppColors.white,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip('Toutes', 'all'),
-            const SizedBox(width: AppSpacing.sm),
-            _buildFilterChip('Urbain', 'urban'),
-            const SizedBox(width: AppSpacing.sm),
-            _buildFilterChip('Interurbain', 'interurban'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String value) {
-    final isSelected = _selectedFilter == value;
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) {
-        setState(() => _selectedFilter = value);
-      },
-      backgroundColor: AppColors.white,
-      selectedColor: AppColors.primary.withValues(alpha: 0.2),
-      checkmarkColor: AppColors.primary,
-      labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isSelected ? AppColors.primary : AppColors.charcoal,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-      ),
-      side: BorderSide(
-        color: isSelected ? AppColors.primary : AppColors.lightGray,
-      ),
-    );
+    return const SizedBox.shrink(); // Filtrage inutile sans SOTRACO
   }
 
   Widget _buildLoadingState() {
@@ -260,25 +207,12 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
           child: Row(
             children: [
               // Logo
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: CompanyColors.getCompanyColor(company['name']),
-                  borderRadius: AppRadius.radiusMd,
-                ),
-                child: Center(
-                  child: Text(
-                    company['name'][0],
-                    style: AppTextStyles.h1.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              CompanyLogoHelper.buildLogo(
+                company['name'] as String? ?? '',
+                size: 80,
               ),
               const SizedBox(width: AppSpacing.md),
-              
+
               // Info
               Expanded(
                 child: Column(
@@ -335,7 +269,8 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.star, size: 16, color: Color(0xFFFFB800)),
+                        const Icon(Icons.star,
+                            size: 16, color: Color(0xFFFFB800)),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -346,7 +281,6 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                             ),
                           ),
                         ),
-
                         Text(
                           ' (${company['reviews']} avis)',
                           style: AppTextStyles.caption.copyWith(
@@ -374,7 +308,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                   ],
                 ),
               ),
-              
+
               const Icon(Icons.chevron_right, color: AppColors.gray),
             ],
           ),

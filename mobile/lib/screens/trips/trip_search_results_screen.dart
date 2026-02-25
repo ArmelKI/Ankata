@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
 import '../../services/favorites_service.dart';
+import '../../utils/company_logo_helper.dart';
 
 class TripSearchResultsScreen extends ConsumerStatefulWidget {
   final String originCity;
@@ -144,6 +144,7 @@ class _TripSearchResultsScreenState
             'isVip': schedule['is_vip'] ?? false,
             'rating': line['rating_average'] ?? 0.0,
             'reviews': 0,
+            'logoUrl': line['logo_url'],
           });
         }
       }
@@ -401,20 +402,9 @@ class _TripSearchResultsScreenState
               Row(
                 children: [
                   // Logo compagnie
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: CompanyColors.getCompanyColor(trip['company']),
-                      borderRadius: AppRadius.radiusSm,
-                    ),
-                    child: Center(
-                      child: Text(
-                        trip['company'][0],
-                        style:
-                            AppTextStyles.h3.copyWith(color: AppColors.white),
-                      ),
-                    ),
+                  CompanyLogoHelper.buildLogo(
+                    trip['company'] as String? ?? '',
+                    size: 60,
                   ),
                   const SizedBox(width: AppSpacing.md),
 
@@ -636,7 +626,7 @@ class _TripSearchResultsScreenState
             ),
             const SizedBox(height: AppSpacing.xl),
             OutlinedButton(
-              onPressed: () => context.pop(),
+              onPressed: () => _safePop(context),
               child: const Text('Modifier la recherche'),
             ),
           ],
