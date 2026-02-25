@@ -6,7 +6,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'config/app_theme.dart';
 import 'config/router.dart';
-import 'services/streak_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +21,6 @@ void main() async {
     debugPrint('⚠️ Firebase initialization error: $e');
   }
 
-  // Check daily streak (gamification)
-  try {
-    await StreakService.checkStreak();
-    debugPrint('✅ Streak checked');
-  } catch (e) {
-    debugPrint('⚠️ Streak check failed: $e');
-  }
-  
   runApp(
     const ProviderScope(
       child: AnkataApp(),
@@ -47,7 +38,8 @@ class AnkataApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Ankata',
       theme: AppTheme.lightTheme,
-      themeMode: ThemeMode.light,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       locale: const Locale('fr', 'FR'),

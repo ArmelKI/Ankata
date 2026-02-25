@@ -7,9 +7,9 @@ class FaqScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 1,
         title: Text('FAQ', style: AppTextStyles.h3),
       ),
@@ -76,7 +76,7 @@ class _FaqItem extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(answer,
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
+                style: AppTextStyles.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
         ],
       ),

@@ -92,8 +92,9 @@ final passengerInfoProvider = StateProvider<Map<String, dynamic>>((ref) => {
       'firstName': '',
       'lastName': '',
       'phoneNumber': '',
-      'email': '',
-      'idNumber': '',
+      'dateOfBirth': '',
+      'cnib': '',
+      'gender': '',
     });
 
 /// Selected seats for current booking

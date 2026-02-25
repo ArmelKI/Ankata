@@ -1,8 +1,11 @@
 class User {
   final String id;
   final String phoneNumber;
-  final String? fullName;
-  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final DateTime? dateOfBirth;
+  final String? cnib;
+  final String? gender;
   final String? profilePictureUrl;
   final bool isVerified;
   final DateTime createdAt;
@@ -11,8 +14,11 @@ class User {
   User({
     required this.id,
     required this.phoneNumber,
-    this.fullName,
-    this.email,
+    this.firstName,
+    this.lastName,
+    this.dateOfBirth,
+    this.cnib,
+    this.gender,
     this.profilePictureUrl,
     required this.isVerified,
     required this.createdAt,
@@ -23,12 +29,19 @@ class User {
     return User(
       id: json['id'] as String,
       phoneNumber: json['phoneNumber'] as String,
-      fullName: json['fullName'] as String?,
-      email: json['email'] as String?,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      dateOfBirth: json['dateOfBirth'] != null
+          ? DateTime.parse(json['dateOfBirth'] as String)
+          : null,
+      cnib: json['cnib'] as String?,
+      gender: json['gender'] as String?,
       profilePictureUrl: json['profilePictureUrl'] as String?,
       isVerified: json['isVerified'] as bool,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      lastLogin: json['lastLogin'] != null ? DateTime.parse(json['lastLogin'] as String) : null,
+      lastLogin: json['lastLogin'] != null
+          ? DateTime.parse(json['lastLogin'] as String)
+          : null,
     );
   }
 
@@ -36,8 +49,11 @@ class User {
     return {
       'id': id,
       'phoneNumber': phoneNumber,
-      'fullName': fullName,
-      'email': email,
+      'firstName': firstName,
+      'lastName': lastName,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'cnib': cnib,
+      'gender': gender,
       'profilePictureUrl': profilePictureUrl,
       'isVerified': isVerified,
       'createdAt': createdAt.toIso8601String(),
@@ -48,8 +64,11 @@ class User {
   User copyWith({
     String? id,
     String? phoneNumber,
-    String? fullName,
-    String? email,
+    String? firstName,
+    String? lastName,
+    DateTime? dateOfBirth,
+    String? cnib,
+    String? gender,
     String? profilePictureUrl,
     bool? isVerified,
     DateTime? createdAt,
@@ -58,8 +77,11 @@ class User {
     return User(
       id: id ?? this.id,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      fullName: fullName ?? this.fullName,
-      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      cnib: cnib ?? this.cnib,
+      gender: gender ?? this.gender,
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       isVerified: isVerified ?? this.isVerified,
       createdAt: createdAt ?? this.createdAt,
