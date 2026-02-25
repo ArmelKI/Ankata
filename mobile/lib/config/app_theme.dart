@@ -6,24 +6,40 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Couleurs principales
-  static const Color primary = Color(0xFF00A859); // Vert principal Ankata
-  static const Color primaryDark =
-      Color(0xFF008844); // Vert foncé pour gradients
-  static const Color primaryLight = Color(0xFF4CAF50); // Vert clair
-
+  static const Color primary = Color(0xFF21808D); // Bleu-vert principal
+  static const Color primaryDark = Color(0xFF1B6C75); // Variante foncée
+  static const Color primaryLight = Color(0xFF4ECDC4); // Variante claire
+  
   // Couleurs neutres
-  static const Color charcoal = Color(0xFF1F2121); // Texte principal
+  static const Color charcoal = Color(0xFF1A1A1A); // Texte principal (clair)
   static const Color gray = Color(0xFF626C6C); // Texte secondaire
   static const Color lightGray = Color(0xFFF5F5F5); // Fond
   static const Color border = Color(0xFFE0E0E0); // Bordures
   static const Color white = Color(0xFFFFFFFF);
 
+  // Couleurs dynamiques selon le thème
+  static Color textPrimary = charcoal;
+  static Color textSecondary = gray;
+  static Color surface = white;
+
+  static void configureForBrightness(Brightness brightness) {
+    if (brightness == Brightness.dark) {
+      textPrimary = const Color(0xFFF5F5F5);
+      textSecondary = const Color(0xFFB0B0B0);
+      surface = const Color(0xFF0F0F0F);
+    } else {
+      textPrimary = charcoal;
+      textSecondary = gray;
+      surface = white;
+    }
+  }
+  
   // Couleurs sémantiques
   static const Color success = Color(0xFF00A859);
   static const Color error = Color(0xFFDC143C);
   static const Color warning = Color(0xFFFF6B00);
   static const Color info = Color(0xFF1E90FF);
-
+  
   // Couleurs compagnies
   static const Color sotracoGreen = Color(0xFF00A859);
   static const Color tsrBlue = Color(0xFF1E90FF);
@@ -31,7 +47,7 @@ class AppColors {
   static const Color rahimoRed = Color(0xFFDC143C);
   static const Color rakietaBurgundy = Color(0xFF8B0000);
   static const Color tcvDarkGreen = Color(0xFF006400);
-
+  
   // Couleurs étoiles/ratings
   static const Color star = Color(0xFFFFD700);
 }
@@ -54,7 +70,7 @@ class AppRadius {
   static const double lg = 16.0;
   static const double xl = 24.0;
   static const double full = 999.0;
-
+  
   // Objets BorderRadius préconstruits
   static BorderRadius radiusSm = BorderRadius.circular(sm);
   static BorderRadius radiusMd = BorderRadius.circular(md);
@@ -66,7 +82,7 @@ class AppRadius {
 class AppShadows {
   // Niveaux d'ombres
   static List<BoxShadow> shadow0 = []; // Aucune ombre
-
+  
   static List<BoxShadow> shadow1 = [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.04),
@@ -74,7 +90,7 @@ class AppShadows {
       offset: const Offset(0, 2),
     ),
   ];
-
+  
   static List<BoxShadow> shadow2 = [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.08),
@@ -82,7 +98,7 @@ class AppShadows {
       offset: const Offset(0, 2),
     ),
   ];
-
+  
   static List<BoxShadow> shadow3 = [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.12),
@@ -90,7 +106,7 @@ class AppShadows {
       offset: const Offset(0, 4),
     ),
   ];
-
+  
   static List<BoxShadow> shadow4 = [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.16),
@@ -107,14 +123,14 @@ class AppGradients {
     end: Alignment.bottomRight,
     colors: [AppColors.primary, AppColors.primaryDark],
   );
-
+  
   // Gradient pour overlays sombres sur images
   static const LinearGradient darkOverlay = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Colors.transparent, Color(0x99000000)],
   );
-
+  
   // Gradient pour shimmer loading
   static const LinearGradient shimmer = LinearGradient(
     begin: Alignment.centerLeft,
@@ -130,74 +146,74 @@ class AppGradients {
 class AppTextStyles {
   // Base font family
   static String get fontFamily => 'Poppins';
-
+  
   // Titres
   static TextStyle h1 = GoogleFonts.poppins(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: AppColors.charcoal,
+    color: AppColors.textPrimary,
     height: 1.2,
   );
-
+  
   static TextStyle h2 = GoogleFonts.poppins(
     fontSize: 24,
     fontWeight: FontWeight.w600,
-    color: AppColors.charcoal,
+    color: AppColors.textPrimary,
     height: 1.3,
   );
-
+  
   static TextStyle h3 = GoogleFonts.poppins(
     fontSize: 20,
     fontWeight: FontWeight.w600,
-    color: AppColors.charcoal,
+    color: AppColors.textPrimary,
     height: 1.4,
   );
-
+  
   static TextStyle h4 = GoogleFonts.poppins(
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: AppColors.charcoal,
+    color: AppColors.textPrimary,
     height: 1.4,
   );
-
+  
   // Corps de texte
   static TextStyle bodyLarge = GoogleFonts.poppins(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: AppColors.charcoal,
+    color: AppColors.textPrimary,
     height: 1.5,
   );
-
+  
   static TextStyle bodyMedium = GoogleFonts.poppins(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: AppColors.charcoal,
+    color: AppColors.textPrimary,
     height: 1.5,
   );
-
+  
   static TextStyle bodySmall = GoogleFonts.poppins(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    color: AppColors.gray,
+    color: AppColors.textSecondary,
     height: 1.5,
   );
-
+  
   // Texte secondaire
   static TextStyle caption = GoogleFonts.poppins(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    color: AppColors.gray,
+    color: AppColors.textSecondary,
     height: 1.4,
   );
-
+  
   static TextStyle overline = GoogleFonts.poppins(
     fontSize: 10,
     fontWeight: FontWeight.w600,
-    color: AppColors.gray,
+    color: AppColors.textSecondary,
     height: 1.5,
     letterSpacing: 0.5,
   );
-
+  
   // Boutons
   static TextStyle button = GoogleFonts.poppins(
     fontSize: 16,
@@ -205,14 +221,14 @@ class AppTextStyles {
     color: AppColors.white,
     height: 1.5,
   );
-
+  
   static TextStyle buttonSmall = GoogleFonts.poppins(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.white,
     height: 1.5,
   );
-
+  
   // Prix
   static TextStyle price = GoogleFonts.poppins(
     fontSize: 20,
@@ -220,7 +236,7 @@ class AppTextStyles {
     color: AppColors.primary,
     height: 1.2,
   );
-
+  
   static TextStyle priceSmall = GoogleFonts.poppins(
     fontSize: 16,
     fontWeight: FontWeight.w600,
@@ -244,7 +260,7 @@ class AppTheme {
     ),
     scaffoldBackgroundColor: AppColors.lightGray,
     fontFamily: AppTextStyles.fontFamily,
-
+    
     // AppBar
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.white,
@@ -254,7 +270,7 @@ class AppTheme {
       titleTextStyle: AppTextStyles.h3,
       iconTheme: const IconThemeData(color: AppColors.gray),
     ),
-
+    
     // Boutons
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -271,7 +287,7 @@ class AppTheme {
         textStyle: AppTextStyles.button,
       ),
     ),
-
+    
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primary,
@@ -286,7 +302,7 @@ class AppTheme {
         textStyle: AppTextStyles.button,
       ),
     ),
-
+    
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.primary,
@@ -297,7 +313,7 @@ class AppTheme {
         textStyle: AppTextStyles.button,
       ),
     ),
-
+    
     // Champs de formulaire
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -322,7 +338,7 @@ class AppTheme {
       hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
     ),
-
+    
     // Cartes
     cardTheme: CardThemeData(
       color: AppColors.white,
@@ -333,7 +349,7 @@ class AppTheme {
       ),
       margin: const EdgeInsets.all(AppSpacing.sm),
     ),
-
+    
     // Puces
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.lightGray,
@@ -347,21 +363,20 @@ class AppTheme {
         borderRadius: AppRadius.radiusFull,
       ),
     ),
-
+    
     // Dividers
     dividerTheme: const DividerThemeData(
       color: AppColors.border,
       thickness: 1,
       space: AppSpacing.lg,
     ),
-
+    
     // Bottom Navigation Bar
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.white,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.gray,
-      selectedLabelStyle:
-          AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
+      selectedLabelStyle: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
       unselectedLabelStyle: AppTextStyles.caption,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
@@ -371,33 +386,29 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.primary,
-      secondary: AppColors.primaryLight,
+      primary: Color(0xFF4ECDC4),
+      secondary: Color(0xFF2FB7AE),
       error: AppColors.error,
-      surface: Color(0xFF1E1E1E),
-      onPrimary: AppColors.white,
-      onSecondary: AppColors.white,
-      onSurface: AppColors.white,
+      surface: Color(0xFF0F0F0F),
+      onPrimary: Color(0xFF0F0F0F),
+      onSecondary: Color(0xFF0F0F0F),
+      onSurface: Color(0xFFF5F5F5),
       onError: AppColors.white,
     ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
+    scaffoldBackgroundColor: const Color(0xFF0F0F0F),
     fontFamily: AppTextStyles.fontFamily,
-
-    // AppBar
     appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF1E1E1E),
-      foregroundColor: AppColors.white,
+      backgroundColor: const Color(0xFF0F0F0F),
+      foregroundColor: const Color(0xFFF5F5F5),
       elevation: 1,
       centerTitle: false,
-      titleTextStyle: AppTextStyles.h3.copyWith(color: AppColors.white),
-      iconTheme: const IconThemeData(color: AppColors.white),
+      titleTextStyle: AppTextStyles.h3,
+      iconTheme: const IconThemeData(color: Color(0xFFF5F5F5)),
     ),
-
-    // Boutons
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
+        backgroundColor: const Color(0xFF4ECDC4),
+        foregroundColor: const Color(0xFF0F0F0F),
         elevation: 0,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
@@ -409,11 +420,10 @@ class AppTheme {
         textStyle: AppTextStyles.button,
       ),
     ),
-
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.primary, width: 1.5),
+        foregroundColor: const Color(0xFF4ECDC4),
+        side: const BorderSide(color: Color(0xFF4ECDC4), width: 1.5),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
@@ -424,10 +434,9 @@ class AppTheme {
         textStyle: AppTextStyles.button,
       ),
     ),
-
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: const Color(0xFF4ECDC4),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
@@ -435,48 +444,42 @@ class AppTheme {
         textStyle: AppTextStyles.button,
       ),
     ),
-
-    // Champs de formulaire
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF2C2C2C),
+      fillColor: const Color(0xFF1A1A1A),
       contentPadding: const EdgeInsets.all(AppSpacing.md),
       border: OutlineInputBorder(
         borderRadius: AppRadius.radiusMd,
-        borderSide: const BorderSide(color: Color(0xFF424242)),
+        borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: AppRadius.radiusMd,
-        borderSide: const BorderSide(color: Color(0xFF424242)),
+        borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: AppRadius.radiusMd,
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: AppRadius.radiusMd,
         borderSide: const BorderSide(color: AppColors.error),
       ),
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
-      labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+      labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
     ),
-
-    // Cartes
     cardTheme: CardThemeData(
-      color: const Color(0xFF1E1E1E),
+      color: const Color(0xFF1A1A1A),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.radiusMd,
-        side: const BorderSide(color: Color(0xFF424242)),
+        side: const BorderSide(color: Color(0xFF2A2A2A)),
       ),
       margin: const EdgeInsets.all(AppSpacing.sm),
     ),
-
-    // Puces
     chipTheme: ChipThemeData(
-      backgroundColor: const Color(0xFF2C2C2C),
-      selectedColor: AppColors.primary,
-      labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.white),
+      backgroundColor: const Color(0xFF1A1A1A),
+      selectedColor: const Color(0xFF4ECDC4),
+      labelStyle: AppTextStyles.bodySmall,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
@@ -485,24 +488,17 @@ class AppTheme {
         borderRadius: AppRadius.radiusFull,
       ),
     ),
-
-    // Dividers
     dividerTheme: const DividerThemeData(
-      color: Color(0xFF424242),
+      color: Color(0xFF2A2A2A),
       thickness: 1,
       space: AppSpacing.lg,
     ),
-
-    // Bottom Navigation Bar
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: const Color(0xFF1E1E1E),
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.gray,
-      selectedLabelStyle:
-          AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
-      unselectedLabelStyle: AppTextStyles.caption,
-      type: BottomNavigationBarType.fixed,
+      backgroundColor: const Color(0xFF0F0F0F),
+      selectedItemColor: const Color(0xFF4ECDC4),
+      unselectedItemColor: AppColors.textSecondary,
       elevation: 8,
+      type: BottomNavigationBarType.fixed,
     ),
   );
 }

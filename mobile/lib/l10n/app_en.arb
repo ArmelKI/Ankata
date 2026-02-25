@@ -1,0 +1,197 @@
+{
+  "@@locale": "en",
+  "@@context": "Ankata Transport Application EN",
+  
+  "appTitle": "Ankata",
+  "appSubtitle": "Smart Transport in Burkina Faso",
+  "appDescription": "Book your trips online easily and quickly",
+  
+  "search": "Search",
+  "origin": "Departure",
+  "destination": "Arrival",
+  "date": "Date",
+  "time": "Time",
+  "searchTrips": "Search trips",
+  "noResults": "No trips found",
+  "loading": "Loading...",
+  "error": "Error",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "save": "Save",
+  "edit": "Edit",
+  "delete": "Delete",
+  
+  "companies": "Companies",
+  "lines": "Lines",
+  "schedules": "Schedules",
+  "bookings": "Bookings",
+  "profile": "Profile",
+  "settings": "Settings",
+  "help": "Help",
+  
+  "price": "Price",
+  "duration": "Duration",
+  "distance": "Distance",
+  "seats": "Seats",
+  "available": "Available",
+  "soldOut": "Sold Out",
+  "rating": "Rating",
+  "reviews": "Reviews",
+  
+  "book": "Book",
+  "bookingConfirmed": "Booking Confirmed",
+  "bookingCancelled": "Booking Cancelled",
+  "bookingHistory": "Booking History",
+  
+  "payment": "Payment",
+  "paymentMethod": "Payment Method",
+  "orangeMoney": "Orange Money",
+  "moovMoney": "Moov Money",
+  "yengaPay": "Yenga Pay",
+  "cardPayment": "Card Payment",
+  "wave": "Wave",
+  
+  "login": "Login",
+  "logout": "Logout",
+  "signup": "Sign Up",
+  "email": "Email",
+  "password": "Password",
+  "phone": "Phone",
+  "forgotPassword": "Forgot Password",
+  "resetPassword": "Reset Password",
+  
+  "otp": "OTP Code",
+  "otpSent": "OTP code sent via SMS",
+  "otpExpired": "OTP code expired",
+  "otpInvalid": "Invalid OTP code",
+  
+  "about": "About",
+  "version": "Version",
+  "contact": "Contact",
+  "website": "Website",
+  "facebook": "Facebook",
+  "whatsapp": "WhatsApp",
+  "language": "Language",
+  "theme": "Theme",
+  "notifications": "Notifications",
+  
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "june": "June",
+  "july": "July",
+  "august": "August",
+  "september": "September",
+  "october": "October",
+  "november": "November",
+  "december": "December",
+  
+  "fcfa": "FCFA",
+  "km": "km",
+  "minute": "minute",
+  "minutes": "minutes",
+  "hour": "hour",
+  "hours": "hours",
+  
+  "welcome": "Welcome {name}",
+  "@welcome": {
+    "description": "Welcome with user name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "tripPrice": "Trip price: {price} FCFA",
+  "@tripPrice": {
+    "description": "Price of a trip",
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "departureTime": "Departure at {time}",
+  "@departureTime": {
+    "description": "Departure time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "arrivalTime": "Arrival at {time}",
+  "@arrivalTime": {
+    "description": "Arrival time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "tripDuration": "Duration: {duration} hours",
+  "@tripDuration": {
+    "description": "Trip duration",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "selectSeats": "Select seats",
+  "seat": "Seat",
+  "stops": "Stops",
+  "stop": "Stop",
+  "passengerInfo": "Passenger Information",
+  "enterPassengerInfo": "Enter passenger information",
+  "passengerName": "Passenger Name",
+  "passengerPhone": "Passenger Phone",
+  "selectTrip": "Select a trip",
+  "paymentSummary": "Payment Summary",
+  "ticketPrice": "Ticket Price",
+  "serviceFee": "Service Fee",
+  "seatSurcharge": "Seat Surcharge",
+  "total": "Total",
+  "totalPrice": "Total to Pay",
+  "pay": "Pay",
+  "booking": "Booking",
+  "bookingSuccessful": "Booking Confirmed",
+  "bookingCode": "Booking Code",
+  "bookingDate": "Booking Date",
+  "qrCode": "QR Code",
+  "download": "Download",
+  "share": "Share",
+  "myBookings": "My Bookings",
+  "upcomingTrips": "Upcoming Trips",
+  "pastTrips": "Past Trips",
+  "cancelBooking": "Cancel Booking",
+  "favorite": "Favorite",
+  "favorites": "Favorites",
+  "addToFavorites": "Add to Favorites",
+  "removeFromFavorites": "Remove from Favorites",
+  "sortBy": "Sort By",
+  "sortByPrice": "Price",
+  "sortByTime": "Time",
+  "sortByDuration": "Duration",
+  "sortByRating": "Rating",
+  "filter": "Filter",
+  "filters": "Filters",
+  "clearFilters": "Clear Filters",
+  "apply": "Apply"
+}
