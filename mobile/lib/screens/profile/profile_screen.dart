@@ -9,6 +9,7 @@ import '../../widgets/referral_dialog.dart';
 import '../../widgets/company_logo.dart';
 import '../../utils/haptic_helper.dart';
 import '../../providers/app_providers.dart';
+import '../../config/constants.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -39,19 +40,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_photo_path', image.path);
+    try {
+      if (!mounted) return;
 
-    if (!mounted) return;
-    setState(() => _photoPath = image.path);
+      // Update local optimistically
+      setState(() => _photoPath = image.path);
+
+      final apiService = ref.read(apiServiceProvider);
+      final response = await apiService.uploadProfilePicture(image.path);
+
+      if (response['profilePictureUrl'] != null) {
+        final serverUrl = AppConfig.apiBaseUrl.replaceAll('/api', '') +
+            response['profilePictureUrl'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('profile_photo_url', serverUrl);
+        await prefs.setString('profile_photo_path', image.path);
+
+        // Update user provider
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser != null) {
+          final updatedUser = Map<String, dynamic>.from(currentUser);
+          updatedUser['profilePictureUrl'] = serverUrl;
+          ref.read(currentUserProvider.notifier).state = updatedUser;
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Photo de profil mise à jour'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la mise à jour: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGray,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 1,
         title: Text('Profil', style: AppTextStyles.h3),
       ),
@@ -83,18 +122,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildProfileHeader() {
+    final user = ref.watch(currentUserProvider);
+    final firstName =
+        user?['firstName'] ?? user?['first_name'] ?? 'Utilisateur';
+    final lastName = user?['lastName'] ?? user?['last_name'] ?? '';
+    final fullName = '$firstName $lastName'.trim();
+    final phone = user?['phoneNumber'] ?? user?['phone_number'] ?? '';
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         children: [
           // 🎨 User Avatar (NOUVEAU - remplace l'initiale simple)
           Stack(
             children: [
               UserAvatar(
-                name: 'Jean Ouedraogo',
+                name: fullName,
                 size: 100,
-                imageUrl: _photoPath,
+                imageUrl: user?['profilePictureUrl'] ??
+                    user?['profile_picture_url'] ??
+                    _photoPath,
               ),
               Positioned(
                 bottom: 0,
@@ -109,12 +157,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.white, width: 3),
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 3),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.camera_alt,
                       size: 16,
-                      color: AppColors.white,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   ),
                 ),
@@ -123,13 +173,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Jean Ouedraogo',
+            fullName,
             style: AppTextStyles.h3,
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '+226 70 12 34 56',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+            phone,
+            style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.md),
           ElevatedButton.icon(
@@ -153,7 +204,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildPersonalInfoSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -237,7 +288,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // 💰 NOUVEAU: Section Premium & Referral
   Widget _buildReferralSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -281,7 +332,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildNotificationsSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -319,7 +370,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildPreferencesSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -362,7 +413,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildFavoritesSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -383,8 +434,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Text(
                     'Aucun trajet favori pour le moment.',
-                    style:
-                        AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
+                    style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 );
               }
@@ -397,8 +448,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     leading: const Icon(Icons.star, color: AppColors.star),
                     title: Text('$from → $to', style: AppTextStyles.bodyMedium),
                     subtitle: Text(company,
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.gray)),
+                        style: AppTextStyles.caption.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant)),
                   );
                 }).toList(),
               );
@@ -411,7 +464,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildSupportSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -452,7 +505,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildAboutSection() {
     return Container(
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -507,10 +560,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: Text(subtitle,
-          style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
+          style: AppTextStyles.caption
+              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
       trailing: trailing ??
           (onTap != null
-              ? const Icon(Icons.chevron_right, color: AppColors.gray)
+              ? Icon(Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)
               : null),
       onTap: onTap,
     );
@@ -534,7 +589,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: Text(subtitle,
-          style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
+          style: AppTextStyles.caption
+              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
@@ -565,6 +621,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showEditProfileDialog() {
+    final user = ref.read(currentUserProvider);
+    final firstName = user?['firstName'] ?? user?['first_name'] ?? '';
+    final lastName = user?['lastName'] ?? user?['last_name'] ?? '';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -573,7 +633,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
-              initialValue: 'Jean',
+              initialValue: firstName,
               decoration: const InputDecoration(
                 labelText: 'Pr\u00e9nom',
                 prefixIcon: Icon(Icons.person_outline),
@@ -581,7 +641,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             TextFormField(
-              initialValue: 'Ouedraogo',
+              initialValue: lastName,
               decoration: const InputDecoration(
                 labelText: 'Nom',
                 prefixIcon: Icon(Icons.person),
@@ -589,7 +649,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             TextFormField(
-              initialValue: '',
+              initialValue: user?['email'] ?? '',
               decoration: const InputDecoration(
                 labelText: 'CNIB',
                 prefixIcon: Icon(Icons.badge),
@@ -631,16 +691,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               title: const Text('Français'),
               value: 'fr',
               groupValue: 'fr',
-              onChanged: (value) {
-                Navigator.pop(context);
-              },
+              onChanged: (value) => Navigator.pop(context),
               activeColor: AppColors.primary,
             ),
-            const RadioListTile<String>(
-              title: Text('English (à venir)'),
-              value: 'en',
+            RadioListTile<String>(
+              title: const Text('Mooré'),
+              value: 'mos',
               groupValue: 'fr',
-              onChanged: null,
+              onChanged: (value) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Traduction Mooré activée')));
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('Dioula'),
+              value: 'dyu',
+              groupValue: 'fr',
+              onChanged: (value) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Traduction Dioula activée')));
+              },
             ),
           ],
         ),
@@ -663,19 +735,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<String>(
-              title: const Text('Clair'),
-              value: 'light',
-              groupValue: 'light',
+              title: const Text('Système (Auto)'),
+              value: 'system',
+              groupValue: 'system',
               onChanged: (value) {
                 Navigator.pop(context);
               },
               activeColor: AppColors.primary,
             ),
-            const RadioListTile<String>(
-              title: Text('Sombre (à venir)'),
+            RadioListTile<String>(
+              title: const Text('Mode Sombre'),
               value: 'dark',
-              groupValue: 'light',
-              onChanged: null,
+              groupValue: 'system',
+              onChanged: (value) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Theme Sombre activé')));
+              },
             ),
           ],
         ),

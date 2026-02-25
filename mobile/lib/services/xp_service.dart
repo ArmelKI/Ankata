@@ -138,11 +138,11 @@ class XPBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.radiusMd,
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -170,7 +170,7 @@ class XPBar extends StatelessWidget {
                       child: Text(
                         '$level',
                         style: AppTextStyles.h3.copyWith(
-                          color: AppColors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -189,7 +189,7 @@ class XPBar extends StatelessWidget {
                       Text(
                         XPService.getLevelTitle(level),
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.gray,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -213,7 +213,7 @@ class XPBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: AppColors.gray.withValues(alpha: 0.2),
+              backgroundColor: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppColors.primary,
               ),
@@ -225,7 +225,7 @@ class XPBar extends StatelessWidget {
           Text(
             '${(nextLevelXP - xp)} XP vers niveau ${level + 1}',
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.gray,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -278,11 +278,11 @@ class LevelUpDialog extends StatelessWidget {
                         ),
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.star,
                           size: 60,
-                          color: AppColors.white,
+                          color: Theme.of(context).colorScheme.surface,
                         ),
                       ),
                     ),
@@ -306,7 +306,7 @@ class LevelUpDialog extends StatelessWidget {
                 Text(
                   '${data.oldLevel}',
                   style: AppTextStyles.h1.copyWith(
-                    color: AppColors.gray,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const Padding(
@@ -336,7 +336,7 @@ class LevelUpDialog extends StatelessWidget {
                   Text(
                     'Récompense',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.gray,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
@@ -350,7 +350,7 @@ class LevelUpDialog extends StatelessWidget {
                   Text(
                     data.reward['description'],
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.gray,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -372,7 +372,7 @@ class LevelUpDialog extends StatelessWidget {
                 child: Text(
                   'Continuer',
                   style: AppTextStyles.button.copyWith(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
               ),

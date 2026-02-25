@@ -204,7 +204,7 @@ class StreakDialog extends StatelessWidget {
                   Text(
                     data.currentStreak == 1 ? 'jour' : 'jours',
                     style: AppTextStyles.h3.copyWith(
-                      color: AppColors.gray,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -221,7 +221,7 @@ class StreakDialog extends StatelessWidget {
               Text(
                 'Tu avais ${data.previousStreak} jours',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.gray,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -282,7 +282,7 @@ class StreakDialog extends StatelessWidget {
                 child: Text(
                   'Continuer',
                   style: AppTextStyles.button.copyWith(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
               ),
@@ -321,7 +321,7 @@ class StreakWidget extends StatelessWidget {
           Text(
             '$streak jours',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               fontWeight: FontWeight.w600,
             ),
           ),
