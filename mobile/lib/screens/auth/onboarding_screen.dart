@@ -92,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_currentPage == pages.length - 1) {
-                          context.go('/phone-auth');
+                          context.go('/login');
                         } else {
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 300),

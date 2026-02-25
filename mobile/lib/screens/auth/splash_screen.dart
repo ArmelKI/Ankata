@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class SplashScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/app_providers.dart';
+
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -16,7 +19,22 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _navigateToHome() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2));
+
+    try {
+      // Intégration auto-login : on tente de récupérer l'utilisateur courant
+      final userResponse = await ref.read(apiServiceProvider).getCurrentUser();
+      if (userResponse['user'] != null) {
+        ref.read(currentUserProvider.notifier).state = userResponse['user'];
+        if (mounted) {
+          context.go('/home');
+        }
+        return;
+      }
+    } catch (e) {
+      // Échec silencieux, ira vers onboarding/login
+    }
+
     if (mounted) {
       context.go('/onboarding');
     }

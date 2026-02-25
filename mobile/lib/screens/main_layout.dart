@@ -48,14 +48,16 @@ class MainLayout extends StatelessWidget {
       body: child,
       bottomNavigationBar: Container(
         height: 64,
-        decoration: const BoxDecoration(
-          color: AppColors.white,
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+              top: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(
+              context: context,
               icon: Icons.home,
               label: 'Accueil',
               index: 0,
@@ -63,6 +65,7 @@ class MainLayout extends StatelessWidget {
               onTap: () => _onItemTapped(0, context),
             ),
             _buildNavItem(
+              context: context,
               icon: Icons.confirmation_number_outlined,
               label: 'Mes Billets',
               index: 1,
@@ -70,6 +73,7 @@ class MainLayout extends StatelessWidget {
               onTap: () => _onItemTapped(1, context),
             ),
             _buildNavItem(
+              context: context,
               icon: Icons.business,
               label: 'Compagnies',
               index: 2,
@@ -77,6 +81,7 @@ class MainLayout extends StatelessWidget {
               onTap: () => _onItemTapped(2, context),
             ),
             _buildNavItem(
+              context: context,
               icon: Icons.person_outline,
               label: 'Profil',
               index: 3,
@@ -90,6 +95,7 @@ class MainLayout extends StatelessWidget {
   }
 
   Widget _buildNavItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required int index,
@@ -104,14 +110,18 @@ class MainLayout extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isActive ? AppColors.primary : AppColors.gray,
+            color: isActive
+                ? AppColors.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
             size: 24,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: isActive ? AppColors.primary : AppColors.gray,
+              color: isActive
+                  ? AppColors.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
