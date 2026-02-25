@@ -57,9 +57,29 @@ class LineController {
       const linesWithSchedules = await Promise.all(
         lines.map(async (line) => {
           const schedules = await LineModel.getSchedules(line.id, date);
+          const normalizedSchedules = schedules.map((schedule) => {
+            if (schedule.arrival_time || !line.estimated_duration_minutes) {
+              return schedule;
+            }
+            const [hours, minutes] = (schedule.departure_time || '00:00:00')
+              .split(':')
+              .map((v) => parseInt(v, 10));
+            const totalMinutes =
+              (hours * 60 + minutes + line.estimated_duration_minutes) %
+              (24 * 60);
+            const arrivalHours = String(Math.floor(totalMinutes / 60)).padStart(
+              2,
+              '0'
+            );
+            const arrivalMinutes = String(totalMinutes % 60).padStart(2, '0');
+            return {
+              ...schedule,
+              arrival_time: `${arrivalHours}:${arrivalMinutes}:00`,
+            };
+          });
           return {
             ...line,
-            schedules,
+            schedules: normalizedSchedules,
           };
         })
       );

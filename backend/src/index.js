@@ -7,6 +7,9 @@ const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const winston = require('winston');
 
+// Import middleware
+const { verifyToken, verifyOptional } = require('./middleware/auth.middleware');
+
 // Import routes
 const authRoutes = require('./routes/auth.routes');
 const linesRoutes = require('./routes/lines.routes');
@@ -18,6 +21,7 @@ const notificationsRoutes = require('./routes/notifications.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 const sotracoRoutes = require('./routes/sotraco.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const usersRoutes = require('./routes/users.routes');
 
 // Initialize Express app
 const app = express();
@@ -39,8 +43,17 @@ const logger = winston.createLogger({
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  origin: [
+    'http://localhost:3001',
+    'http://localhost:8081',
+    'http://localhost:8080',
+    process.env.FRONTEND_URL || 'http://localhost:3001',
+    ...(process.env.NODE_ENV === 'production' ? ['https://*.ankata.bf'] : []),
+  ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
@@ -75,16 +88,20 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+// Public routes (no JWT required)
 app.use('/api/auth', authRoutes);
-app.use('/api/lines', linesRoutes);
-app.use('/api/bookings', bookingsRoutes);
-app.use('/api/companies', companiesRoutes);
-app.use('/api/ratings', ratingsRoutes);
-app.use('/api/payments', paymentsRoutes);
-app.use('/api/notifications', notificationsRoutes);
-app.use('/api/favorites', favoritesRoutes);
-app.use('/api/sotraco', sotracoRoutes);
-app.use('/api/upload', uploadRoutes);
+
+// Protected routes (JWT required)
+app.use('/api/lines', verifyOptional, linesRoutes);
+app.use('/api/bookings', verifyToken, bookingsRoutes);
+app.use('/api/companies', verifyOptional, companiesRoutes);
+app.use('/api/ratings', verifyToken, ratingsRoutes);
+app.use('/api/payments', verifyToken, paymentsRoutes);
+app.use('/api/notifications', verifyToken, notificationsRoutes);
+app.use('/api/favorites', verifyToken, favoritesRoutes);
+app.use('/api/sotraco', verifyOptional, sotracoRoutes);
+app.use('/api/upload', verifyToken, uploadRoutes);
+app.use('/api/users', verifyToken, usersRoutes);
 
 // 404 handler
 app.use((req, res) => {

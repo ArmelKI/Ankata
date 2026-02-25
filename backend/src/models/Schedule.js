@@ -7,14 +7,27 @@ class ScheduleModel {
     return result.rows[0] || null;
   }
 
-  static async decrementAvailableSeats(scheduleId) {
+  static async decrementAvailableSeats(scheduleId, count = 1) {
+    // Safely convert count to integer, minimum 1
+    const safeCount = Math.max(1, parseInt(count, 10) || 1);
     const query = `
       UPDATE schedules
-      SET available_seats = available_seats - 1
-      WHERE id = $1 AND available_seats > 0
+      SET available_seats = available_seats - $2
+      WHERE id = $1 AND available_seats >= $2
       RETURNING *;
     `;
-    const result = await pool.query(query, [scheduleId]);
+    const result = await pool.query(query, [scheduleId, safeCount]);
+    return result.rows[0] || null;
+  }
+
+  static async decrementAvailableSeatsBy(scheduleId, count) {
+    const query = `
+      UPDATE schedules
+      SET available_seats = available_seats - $2
+      WHERE id = $1 AND available_seats >= $2
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [scheduleId, count]);
     return result.rows[0] || null;
   }
 
@@ -26,6 +39,17 @@ class ScheduleModel {
       RETURNING *;
     `;
     const result = await pool.query(query, [scheduleId]);
+    return result.rows[0] || null;
+  }
+
+  static async incrementAvailableSeatsBy(scheduleId, count) {
+    const query = `
+      UPDATE schedules
+      SET available_seats = available_seats + $2
+      WHERE id = $1
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [scheduleId, count]);
     return result.rows[0] || null;
   }
 

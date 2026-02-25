@@ -14,13 +14,20 @@ class BookingController {
         companyId,
         passengerName,
         passengerPhone,
+        passengers,
+        seatNumbers,
         departureDate,
         luggageWeightKg = 0,
         paymentMethod = 'pending',
       } = req.body;
 
       // Validate required fields
-      if (!scheduleId || !lineId || !companyId || !passengerName || !departureDate) {
+      const passengerList = Array.isArray(passengers) ? passengers : null;
+      const primaryPassengerName = passengerList?.[0]?.name || passengerName;
+      const primaryPassengerPhone = passengerList?.[0]?.phone || passengerPhone;
+      const numPassengers = passengerList?.length || req.body.numPassengers || 1;
+
+      if (!scheduleId || !lineId || !companyId || !primaryPassengerName || !departureDate) {
         return res.status(400).json({
           error: 'Missing required fields: scheduleId, lineId, companyId, passengerName, departureDate',
         });
@@ -34,7 +41,7 @@ class BookingController {
 
       // Check schedule availability
       const schedule = await ScheduleModel.findById(scheduleId);
-      if (!schedule || schedule.available_seats <= 0) {
+      if (!schedule || schedule.available_seats < numPassengers) {
         return res.status(400).json({ error: 'No available seats for this schedule' });
       }
 
@@ -42,7 +49,7 @@ class BookingController {
       const basePrice = parseFloat(line.base_price);
       const luggageFee = luggageWeightKg * parseFloat(line.luggage_price_per_kg);
       const serviceFee = 200; // Frais de service Ankata fixes (ex: 200 FCFA)
-      const totalAmount = basePrice + luggageFee + serviceFee;
+      const totalAmount = basePrice * numPassengers + luggageFee + serviceFee;
 
       // Generate booking code
       const bookingCode = generateBookingCode();
@@ -53,20 +60,22 @@ class BookingController {
         userId,
         scheduleId,
         lineId,
-        companyId,
-        passengerName,
-        passengerPhone,
-        departureDate,
-        seatNumber: 'A1', // Will be assigned later
+        passengerName: primaryPassengerName,
+        passengerPhone: primaryPassengerPhone,
+        passengerEmail: req.body.passengerEmail || null,
+        numPassengers: numPassengers,
+        travelDate: departureDate, // Map to DB column name
+        seatNumbers: Array.isArray(seatNumbers) ? seatNumbers : [],
         luggageWeightKg,
-        basePrice,
-        luggageFee,
-        totalAmount,
-        paymentMethod
+        totalPrice: totalAmount,
+        luggagePrice: luggageFee,
+        serviceFee: serviceFee,
+        paymentMethod,
+        specialRequests: null
       });
 
       // Update available seats
-      await ScheduleModel.decrementAvailableSeats(scheduleId);
+      await ScheduleModel.decrementAvailableSeats(scheduleId, numPassengers);
 
       res.status(201).json({
         message: 'Booking created successfully',
@@ -79,6 +88,7 @@ class BookingController {
           luggageFee: booking.luggage_price,
           serviceFee: booking.service_fee,
           totalAmount: booking.total_price,
+          numPassengers: booking.num_passengers,
           paymentStatus: booking.payment_status,
           bookingStatus: booking.booking_status,
         },
@@ -220,7 +230,11 @@ class BookingController {
       // Restore available seats
       const schedule = await ScheduleModel.findById(booking.schedule_id);
       if (schedule) {
-        await ScheduleModel.incrementAvailableSeats(booking.schedule_id);
+        const seatsToRestore = booking.num_passengers || 1;
+        await ScheduleModel.incrementAvailableSeatsBy(
+          booking.schedule_id,
+          seatsToRestore
+        );
       }
 
       res.status(200).json({

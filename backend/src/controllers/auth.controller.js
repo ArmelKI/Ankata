@@ -2,6 +2,20 @@ const UserModel = require('../models/User');
 const { generateToken, formatPhoneNumber } = require('../utils/helpers');
 const bcrypt = require('bcryptjs');
 const admin = require('../config/firebase');
+const supabase = require('../config/supabase');
+
+const getSignedAvatarUrl = async (avatarPath) => {
+  if (!avatarPath) return null;
+  if (avatarPath.startsWith('http')) return avatarPath;
+
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'avatars';
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(avatarPath, 60 * 60 * 24 * 7);
+
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
+};
 
 class AuthController {
   // Register with Password
@@ -252,6 +266,10 @@ class AuthController {
         return res.status(404).json({ error: 'User not found' });
       }
 
+      const signedAvatarUrl = await getSignedAvatarUrl(
+        user.profile_picture_url
+      );
+
       res.status(200).json({
         user: {
           id: user.id,
@@ -262,7 +280,7 @@ class AuthController {
           cnib: user.cnib,
           gender: user.gender,
           email: user.email,
-          profilePictureUrl: user.profile_picture_url,
+          profilePictureUrl: signedAvatarUrl || user.profile_picture_url,
           isVerified: user.is_verified,
           createdAt: user.created_at,
           lastLogin: user.last_login,
@@ -281,7 +299,16 @@ class AuthController {
   static async updateProfile(req, res) {
     try {
       const userId = req.user.userId;
-      const { firstName, lastName, dateOfBirth, cnib, gender, email, profilePictureUrl } = req.body;
+      const {
+        firstName,
+        lastName,
+        dateOfBirth,
+        cnib,
+        gender,
+        email,
+        profilePictureUrl,
+        city,
+      } = req.body;
 
       const updatedUser = await UserModel.update(userId, {
         first_name: firstName,
@@ -291,11 +318,16 @@ class AuthController {
         gender,
         email,
         profile_picture_url: profilePictureUrl,
+        city,
       });
 
       if (!updatedUser) {
         return res.status(400).json({ error: 'Failed to update profile' });
       }
+
+      const signedAvatarUrl = await getSignedAvatarUrl(
+        updatedUser.profile_picture_url
+      );
 
       res.status(200).json({
         message: 'Profile updated successfully',
@@ -308,7 +340,9 @@ class AuthController {
           cnib: updatedUser.cnib,
           gender: updatedUser.gender,
           email: updatedUser.email,
-          profilePictureUrl: updatedUser.profile_picture_url,
+          profilePictureUrl:
+            signedAvatarUrl || updatedUser.profile_picture_url,
+          city: updatedUser.city,
           isVerified: updatedUser.is_verified,
         },
       });
