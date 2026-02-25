@@ -361,3 +361,7 @@ ORDER BY rating_average DESC;
 -- =====================================================
 -- FIN DU SEED COMPANIES
 -- =====================================================
+
+
+-- UPDATE LOGOS
+UPDATE companies SET logo_url = 'assets/images/companies/' || slug || '.png';

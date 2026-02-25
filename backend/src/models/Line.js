@@ -92,7 +92,7 @@ class LineModel {
 
     if (date) {
       query += ` AND s.valid_from <= $2 AND s.valid_until >= $2
-        AND EXTRACT(DOW FROM $2::date)::int = ANY(s.days_of_week)`;
+        AND EXTRACT(ISODOW FROM $2::date)::int = ANY(s.days_of_week)`;
       values.push(date);
     }
 
@@ -124,10 +124,10 @@ class LineModel {
       JOIN companies c ON l.company_id = c.id
       LEFT JOIN schedules s ON l.id = s.line_id 
         AND s.valid_from <= $3 AND s.valid_until >= $3
-        AND EXTRACT(DOW FROM $3::date)::int = ANY(s.days_of_week)
+        AND EXTRACT(ISODOW FROM $3::date)::int = ANY(s.days_of_week)
         AND s.is_active = true
-      WHERE LOWER(l.origin_city) LIKE '%' || LOWER($1) || '%'
-        AND LOWER(l.destination_city) LIKE '%' || LOWER($2) || '%'
+      WHERE unaccent(l.origin_city) ILIKE unaccent('%' || $1 || '%')
+        AND unaccent(l.destination_city) ILIKE unaccent('%' || $2 || '%')
         AND l.is_active = true
       GROUP BY l.id, l.line_code, l.company_id, l.origin_city, l.destination_city,
         l.origin_name, l.destination_name, l.base_price, l.luggage_price_per_kg,

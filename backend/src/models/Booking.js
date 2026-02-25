@@ -3,24 +3,24 @@ const pool = require('../database/connection');
 class BookingModel {
   static async create(data) {
     const {
-      bookingCode, userId, scheduleId, lineId,
-      passengerName, passengerPhone, passengerEmail, numPassengers, travelDate, seatNumbers,
-      luggageWeightKg, totalPrice, luggagePrice, serviceFee, paymentMethod, specialRequests
+      bookingCode, userId, scheduleId, lineId, companyId,
+      passengerName, passengerPhone, departureDate, seatNumber,
+      luggageWeightKg, basePrice, luggageFee, totalAmount, paymentMethod
     } = data;
 
     const query = `
       INSERT INTO bookings
-      (booking_code, user_id, schedule_id, line_id,
-       passenger_name, passenger_phone, passenger_email, num_passengers, travel_date, seat_numbers,
-       luggage_weight_kg, total_price, luggage_price, service_fee, payment_method, special_requests)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      (booking_code, user_id, schedule_id, line_id, company_id,
+       passenger_name, passenger_phone, departure_date, seat_number,
+       luggage_weight_kg, base_price, luggage_fee, total_amount, payment_method)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *;
     `;
 
     const result = await pool.query(query, [
-      bookingCode, userId, scheduleId, lineId,
-      passengerName, passengerPhone, passengerEmail, numPassengers || 1, travelDate, seatNumbers || [],
-      luggageWeightKg || 0, totalPrice, luggagePrice || 0, serviceFee || 0, paymentMethod, specialRequests
+      bookingCode, userId, scheduleId, lineId, companyId,
+      passengerName, passengerPhone, departureDate, seatNumber || 'A1',
+      luggageWeightKg || 0, basePrice || 0, luggageFee || 0, totalAmount || 0, paymentMethod || 'PENDING'
     ]);
 
     return result.rows[0];
@@ -56,7 +56,7 @@ class BookingModel {
       paramIndex++;
     }
 
-    query += ` ORDER BY b.travel_date DESC, b.created_at DESC
+    query += ` ORDER BY b.departure_date DESC, b.created_at DESC
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     values.push(limit, offset);
 
@@ -79,14 +79,14 @@ class BookingModel {
       JOIN schedules s ON b.schedule_id = s.id
       WHERE b.user_id = $1 AND b.booking_status != 'CANCELLED'
       ORDER BY 
-        CASE WHEN b.travel_date >= $2 THEN 1 ELSE 2 END,
-        b.travel_date DESC;
+        CASE WHEN b.departure_date >= $2 THEN 1 ELSE 2 END,
+        b.departure_date DESC;
     `;
 
     const result = await pool.query(query, [userId, today]);
     
-    const upcoming = result.rows.filter(b => new Date(b.travel_date) >= new Date(today));
-    const past = result.rows.filter(b => new Date(b.travel_date) < new Date(today));
+    const upcoming = result.rows.filter(b => new Date(b.departure_date) >= new Date(today));
+    const past = result.rows.filter(b => new Date(b.departure_date) < new Date(today));
 
     return { upcoming, past };
   }

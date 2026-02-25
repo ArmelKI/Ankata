@@ -53,18 +53,16 @@ class BookingController {
         userId,
         scheduleId,
         lineId,
+        companyId,
         passengerName,
         passengerPhone,
-        passengerEmail: req.body.passengerEmail || null,
-        numPassengers: 1,
-        travelDate: departureDate, // Map to DB column name
-        seatNumbers: [], // Will be assigned later
+        departureDate,
+        seatNumber: 'A1', // Will be assigned later
         luggageWeightKg,
-        totalPrice: totalAmount,
-        luggagePrice: luggageFee,
-        serviceFee: serviceFee,
-        paymentMethod,
-        specialRequests: null
+        basePrice,
+        luggageFee,
+        totalAmount,
+        paymentMethod
       });
 
       // Update available seats
@@ -180,7 +178,7 @@ class BookingController {
           originCity: booking.origin_city,
           destinationCity: booking.destination_city,
           companyName: booking.company_name,
-          totalAmount: booking.total_amount,
+          totalAmount: booking.total_price,
           paymentStatus: booking.payment_status,
           bookingStatus: booking.booking_status,
         },
@@ -211,7 +209,6 @@ class BookingController {
         return res.status(403).json({ error: 'Unauthorized' });
       }
 
-      // Check if booking can be cancelled
       const departureDate = new Date(booking.departure_date);
       if (departureDate < new Date()) {
         return res.status(400).json({ error: 'Cannot cancel past bookings' });

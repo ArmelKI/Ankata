@@ -314,6 +314,87 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at = CURRENT_TIMESTAMP;
 
 -- =====================================================
+-- SECTION 3B: HORAIRES INTERURBAINS BOBO-OUAGADOUGOU (Retour)
+-- =====================================================
+
+-- TSR Bobo-Ouaga (4 départs)
+INSERT INTO schedules (
+  id, line_id, departure_time, days_of_week,
+  total_seats, available_seats, arrival_time,
+  vehicle_type, notes, valid_from, is_active
+) VALUES
+  ('tsr_bobo_ouaga_0600', 'tsr_bobo_ouaga', '06:00:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '11:30:00',
+   'Bus standard', 'Départ matinal', '2026-01-01', true),
+  ('tsr_bobo_ouaga_1000', 'tsr_bobo_ouaga', '10:00:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '15:30:00',
+   'Bus standard', 'Matinée', '2026-01-01', true),
+  ('tsr_bobo_ouaga_1400', 'tsr_bobo_ouaga', '14:00:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '19:30:00',
+   'Bus standard', 'Après-midi', '2026-01-01', true),
+  ('tsr_bobo_ouaga_2330', 'tsr_bobo_ouaga', '23:30:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '05:00:00',
+   'Bus standard', 'Nocturne', '2026-01-01', true)
+ON CONFLICT (id) DO UPDATE SET
+  departure_time = EXCLUDED.departure_time,
+  arrival_time = EXCLUDED.arrival_time,
+  updated_at = CURRENT_TIMESTAMP;
+
+-- RAHIMO Bobo-Ouaga Premium (4 départs)
+INSERT INTO schedules (
+  id, line_id, departure_time, days_of_week,
+  total_seats, available_seats, arrival_time,
+  vehicle_type, notes, valid_from, is_active
+) VALUES
+  ('rahimo_bobo_ouaga_0730', 'rahimo_bobo_ouaga', '07:30:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   70, 70, '12:30:00',
+   'Bus premium', 'Service complet', '2026-01-01', true),
+  ('rahimo_bobo_ouaga_1430', 'rahimo_bobo_ouaga', '14:30:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   70, 70, '19:30:00',
+   'Bus premium', 'Service complet', '2026-01-01', true),
+  ('rahimo_bobo_ouaga_1830', 'rahimo_bobo_ouaga', '18:30:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   70, 70, '23:30:00',
+   'Bus premium', 'Service complet', '2026-01-01', true),
+  ('rahimo_bobo_ouaga_night', 'rahimo_bobo_ouaga', '23:30:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   70, 70, '04:30:00',
+   'Bus premium', 'Service complet nocturne', '2026-01-01', true)
+ON CONFLICT (id) DO UPDATE SET
+  departure_time = EXCLUDED.departure_time,
+  arrival_time = EXCLUDED.arrival_time,
+  updated_at = CURRENT_TIMESTAMP;
+
+-- RAKIETA Bobo-Ouaga (3 départs)
+INSERT INTO schedules (
+  id, line_id, departure_time, days_of_week,
+  total_seats, available_seats, arrival_time,
+  vehicle_type, notes, valid_from, is_active
+) VALUES
+  ('rakieta_bobo_ouaga_0700', 'rakieta_bobo_ouaga', '07:00:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '12:00:00',
+   'Bus climatisé', 'Matinal', '2026-01-01', true),
+  ('rakieta_bobo_ouaga_1500', 'rakieta_bobo_ouaga', '15:00:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '20:00:00',
+   'Bus climatisé', 'Après-midi', '2026-01-01', true),
+  ('rakieta_bobo_ouaga_2000', 'rakieta_bobo_ouaga', '20:00:00', 
+   ARRAY['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'], 
+   60, 60, '01:00:00',
+   'Bus climatisé', 'Soirée', '2026-01-01', true)
+ON CONFLICT (id) DO UPDATE SET
+  departure_time = EXCLUDED.departure_time,
+  arrival_time = EXCLUDED.arrival_time,
+  updated_at = CURRENT_TIMESTAMP;
+
+-- =====================================================
 -- SECTION 4: HORAIRES INTERNATIONAUX (Exemples clés)
 -- =====================================================
 
