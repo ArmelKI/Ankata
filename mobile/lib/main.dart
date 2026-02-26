@@ -8,7 +8,7 @@ import 'firebase_options.dart';
 import 'config/app_theme.dart';
 import 'config/router.dart';
 import 'providers/app_providers.dart';
-import 'generated_l10n/app_localizations.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +31,9 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        darkModeProvider.overrideWith((ref) => initialDarkMode),
+        darkModeProvider.overrideWith(
+          (ref) => initialDarkMode,
+        ),
       ],
       child: const AnkataApp(),
     ),
@@ -58,7 +60,7 @@ class AnkataApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       locale: const Locale('fr'),
       supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: [
+      localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
