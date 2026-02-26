@@ -13,3 +13,4 @@ ios/Flutter/Flutter.podspec
 # Node
 node_modules/
 .env
+backend/.env.render

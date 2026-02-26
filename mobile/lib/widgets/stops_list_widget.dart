@@ -19,9 +19,9 @@ class StopDetailsDialog extends StatelessWidget {
     final lat = stop['lat'] ?? 12.3656;
     final lng = stop['lng'] ?? -1.5197; // Default: Ouagadougou
 
-    // Mapbox static map URL
+    // OpenStreetMap static map URL (100% gratuit, pas de clé API nécessaire)
     final mapUrl =
-        'https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/$lng,$lat,z13/400x300@2x?access_token=pk.eyJ1IjoiYW5rYXRhLWlvIiwiYSI6ImNseTB1dHhzZDAxZjAycXBndW9vOTZoMW0ifQ.rnd';
+        'https://staticmap.openstreetmap.de/staticmap.php?center=$lat,$lng&zoom=13&size=400x300&markers=$lat,$lng,red';
 
     return AlertDialog(
       backgroundColor: AppColors.white,
@@ -31,7 +31,7 @@ class StopDetailsDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mapbox static map
+            // OpenStreetMap static map (gratuit)
             ClipRRect(
               borderRadius: AppRadius.radiusMd,
               child: Image.network(

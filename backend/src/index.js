@@ -1,6 +1,10 @@
 require('dotenv').config();
 require('express-async-errors');
 
+// Validate environment variables on startup
+const { validateEnv } = require('./config/validate-env');
+validateEnv();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -43,13 +47,20 @@ const logger = winston.createLogger({
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [
-    'http://localhost:3001',
-    'http://localhost:8081',
-    'http://localhost:8080',
-    process.env.FRONTEND_URL || 'http://localhost:3001',
-    ...(process.env.NODE_ENV === 'production' ? ['https://*.ankata.bf'] : []),
-  ],
+  origin: process.env.NODE_ENV === 'production'
+    ? [
+        'https://ankata.app',
+        'https://www.ankata.app',
+        'https://ankata.bf',
+        'https://www.ankata.bf',
+        /^https:\/\/.*\.ankata\.(app|bf)$/,
+      ]
+    : [
+        'http://localhost:3001',
+        'http://localhost:8081',
+        'http://localhost:8080',
+        process.env.FRONTEND_URL || 'http://localhost:3001',
+      ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -131,10 +142,11 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.API_PORT || 3000;
+const PORT = process.env.PORT || process.env.API_PORT || 3000;
 app.listen(PORT, () => {
   logger.info(`🚀 Ankata Backend running on port ${PORT}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
 });
 
 module.exports = app;
