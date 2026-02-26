@@ -343,7 +343,7 @@ CREATE TABLE public.loyalty_transactions (
 --
 
 CREATE TABLE public.notifications (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     booking_id uuid,
     title character varying(200) NOT NULL,
@@ -361,7 +361,7 @@ CREATE TABLE public.notifications (
 --
 
 CREATE TABLE public.otp_codes (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     phone_number character varying(20) NOT NULL,
     otp_code character varying(6) NOT NULL,
     purpose character varying(50) NOT NULL,
