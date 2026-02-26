@@ -31,9 +31,7 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        darkModeProvider.overrideWithValue(
-          StateController<bool>(initialDarkMode),
-        ),
+        darkModeProvider.overrideWith((ref) => initialDarkMode),
       ],
       child: const AnkataApp(),
     ),
@@ -60,7 +58,7 @@ class AnkataApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       locale: const Locale('fr'),
       supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
+      localizationsDelegates: [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
