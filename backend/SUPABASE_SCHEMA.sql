@@ -26,7 +26,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
@@ -40,7 +40,7 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION unaccent; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION unaccent; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
@@ -54,14 +54,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
 
 
 --
--- Name: update_company_rating(); Type: FUNCTION; Schema: public; Owner: ankata_user
+-- Name: update_company_rating(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.update_company_rating() RETURNS trigger
@@ -86,10 +86,8 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_company_rating() OWNER TO ankata_user;
-
 --
--- Name: update_schedule_available_seats(); Type: FUNCTION; Schema: public; Owner: ankata_user
+-- Name: update_schedule_available_seats(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.update_schedule_available_seats() RETURNS trigger
@@ -112,10 +110,8 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_schedule_available_seats() OWNER TO ankata_user;
-
 --
--- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: ankata_user
+-- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.update_timestamp() RETURNS trigger
@@ -128,10 +124,8 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_timestamp() OWNER TO ankata_user;
-
 --
--- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: ankata_user
+-- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.update_updated_at_column() RETURNS trigger
@@ -144,12 +138,10 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_updated_at_column() OWNER TO ankata_user;
-
 SET default_table_access_method = heap;
 
 --
--- Name: admin_users; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: admin_users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.admin_users (
@@ -166,10 +158,8 @@ CREATE TABLE public.admin_users (
 );
 
 
-ALTER TABLE public.admin_users OWNER TO ankata_user;
-
 --
--- Name: audit_logs; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: audit_logs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.audit_logs (
@@ -186,10 +176,8 @@ CREATE TABLE public.audit_logs (
 );
 
 
-ALTER TABLE public.audit_logs OWNER TO ankata_user;
-
 --
--- Name: bookings; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: bookings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.bookings (
@@ -219,17 +207,15 @@ CREATE TABLE public.bookings (
 );
 
 
-ALTER TABLE public.bookings OWNER TO ankata_user;
-
 --
--- Name: TABLE bookings; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE bookings; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.bookings IS 'Réservations de billets';
 
 
 --
--- Name: companies; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: companies; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.companies (
@@ -252,17 +238,15 @@ CREATE TABLE public.companies (
 );
 
 
-ALTER TABLE public.companies OWNER TO ankata_user;
-
 --
--- Name: TABLE companies; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE companies; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.companies IS 'Compagnies de transport (SOTRACO, TSR, STAF, RAHIMO, RAKIETA, TCV, SARAMAYA)';
 
 
 --
--- Name: lines; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: lines; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.lines (
@@ -288,17 +272,15 @@ CREATE TABLE public.lines (
 );
 
 
-ALTER TABLE public.lines OWNER TO ankata_user;
-
 --
--- Name: TABLE lines; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE lines; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.lines IS 'Lignes de transport urbaines, interurbaines et internationales';
 
 
 --
--- Name: company_performance; Type: VIEW; Schema: public; Owner: ankata_user
+-- Name: company_performance; Type: VIEW; Schema: public; Owner: -
 --
 
 CREATE VIEW public.company_performance AS
@@ -326,10 +308,8 @@ CREATE VIEW public.company_performance AS
   GROUP BY c.id, c.name, c.slug, c.rating_average, c.total_ratings;
 
 
-ALTER VIEW public.company_performance OWNER TO ankata_user;
-
 --
--- Name: loyalty_points; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: loyalty_points; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.loyalty_points (
@@ -343,10 +323,8 @@ CREATE TABLE public.loyalty_points (
 );
 
 
-ALTER TABLE public.loyalty_points OWNER TO ankata_user;
-
 --
--- Name: loyalty_transactions; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: loyalty_transactions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.loyalty_transactions (
@@ -360,10 +338,8 @@ CREATE TABLE public.loyalty_transactions (
 );
 
 
-ALTER TABLE public.loyalty_transactions OWNER TO ankata_user;
-
 --
--- Name: notifications; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: notifications; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.notifications (
@@ -380,10 +356,8 @@ CREATE TABLE public.notifications (
 );
 
 
-ALTER TABLE public.notifications OWNER TO ankata_user;
-
 --
--- Name: otp_codes; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: otp_codes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.otp_codes (
@@ -400,10 +374,8 @@ CREATE TABLE public.otp_codes (
 );
 
 
-ALTER TABLE public.otp_codes OWNER TO ankata_user;
-
 --
--- Name: otp_verifications; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: otp_verifications; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.otp_verifications (
@@ -419,10 +391,8 @@ CREATE TABLE public.otp_verifications (
 );
 
 
-ALTER TABLE public.otp_verifications OWNER TO ankata_user;
-
 --
--- Name: payments; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: payments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.payments (
@@ -443,17 +413,15 @@ CREATE TABLE public.payments (
 );
 
 
-ALTER TABLE public.payments OWNER TO ankata_user;
-
 --
--- Name: TABLE payments; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE payments; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.payments IS 'Historique des paiements';
 
 
 --
--- Name: promo_codes; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: promo_codes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.promo_codes (
@@ -472,10 +440,8 @@ CREATE TABLE public.promo_codes (
 );
 
 
-ALTER TABLE public.promo_codes OWNER TO ankata_user;
-
 --
--- Name: ratings; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: ratings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.ratings (
@@ -503,17 +469,15 @@ CREATE TABLE public.ratings (
 );
 
 
-ALTER TABLE public.ratings OWNER TO ankata_user;
-
 --
--- Name: TABLE ratings; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE ratings; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.ratings IS 'Évaluations des trajets par les utilisateurs';
 
 
 --
--- Name: schedules; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: schedules; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.schedules (
@@ -532,17 +496,15 @@ CREATE TABLE public.schedules (
 );
 
 
-ALTER TABLE public.schedules OWNER TO ankata_user;
-
 --
--- Name: TABLE schedules; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE schedules; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.schedules IS 'Horaires de départ des lignes';
 
 
 --
--- Name: stops; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: stops; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.stops (
@@ -560,17 +522,15 @@ CREATE TABLE public.stops (
 );
 
 
-ALTER TABLE public.stops OWNER TO ankata_user;
-
 --
--- Name: TABLE stops; Type: COMMENT; Schema: public; Owner: ankata_user
+-- Name: TABLE stops; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.stops IS 'Arrêts de bus et gares routières';
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: ankata_user
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -598,10 +558,8 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO ankata_user;
-
 --
--- Name: admin_users admin_users_email_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: admin_users admin_users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.admin_users
@@ -609,7 +567,7 @@ ALTER TABLE ONLY public.admin_users
 
 
 --
--- Name: admin_users admin_users_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: admin_users admin_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.admin_users
@@ -617,7 +575,7 @@ ALTER TABLE ONLY public.admin_users
 
 
 --
--- Name: audit_logs audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: audit_logs audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audit_logs
@@ -625,7 +583,7 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
--- Name: bookings bookings_booking_code_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_booking_code_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bookings
@@ -633,7 +591,7 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bookings
@@ -641,7 +599,7 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.companies
@@ -649,7 +607,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- Name: companies companies_slug_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: companies companies_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.companies
@@ -657,7 +615,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- Name: lines lines_line_code_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: lines lines_line_code_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.lines
@@ -665,7 +623,7 @@ ALTER TABLE ONLY public.lines
 
 
 --
--- Name: lines lines_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: lines lines_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.lines
@@ -673,7 +631,7 @@ ALTER TABLE ONLY public.lines
 
 
 --
--- Name: loyalty_points loyalty_points_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: loyalty_points loyalty_points_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.loyalty_points
@@ -681,7 +639,7 @@ ALTER TABLE ONLY public.loyalty_points
 
 
 --
--- Name: loyalty_points loyalty_points_user_id_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: loyalty_points loyalty_points_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.loyalty_points
@@ -689,7 +647,7 @@ ALTER TABLE ONLY public.loyalty_points
 
 
 --
--- Name: loyalty_transactions loyalty_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: loyalty_transactions loyalty_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.loyalty_transactions
@@ -697,7 +655,7 @@ ALTER TABLE ONLY public.loyalty_transactions
 
 
 --
--- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -705,7 +663,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: otp_codes otp_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: otp_codes otp_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.otp_codes
@@ -713,7 +671,7 @@ ALTER TABLE ONLY public.otp_codes
 
 
 --
--- Name: otp_verifications otp_verifications_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: otp_verifications otp_verifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.otp_verifications
@@ -721,7 +679,7 @@ ALTER TABLE ONLY public.otp_verifications
 
 
 --
--- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -729,7 +687,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: payments payments_transaction_id_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: payments payments_transaction_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -737,7 +695,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: promo_codes promo_codes_code_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: promo_codes promo_codes_code_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.promo_codes
@@ -745,7 +703,7 @@ ALTER TABLE ONLY public.promo_codes
 
 
 --
--- Name: promo_codes promo_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: promo_codes promo_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.promo_codes
@@ -753,7 +711,7 @@ ALTER TABLE ONLY public.promo_codes
 
 
 --
--- Name: ratings ratings_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: ratings ratings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ratings
@@ -761,7 +719,7 @@ ALTER TABLE ONLY public.ratings
 
 
 --
--- Name: schedules schedules_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: schedules schedules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schedules
@@ -769,7 +727,7 @@ ALTER TABLE ONLY public.schedules
 
 
 --
--- Name: stops stops_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: stops stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.stops
@@ -777,7 +735,7 @@ ALTER TABLE ONLY public.stops
 
 
 --
--- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -785,7 +743,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_google_id_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: users users_google_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -793,7 +751,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_phone_number_key; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: users users_phone_number_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -801,7 +759,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -809,350 +767,350 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: idx_bookings_code; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_bookings_code; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_bookings_code ON public.bookings USING btree (booking_code);
 
 
 --
--- Name: idx_bookings_line; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_bookings_line; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_bookings_line ON public.bookings USING btree (line_id);
 
 
 --
--- Name: idx_bookings_schedule_date; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_bookings_schedule_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_bookings_schedule_date ON public.bookings USING btree (schedule_id, departure_date);
 
 
 --
--- Name: idx_bookings_status; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_bookings_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_bookings_status ON public.bookings USING btree (booking_status);
 
 
 --
--- Name: idx_bookings_user; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_bookings_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_bookings_user ON public.bookings USING btree (user_id);
 
 
 --
--- Name: idx_bookings_user_date; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_bookings_user_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_bookings_user_date ON public.bookings USING btree (user_id, departure_date);
 
 
 --
--- Name: idx_companies_active; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_companies_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_companies_active ON public.companies USING btree (is_active);
 
 
 --
--- Name: idx_companies_rating; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_companies_rating; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_companies_rating ON public.companies USING btree (rating_average DESC);
 
 
 --
--- Name: idx_companies_slug; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_companies_slug; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_companies_slug ON public.companies USING btree (slug);
 
 
 --
--- Name: idx_lines_active; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_lines_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_lines_active ON public.lines USING btree (is_active);
 
 
 --
--- Name: idx_lines_cities; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_lines_cities; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_lines_cities ON public.lines USING btree (origin_city, destination_city);
 
 
 --
--- Name: idx_lines_code; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_lines_code; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_lines_code ON public.lines USING btree (line_code);
 
 
 --
--- Name: idx_lines_company; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_lines_company; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_lines_company ON public.lines USING btree (company_id);
 
 
 --
--- Name: idx_lines_company_route; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_lines_company_route; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_lines_company_route ON public.lines USING btree (company_id, origin_city, destination_city);
 
 
 --
--- Name: idx_loyalty_transactions_user; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_loyalty_transactions_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_loyalty_transactions_user ON public.loyalty_transactions USING btree (user_id);
 
 
 --
--- Name: idx_notifications_read; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_notifications_read; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_notifications_read ON public.notifications USING btree (is_read);
 
 
 --
--- Name: idx_notifications_user; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_notifications_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_notifications_user ON public.notifications USING btree (user_id);
 
 
 --
--- Name: idx_otp_expires; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_otp_expires; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_otp_expires ON public.otp_codes USING btree (expires_at);
 
 
 --
--- Name: idx_otp_phone; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_otp_phone; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_otp_phone ON public.otp_codes USING btree (phone_number);
 
 
 --
--- Name: idx_payments_booking; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_payments_booking; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_payments_booking ON public.payments USING btree (booking_id);
 
 
 --
--- Name: idx_payments_transaction; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_payments_transaction; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_payments_transaction ON public.payments USING btree (transaction_id);
 
 
 --
--- Name: idx_payments_user; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_payments_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_payments_user ON public.payments USING btree (user_id);
 
 
 --
--- Name: idx_promo_codes_active; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_promo_codes_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_promo_codes_active ON public.promo_codes USING btree (is_active);
 
 
 --
--- Name: idx_promo_codes_code; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_promo_codes_code; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_promo_codes_code ON public.promo_codes USING btree (code);
 
 
 --
--- Name: idx_ratings_company; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_ratings_company; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_ratings_company ON public.ratings USING btree (company_id);
 
 
 --
--- Name: idx_ratings_date; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_ratings_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_ratings_date ON public.ratings USING btree (created_at);
 
 
 --
--- Name: idx_ratings_line; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_ratings_line; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_ratings_line ON public.ratings USING btree (line_id);
 
 
 --
--- Name: idx_ratings_user; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_ratings_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_ratings_user ON public.ratings USING btree (user_id);
 
 
 --
--- Name: idx_schedules_active; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_schedules_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_schedules_active ON public.schedules USING btree (is_active);
 
 
 --
--- Name: idx_schedules_departure; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_schedules_departure; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_schedules_departure ON public.schedules USING btree (departure_time);
 
 
 --
--- Name: idx_schedules_line; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_schedules_line; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_schedules_line ON public.schedules USING btree (line_id);
 
 
 --
--- Name: idx_schedules_line_date; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_schedules_line_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_schedules_line_date ON public.schedules USING btree (line_id, valid_from, valid_until);
 
 
 --
--- Name: idx_users_phone; Type: INDEX; Schema: public; Owner: ankata_user
+-- Name: idx_users_phone; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_users_phone ON public.users USING btree (phone_number);
 
 
 --
--- Name: bookings bookings_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER bookings_update_timestamp BEFORE UPDATE ON public.bookings FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: companies companies_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: companies companies_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER companies_update_timestamp BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: lines lines_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: lines lines_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER lines_update_timestamp BEFORE UPDATE ON public.lines FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: payments payments_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: payments payments_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER payments_update_timestamp BEFORE UPDATE ON public.payments FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: ratings ratings_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: ratings ratings_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER ratings_update_timestamp BEFORE UPDATE ON public.ratings FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: schedules schedules_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: schedules schedules_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER schedules_update_timestamp BEFORE UPDATE ON public.schedules FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: bookings update_bookings_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: bookings update_bookings_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON public.bookings FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: companies update_companies_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: companies update_companies_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: lines update_lines_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: lines update_lines_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_lines_updated_at BEFORE UPDATE ON public.lines FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: payments update_payments_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: payments update_payments_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_payments_updated_at BEFORE UPDATE ON public.payments FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: ratings update_rating_on_insert; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: ratings update_rating_on_insert; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_rating_on_insert AFTER INSERT OR UPDATE ON public.ratings FOR EACH ROW EXECUTE FUNCTION public.update_company_rating();
 
 
 --
--- Name: ratings update_ratings_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: ratings update_ratings_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_ratings_updated_at BEFORE UPDATE ON public.ratings FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: schedules update_schedules_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: schedules update_schedules_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_schedules_updated_at BEFORE UPDATE ON public.schedules FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: bookings update_seats_on_booking; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: bookings update_seats_on_booking; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_seats_on_booking AFTER INSERT OR UPDATE ON public.bookings FOR EACH ROW EXECUTE FUNCTION public.update_schedule_available_seats();
 
 
 --
--- Name: users update_users_updated_at; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: users update_users_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: users users_update_timestamp; Type: TRIGGER; Schema: public; Owner: ankata_user
+-- Name: users users_update_timestamp; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER users_update_timestamp BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
 
 
 --
--- Name: admin_users admin_users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: admin_users admin_users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.admin_users
@@ -1160,7 +1118,7 @@ ALTER TABLE ONLY public.admin_users
 
 
 --
--- Name: audit_logs audit_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: audit_logs audit_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audit_logs
@@ -1168,7 +1126,7 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
--- Name: bookings bookings_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bookings
@@ -1176,7 +1134,7 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: bookings bookings_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bookings
@@ -1184,7 +1142,7 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: bookings bookings_schedule_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_schedule_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bookings
@@ -1192,7 +1150,7 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: bookings bookings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: bookings bookings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.bookings
@@ -1200,7 +1158,7 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: lines lines_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: lines lines_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.lines
@@ -1208,7 +1166,7 @@ ALTER TABLE ONLY public.lines
 
 
 --
--- Name: loyalty_points loyalty_points_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: loyalty_points loyalty_points_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.loyalty_points
@@ -1216,7 +1174,7 @@ ALTER TABLE ONLY public.loyalty_points
 
 
 --
--- Name: loyalty_transactions loyalty_transactions_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: loyalty_transactions loyalty_transactions_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.loyalty_transactions
@@ -1224,7 +1182,7 @@ ALTER TABLE ONLY public.loyalty_transactions
 
 
 --
--- Name: loyalty_transactions loyalty_transactions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: loyalty_transactions loyalty_transactions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.loyalty_transactions
@@ -1232,7 +1190,7 @@ ALTER TABLE ONLY public.loyalty_transactions
 
 
 --
--- Name: notifications notifications_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: notifications notifications_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -1240,7 +1198,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: notifications notifications_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -1248,7 +1206,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: payments payments_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: payments payments_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -1256,7 +1214,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: payments payments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: payments payments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -1264,7 +1222,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: promo_codes promo_codes_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: promo_codes promo_codes_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.promo_codes
@@ -1272,7 +1230,7 @@ ALTER TABLE ONLY public.promo_codes
 
 
 --
--- Name: ratings ratings_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: ratings ratings_booking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ratings
@@ -1280,7 +1238,7 @@ ALTER TABLE ONLY public.ratings
 
 
 --
--- Name: ratings ratings_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: ratings ratings_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ratings
@@ -1288,7 +1246,7 @@ ALTER TABLE ONLY public.ratings
 
 
 --
--- Name: ratings ratings_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: ratings ratings_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ratings
@@ -1296,7 +1254,7 @@ ALTER TABLE ONLY public.ratings
 
 
 --
--- Name: ratings ratings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: ratings ratings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ratings
@@ -1304,7 +1262,7 @@ ALTER TABLE ONLY public.ratings
 
 
 --
--- Name: schedules schedules_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: schedules schedules_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schedules
@@ -1312,7 +1270,7 @@ ALTER TABLE ONLY public.schedules
 
 
 --
--- Name: stops stops_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ankata_user
+-- Name: stops stops_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.stops
