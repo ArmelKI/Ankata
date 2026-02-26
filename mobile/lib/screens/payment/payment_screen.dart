@@ -97,29 +97,29 @@ class _PaymentScreenState extends State<PaymentScreen>
                     // Payment methods
                     _buildPaymentMethodCard(
                       method: PaymentMethod.orangeMoney,
-                      icon: '🟠',
+                      icon: 'OM',
                       title: 'Orange Money',
-                      subtitle: 'Paiement instantané et sécurisé',
-                      badge: '70% marché',
+                      subtitle: 'Paiement instantane et securise',
+                      badge: '70% marche',
                     ),
 
                     const SizedBox(height: 12),
 
                     _buildPaymentMethodCard(
                       method: PaymentMethod.mtnMoney,
-                      icon: '🟡',
+                      icon: 'MM',
                       title: 'MTN Mobile Money',
-                      subtitle: 'Paiement instantané et sécurisé',
-                      badge: '20% marché',
+                      subtitle: 'Paiement instantane et securise',
+                      badge: '20% marche',
                     ),
 
                     const SizedBox(height: 12),
 
                     _buildPaymentMethodCard(
                       method: PaymentMethod.card,
-                      icon: '💳',
+                      icon: 'CB',
                       title: 'Carte bancaire',
-                      subtitle: 'Visa, Mastercard acceptées',
+                      subtitle: 'Visa, Mastercard acceptees',
                       badge: 'International',
                     ),
 

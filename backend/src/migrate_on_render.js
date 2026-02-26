@@ -59,7 +59,7 @@ async function migrate() {
       console.log('Data imported!');
     }
     
-    console.log('🎉 Migration completed successfully!');
+    console.log('Migration completed successfully!');
   } catch (err) {
     console.error('Migration failed:', err);
     process.exit(1);

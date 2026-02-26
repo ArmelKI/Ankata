@@ -101,7 +101,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: AppSpacing.md),
             _buildPersonalInfoSection(),
             const SizedBox(height: AppSpacing.md),
-            _buildReferralSection(), // 🎁 Referral (100F par ami, max 15)
+            _buildReferralSection(), // Referral (100F par ami, max 15)
             const SizedBox(height: AppSpacing.md),
             _buildNotificationsSection(),
             const SizedBox(height: AppSpacing.md),
@@ -134,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       color: AppColors.white,
       child: Column(
         children: [
-          // 🎨 User Avatar (NOUVEAU - remplace l'initiale simple)
+          // User Avatar
           Stack(
             children: [
               UserAvatar(
@@ -282,7 +282,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // 💰 NOUVEAU: Section Premium & Referral
+  // Section Referral
   Widget _buildReferralSection() {
     return Container(
       color: AppColors.white,

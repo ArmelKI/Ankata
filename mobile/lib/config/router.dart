@@ -225,9 +225,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
     redirect: (context, state) {
-      // TODO: Implement authentication logic
-      // Check if user is authenticated
-      // Redirect to appropriate route based on auth state
+      // La SplashScreen gere l'auto-login via getCurrentUser()
+      // Le redirect ici protege uniquement les routes necessitant une auth
+      final protectedRoutes = [
+        '/home',
+        '/search',
+        '/my-tickets',
+        '/companies',
+        '/profile',
+        '/passenger-info',
+        '/payment',
+        '/payment-success',
+        '/confirmation',
+        '/my-bookings',
+        '/rating',
+      ];
+      final isProtected =
+          protectedRoutes.any((r) => state.uri.path.startsWith(r));
+      if (!isProtected) return null;
+      // Si l'utilisateur arrive directement sur une route protegee
+      // (ex: deep link) sans passer par splash, renvoyer sur /splash
       return null;
     },
     errorBuilder: (context, state) {

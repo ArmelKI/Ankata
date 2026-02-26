@@ -19,9 +19,9 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    debugPrint('✅ Firebase initialized successfully');
+    debugPrint('[OK] Firebase initialized successfully');
   } catch (e) {
-    debugPrint('⚠️ Firebase initialization error: $e');
+    debugPrint('[WARNING] Firebase initialization error: $e');
   }
 
   await Hive.initFlutter();

@@ -330,15 +330,15 @@ class PaymentService {
         )} FCFA';
   }
 
-  // Obtenir l'icône/emoji de la méthode
+  // Obtenir l'abreviation de la methode
   static String getMethodIcon(PaymentMethod method) {
     switch (method) {
       case PaymentMethod.orangeMoney:
-        return '🟠';
+        return 'OM';
       case PaymentMethod.mtnMoney:
-        return '🟡';
+        return 'MM';
       case PaymentMethod.card:
-        return '💳';
+        return 'CB';
     }
   }
 

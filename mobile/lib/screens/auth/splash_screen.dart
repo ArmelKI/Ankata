@@ -43,24 +43,48 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/ankata_logo.jpeg',
-              width: 200,
-              height: 200,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Application de réservation de transport',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF00A859), Color(0xFF007A40)],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  'assets/logos/ankata_logo.jpeg',
+                  width: 160,
+                  height: 160,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              const Text(
+                'Ankata',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Transport au Burkina Faso',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

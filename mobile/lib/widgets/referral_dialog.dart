@@ -183,7 +183,7 @@ class ReferralDialog extends StatelessWidget {
 
   void _shareReferralCode(BuildContext context) {
     final message = '''
-🎁 Rejoins-moi sur Ankata !
+Rejoins-moi sur Ankata !
 
 Utilise mon code de parrainage: $referralCode
 
