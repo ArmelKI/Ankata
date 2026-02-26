@@ -1,0 +1,35 @@
+                                      Table « public.companies »
+       Colonne        |            Type             | Collationnement | NULL-able |    Par défaut     
+----------------------+-----------------------------+-----------------+-----------+-------------------
+ id                   | uuid                        |                 | not null  | gen_random_uuid()
+ name                 | character varying(255)      |                 | not null  | 
+ slug                 | character varying(255)      |                 | not null  | 
+ description          | text                        |                 |           | 
+ logo_url             | text                        |                 |           | 
+ primary_color        | character varying(7)        |                 |           | 
+ secondary_color      | character varying(7)        |                 |           | 
+ phone                | character varying(20)       |                 |           | 
+ whatsapp             | character varying(20)       |                 |           | 
+ facebook_url         | text                        |                 |           | 
+ headquarters_address | text                        |                 |           | 
+ rating_average       | numeric(3,1)                |                 |           | 0.0
+ total_ratings        | integer                     |                 |           | 0
+ is_active            | boolean                     |                 |           | true
+ created_at           | timestamp without time zone |                 |           | CURRENT_TIMESTAMP
+ updated_at           | timestamp without time zone |                 |           | CURRENT_TIMESTAMP
+Index :
+    "companies_pkey" PRIMARY KEY, btree (id)
+    "companies_slug_key" UNIQUE CONSTRAINT, btree (slug)
+    "idx_companies_active" btree (is_active)
+    "idx_companies_rating" btree (rating_average DESC)
+    "idx_companies_slug" btree (slug)
+Référencé par :
+    TABLE "admin_users" CONSTRAINT "admin_users_company_id_fkey" FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
+    TABLE "bookings" CONSTRAINT "bookings_company_id_fkey" FOREIGN KEY (company_id) REFERENCES companies(id)
+    TABLE "lines" CONSTRAINT "lines_company_id_fkey" FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    TABLE "promo_codes" CONSTRAINT "promo_codes_company_id_fkey" FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
+    TABLE "ratings" CONSTRAINT "ratings_company_id_fkey" FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+Triggers :
+    companies_update_timestamp BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION update_timestamp()
+    update_companies_updated_at BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+
