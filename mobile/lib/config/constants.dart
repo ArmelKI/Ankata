@@ -1,11 +1,11 @@
 class AppConfig {
   // API Configuration
-  static const String apiBaseUrl = 'http://localhost:3000/api';
+  static const String apiBaseUrl = 'https://ankata.onrender.com/api';
   static const String apiTimeout = '30000'; // milliseconds
 
   // Environment
   static const String environment =
-      'development'; // development, staging, production
+      'production'; // development, staging, production
 
   // Feature Flags
   static const bool enableLogging = true;
