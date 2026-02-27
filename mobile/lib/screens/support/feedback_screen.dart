@@ -110,7 +110,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Comment pouvons-nous vous aider ?',
                 style: TextStyle(
                   fontSize: 18,
@@ -119,12 +119,12 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
+              Text(
                 'Signalez un problème ou suggérez une amélioration pour nous aider à rendre Ankata encore meilleur.',
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.lg),
-              const Text('Nature du retour', style: AppTextStyles.bodyMedium),
+              Text('Nature du retour', style: AppTextStyles.bodyMedium),
               const SizedBox(height: AppSpacing.xs),
               DropdownButtonFormField<String>(
                 value: _type,

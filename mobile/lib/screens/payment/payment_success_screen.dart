@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'dart:math' as math;
 import '../../services/notification_service.dart';
 import '../../providers/app_providers.dart';
 import '../../utils/haptic_helper.dart';
+import '../../widgets/animated_button.dart';
 
 class PaymentSuccessScreen extends ConsumerStatefulWidget {
   final int amount;
