@@ -18,7 +18,7 @@ class BookingController {
         seatNumbers,
         departureDate,
         luggageWeightKg = 0,
-        paymentMethod = 'pending',
+        paymentMethod = null,
       } = req.body;
 
       // Validate required fields

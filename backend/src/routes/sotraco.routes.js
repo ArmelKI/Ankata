@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('../middleware/auth');
 const SotracoController = require('../controllers/sotraco.controller');
 
-// Toutes les requêtes SOTRACO nécessitent une authentification
-router.use(authMiddleware);
+// SOTRACO routes are publicly accessible; optional auth is applied at app level
 
 // Obtenir les arrêts les plus proches des coordonnées (lat, lng)
 // GET /api/sotraco/stops/nearest

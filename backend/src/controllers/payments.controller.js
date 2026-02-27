@@ -9,12 +9,19 @@ class PaymentController {
       const userId = req.user.userId;
       const {
         bookingId,
-        paymentMethod, // 'orange_money', 'moov_money', 'card'
+        paymentMethod, // 'ORANGE_MONEY', 'WAVE', 'MOOV_MONEY', 'CARD'
       } = req.body;
 
       if (!bookingId || !paymentMethod) {
         return res.status(400).json({
           error: 'bookingId and paymentMethod are required',
+        });
+      }
+
+      const normalizedMethod = this._normalizePaymentMethod(paymentMethod);
+      if (!normalizedMethod) {
+        return res.status(400).json({
+          error: 'Unsupported payment method. Use ORANGE_MONEY, WAVE, MOOV_MONEY, CARD',
         });
       }
 
@@ -33,8 +40,8 @@ class PaymentController {
         userId,
         amount: booking.total_amount,
         currency: 'XOF',
-        paymentMethod,
-        paymentGateway: this._getPaymentGateway(paymentMethod),
+        paymentMethod: normalizedMethod,
+        paymentGateway: this._getPaymentGateway(normalizedMethod),
         metadata: {
           bookingCode: booking.booking_code,
           passengerName: booking.passenger_name,
@@ -58,7 +65,7 @@ class PaymentController {
           amount: payment.amount,
           currency: payment.currency,
           paymentMethod: payment.payment_method,
-          status: payment.status,
+          status: payment.payment_status,
         },
         paymentData: {
           redirectUrl: aggregatorResponse.paymentUrl,
@@ -92,24 +99,30 @@ class PaymentController {
         return res.status(404).json({ error: 'Payment not found' });
       }
 
+      const normalizedStatus = this._normalizePaymentStatus(status);
+
       // Update payment status
       const updatedPayment = await PaymentModel.updateStatus(
         paymentId,
-        status,
+        normalizedStatus,
         transactionId,
         errorMessage
       );
 
       // If payment is successful, update booking payment status
-      if (status === 'success') {
+      if (normalizedStatus === 'COMPLETED') {
         await BookingModel.updatePaymentStatus(
           payment.booking_id,
-          'completed'
+          'COMPLETED'
         );
-      } else if (status === 'failed') {
+        await BookingModel.updateBookingStatus(
+          payment.booking_id,
+          'COMPLETED'
+        );
+      } else if (normalizedStatus === 'FAILED') {
         await BookingModel.updatePaymentStatus(
           payment.booking_id,
-          'failed'
+          'FAILED'
         );
       }
 
@@ -155,11 +168,42 @@ class PaymentController {
 
   static _getPaymentGateway(paymentMethod) {
     const gateways = {
-      orange_money_bf: 'aggregator_om',
-      moov_money_bf: 'aggregator_moov',
-      card: 'aggregator_card',
+      ORANGE_MONEY: 'aggregator_om',
+      WAVE: 'aggregator_wave',
+      MOOV_MONEY: 'aggregator_moov',
+      CARD: 'aggregator_card',
     };
     return gateways[paymentMethod] || 'aggregator_default';
+  }
+
+  static _normalizePaymentMethod(method) {
+    if (!method || typeof method !== 'string') {
+      return null;
+    }
+    const normalized = method.trim().toUpperCase();
+    const mapping = {
+      ORANGE_MONEY_BF: 'ORANGE_MONEY',
+      ORANGE_MONEY: 'ORANGE_MONEY',
+      WAVE: 'WAVE',
+      MOOV_MONEY_BF: 'MOOV_MONEY',
+      MOOV_MONEY: 'MOOV_MONEY',
+      CARD: 'CARD',
+    };
+    return mapping[normalized] || null;
+  }
+
+  static _normalizePaymentStatus(status) {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (normalized === 'success' || normalized === 'paid' || normalized === 'completed') {
+      return 'COMPLETED';
+    }
+    if (normalized === 'failed' || normalized === 'error') {
+      return 'FAILED';
+    }
+    if (normalized === 'cancelled' || normalized === 'canceled') {
+      return 'CANCELLED';
+    }
+    return 'PENDING';
   }
 }
 

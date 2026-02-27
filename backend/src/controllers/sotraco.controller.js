@@ -1,6 +1,17 @@
 const pool = require('../database/connection');
 
 class SotracoController {
+  static async _tableExists(tableName) {
+    const query = `
+      SELECT 1
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = $1
+      LIMIT 1;
+    `;
+    const result = await pool.query(query, [tableName]);
+    return result.rowCount > 0;
+  }
+
   /**
    * Rechercher les arrêts les plus proches d'une coordonnée GPS existante
    * Utilisant la formule de Haversine pour une recherche par rayon
@@ -17,35 +28,39 @@ class SotracoController {
       const longitude = parseFloat(lng);
       const searchRadius = parseFloat(radius);
 
-      // Requête SQL utilisant la formule de Haversine
-      // Multiplie par 6371 (rayon de la Terre en km) pour obtenir la distance en km
-      const query = `
-        SELECT 
-          id, stop_name, city, address, latitude, longitude, stop_type,
-          (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * cos(radians(longitude) - radians($2)) + sin(radians($1)) * sin(radians(latitude)))) AS distance
-        FROM stops
-        WHERE stop_type = 'URBAIN'
-        HAVING (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * cos(radians(longitude) - radians($2)) + sin(radians($1)) * sin(radians(latitude)))) < $3
-        ORDER BY distance ASC
-        LIMIT 10;
-      `;
+      const hasStopsTable = await SotracoController._tableExists('stops');
+      if (!hasStopsTable) {
+        return res.status(200).json({
+          stops: [],
+          warning: 'stops table missing',
+        });
+      }
 
       // NOTE: Standard PostgreSQL ne permet pas HAVING sur un alias sélectionné sans GROUP BY.
       // Une CTE (Common Table Expression) ou une sous-requête est préférable.
-      const safeQuery = `
+      const buildQuery = (includeStopType) => `
         SELECT * FROM (
           SELECT 
-            id, stop_name, city, address, latitude, longitude, stop_type,
+            id, stop_name, city, address, latitude, longitude${includeStopType ? ', stop_type' : ''},
             (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * cos(radians(longitude) - radians($2)) + sin(radians($1)) * sin(radians(latitude)))) AS distance
           FROM stops
-          WHERE stop_type = 'URBAIN'
+          ${includeStopType ? "WHERE stop_type = 'URBAIN'" : ''}
         ) sub
         WHERE distance < $3
         ORDER BY distance ASC
         LIMIT 10;
       `;
 
-      const result = await pool.query(safeQuery, [latitude, longitude, searchRadius]);
+      let result;
+      try {
+        result = await pool.query(buildQuery(true), [latitude, longitude, searchRadius]);
+      } catch (error) {
+        if (error.code === '42703' || /stop_type/i.test(error.message)) {
+          result = await pool.query(buildQuery(false), [latitude, longitude, searchRadius]);
+        } else {
+          throw error;
+        }
+      }
 
       res.status(200).json({
         stops: result.rows
@@ -63,6 +78,14 @@ class SotracoController {
     try {
       const { stopId } = req.params;
 
+      const hasLineStopsTable = await SotracoController._tableExists('line_stops');
+      if (!hasLineStopsTable) {
+        return res.status(200).json({
+          lines: [],
+          warning: 'line_stops table missing',
+        });
+      }
+
       const query = `
         SELECT 
           l.id, l.line_code, l.line_name, l.origin_city, l.destination_city, l.base_price,
@@ -73,7 +96,18 @@ class SotracoController {
         ORDER BY l.line_name ASC;
       `;
 
-      const result = await pool.query(query, [stopId]);
+      let result;
+      try {
+        result = await pool.query(query, [stopId]);
+      } catch (error) {
+        if (error.code === '42P01' || /line_stops/i.test(error.message)) {
+          return res.status(200).json({
+            lines: [],
+            warning: 'line_stops table missing',
+          });
+        }
+        throw error;
+      }
 
       res.status(200).json({
         lines: result.rows
