@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
-import '../../config/constants.dart';
 
 /// Générateur de logos pour compagnies de transport
 /// Utilise initiale + couleur de marque
@@ -118,21 +117,6 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      String finalUrl = imageUrl!;
-      if (!finalUrl.startsWith('http') &&
-          !finalUrl.startsWith('https') &&
-          !finalUrl.startsWith('/') &&
-          !File(finalUrl).existsSync()) {
-        final baseUrl = AppConfig.apiBaseUrl;
-        if (baseUrl.endsWith('/') && finalUrl.startsWith('/')) {
-          finalUrl = baseUrl + finalUrl.substring(1);
-        } else if (!baseUrl.endsWith('/') && !finalUrl.startsWith('/')) {
-          finalUrl = '$baseUrl/$finalUrl';
-        } else {
-          finalUrl = baseUrl + finalUrl;
-        }
-      }
-
       if (imageUrl!.startsWith('/') && File(imageUrl!).existsSync()) {
         return CircleAvatar(
           radius: size / 2,
@@ -142,7 +126,7 @@ class UserAvatar extends StatelessWidget {
       }
       return CircleAvatar(
         radius: size / 2,
-        backgroundImage: NetworkImage(finalUrl),
+        backgroundImage: NetworkImage(imageUrl!),
         backgroundColor: backgroundColor ?? _getColorFromName(name),
       );
     }

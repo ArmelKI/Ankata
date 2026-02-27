@@ -167,12 +167,9 @@ class StreakDialog extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Icon(
-                        data.streakBroken
-                            ? Icons.heart_broken
-                            : Icons.local_fire_department,
-                        size: 48,
-                        color: Colors.white,
+                      child: Text(
+                        data.streakBroken ? '💔' : '🔥',
+                        style: const TextStyle(fontSize: 48),
                       ),
                     ),
                   ),
@@ -323,11 +320,7 @@ class StreakWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.local_fire_department,
-            color: Colors.white,
-            size: 20,
-          ),
+          const Text('🔥', style: TextStyle(fontSize: 20)),
           const SizedBox(width: 8),
           Text(
             '$streak jours',
