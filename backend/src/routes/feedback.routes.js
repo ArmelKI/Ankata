@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const FeedbackController = require('../controllers/feedback.controller');
-const auth = require('../middleware/auth');
+const { verifyToken } = require('../middleware/auth.middleware');
 
-router.post('/', auth, FeedbackController.submit);
-router.get('/my', auth, FeedbackController.getMyFeedback);
+router.post('/', verifyToken, FeedbackController.submit);
+router.get('/my', verifyToken, FeedbackController.getMyFeedback);
 
 module.exports = router;
