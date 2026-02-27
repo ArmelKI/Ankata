@@ -20,15 +20,15 @@ class PassengerInfoScreen extends ConsumerStatefulWidget {
 
 class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final List<TextEditingController> _nameControllers = [];
+  final List<TextEditingController> _phoneControllers = [];
   final _idNumberController = TextEditingController();
-  List<String> _selectedSeats = [];
 
-  bool _acceptTerms = false;
-  String? _idType = 'CNI';
   int _adultCount = 1;
   int _childCount = 0;
+  List<String> _selectedSeats = [];
+  bool _acceptTerms = false;
+  String? _idType = 'CNI';
 
   @override
   void initState() {
@@ -38,26 +38,44 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
       _adultCount = passengers;
     }
 
+    _syncControllers();
+
     // Pre-fill user data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(currentUserProvider);
-      if (user != null) {
+      if (user != null && _nameControllers.isNotEmpty) {
         final firstName = user['firstName'] ?? user['first_name'] ?? '';
         final lastName = user['lastName'] ?? user['last_name'] ?? '';
         setState(() {
-          _nameController.text = '$firstName $lastName'.trim();
+          _nameControllers[0].text = '$firstName $lastName'.trim();
           final phone = user['phoneNumber'] ?? user['phone_number'] ?? '';
-          _phoneController.text =
+          _phoneControllers[0].text =
               phone.startsWith('+226') ? phone.substring(4).trim() : phone;
         });
       }
     });
   }
 
+  void _syncControllers() {
+    int totalCount = _adultCount + _childCount;
+    while (_nameControllers.length < totalCount) {
+      _nameControllers.add(TextEditingController());
+      _phoneControllers.add(TextEditingController());
+    }
+    while (_nameControllers.length > totalCount) {
+      _nameControllers.removeLast().dispose();
+      _phoneControllers.removeLast().dispose();
+    }
+  }
+
   @override
   void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
+    for (var controller in _nameControllers) {
+      controller.dispose();
+    }
+    for (var controller in _phoneControllers) {
+      controller.dispose();
+    }
     _idNumberController.dispose();
     super.dispose();
   }
@@ -81,16 +99,20 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
       final seatSurcharge = _selectedSeats.length * 500; // 500 FCFA par siège
 
       try {
+        final List<Map<String, String>> passengers = [];
+        for (int i = 0; i < _nameControllers.length; i++) {
+          passengers.add({
+            'name': _nameControllers[i].text.trim(),
+            'phone': _phoneControllers[i].text.trim(),
+            'type': i < _adultCount ? 'adulte' : 'enfant',
+          });
+        }
+
         final response = await ref.read(apiServiceProvider).createBooking({
           'scheduleId': trip['scheduleId'],
           'lineId': trip['lineId'],
           'companyId': trip['companyId'],
-          'passengers': [
-            {
-              'name': _nameController.text,
-              'phone': _phoneController.text,
-            }
-          ],
+          'passengers': passengers,
           'seatNumbers': _selectedSeats,
           'departureDate': trip['date'],
           'luggageWeightKg': 0,
@@ -109,10 +131,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
             'tripDetails': '${trip['from']} → ${trip['to']}',
             'bookingCode': booking['bookingCode'],
             'trip': trip,
-            'passenger': {
-              'name': _nameController.text,
-              'phone': _phoneController.text,
-            },
+            'passenger': passengers.first, // Primary passenger for display
             'seats': _selectedSeats.join(', '),
           });
         }
@@ -174,7 +193,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                       onSeatsSelected: (seats) {
                         setState(() => _selectedSeats = seats);
                       },
-                      maxSeats: 4,
+                      maxSeats: _adultCount + _childCount,
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _buildPersonalInfo(),
@@ -353,13 +372,29 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
           _buildCounterRow('Adultes', _adultCount, (delta) {
             final next = _adultCount + delta;
             if (next < 1 || next > 9) return;
-            setState(() => _adultCount = next);
+            setState(() {
+              _adultCount = next;
+              _syncControllers();
+              // Reset seats if count decreases
+              if (_selectedSeats.length > (_adultCount + _childCount)) {
+                _selectedSeats =
+                    _selectedSeats.take(_adultCount + _childCount).toList();
+              }
+            });
           }),
           const SizedBox(height: AppSpacing.sm),
           _buildCounterRow('Enfants', _childCount, (delta) {
             final next = _childCount + delta;
             if (next < 0 || next > 9) return;
-            setState(() => _childCount = next);
+            setState(() {
+              _childCount = next;
+              _syncControllers();
+              // Reset seats if count decreases
+              if (_selectedSeats.length > (_adultCount + _childCount)) {
+                _selectedSeats =
+                    _selectedSeats.take(_adultCount + _childCount).toList();
+              }
+            });
           }),
         ],
       ),
@@ -390,57 +425,73 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
   }
 
   Widget _buildPersonalInfo() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.radiusMd,
-        boxShadow: AppShadows.shadow1,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Informations personnelles', style: AppTextStyles.h4),
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Nom complet',
-              hintText: 'Ex: Votre nom complet',
-              prefixIcon: Icon(Icons.person),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Veuillez entrer votre nom complet';
-              }
-              if (value.length < 3) {
-                return 'Le nom doit contenir au moins 3 caractères';
-              }
-              return null;
-            },
+    return Column(
+      children: List.generate(_nameControllers.length, (index) {
+        final isAdult = index < _adultCount;
+        return Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: AppRadius.radiusMd,
+            boxShadow: AppShadows.shadow1,
           ),
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            controller: _phoneController,
-            decoration: const InputDecoration(
-              labelText: 'Téléphone',
-              hintText: 'Ex: 70 12 34 56',
-              prefixIcon: Icon(Icons.phone),
-              prefixText: '+226 ',
-            ),
-            keyboardType: TextInputType.phone,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Veuillez entrer votre numéro de téléphone';
-              }
-              if (value.replaceAll(' ', '').length != 8) {
-                return 'Le numéro doit contenir 8 chiffres';
-              }
-              return null;
-            },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Passager ${index + 1} (${isAdult ? "Adulte" : "Enfant"})',
+                    style: AppTextStyles.h4,
+                  ),
+                  if (index == 0)
+                    const Icon(Icons.star, color: AppColors.primary, size: 20),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: _nameControllers[index],
+                decoration: InputDecoration(
+                  labelText: 'Nom complet',
+                  hintText: 'Ex: Nom du passager ${index + 1}',
+                  prefixIcon: const Icon(Icons.person),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer le nom';
+                  }
+                  if (value.length < 3) {
+                    return 'Le nom est trop court';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: _phoneControllers[index],
+                decoration: const InputDecoration(
+                  labelText: 'Téléphone',
+                  hintText: 'Ex: 70 12 34 56',
+                  prefixIcon: Icon(Icons.phone),
+                  prefixText: '+226 ',
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer le numéro';
+                  }
+                  if (value.replaceAll(' ', '').length != 8) {
+                    return 'Format invalide (8 chiffres)';
+                  }
+                  return null;
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }),
     );
   }
 

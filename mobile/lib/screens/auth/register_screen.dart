@@ -18,6 +18,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _referralController = TextEditingController();
   final _securityA1Controller = TextEditingController();
   final _securityA2Controller = TextEditingController();
 
@@ -40,6 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _lastNameController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _referralController.dispose();
     _securityA1Controller.dispose();
     _securityA2Controller.dispose();
     super.dispose();
@@ -71,6 +73,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         'lastName': _lastNameController.text.trim(),
         'phoneNumber': _phoneController.text.trim(),
         'password': _passwordController.text,
+        'referralCode': _referralController.text.trim().toUpperCase(),
         'securityQ1': _securityQ1,
         'securityA1': _securityA1Controller.text.trim(),
         'securityQ2': _securityQ2,
@@ -116,8 +119,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text('Inscription', style: AppTextStyles.h2),
                 const SizedBox(height: 8),
                 Text('Remplissez les informations ci-dessous',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -177,13 +180,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   validator: (v) =>
                       v!.length < 6 ? 'Minimum 6 caractères' : null,
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _referralController,
+                  decoration: InputDecoration(
+                    labelText: 'Code de parrainage (Optionnel)',
+                    prefixIcon: const Icon(Icons.card_giftcard),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Text('Questions de sécurité', style: AppTextStyles.h3),
                 const SizedBox(height: 8),
                 Text(
                     'En cas d\'oubli de mot de passe, ces questions vous permettront de le réinitialiser.',
-                    style:
-                        AppTextStyles.caption.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                    style: AppTextStyles.caption.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _securityQ1,

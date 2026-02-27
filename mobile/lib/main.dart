@@ -9,6 +9,8 @@ import 'config/app_theme.dart';
 import 'config/router.dart';
 import 'providers/app_providers.dart';
 import 'l10n/app_localizations.dart';
+import 'services/ticket_cache_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +29,10 @@ void main() async {
   await Hive.initFlutter();
   final userBox = await Hive.openBox('user_profile');
   final initialDarkMode = userBox.get('darkMode', defaultValue: false) as bool;
+
+  // Initialize Services
+  await TicketCacheService.init();
+  await NotificationService.init();
 
   runApp(
     ProviderScope(

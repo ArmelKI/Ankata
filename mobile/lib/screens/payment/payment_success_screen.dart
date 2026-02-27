@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'dart:math' as math;
-import '../../widgets/animated_button.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/notification_service.dart';
+import '../../providers/app_providers.dart';
 import '../../utils/haptic_helper.dart';
 
-class PaymentSuccessScreen extends StatefulWidget {
+class PaymentSuccessScreen extends ConsumerStatefulWidget {
   final int amount;
   final String bookingId;
 
@@ -15,10 +14,11 @@ class PaymentSuccessScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+  ConsumerState<PaymentSuccessScreen> createState() =>
+      _PaymentSuccessScreenState();
 }
 
-class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
+class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen>
     with TickerProviderStateMixin {
   late AnimationController _checkmarkController;
   late AnimationController _confettiController;
@@ -58,6 +58,50 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     Future.delayed(const Duration(milliseconds: 400), () {
       _confettiController.forward();
     });
+
+    _scheduleTripReminder();
+  }
+
+  Future<void> _scheduleTripReminder() async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final booking = await api.getBookingDetails(widget.bookingId);
+
+      final departureDateStr = booking['departure_date'] as String?;
+      final departureTimeStr = booking['departure_time'] as String?;
+
+      if (departureDateStr != null && departureTimeStr != null) {
+        // Parse date and time
+        // Example: 2024-05-20 and 08:30
+        final dateParts = departureDateStr.split('-');
+        final timeParts = departureTimeStr.split(':');
+
+        final departureDateTime = DateTime(
+          int.parse(dateParts[0]),
+          int.parse(dateParts[1]),
+          int.parse(dateParts[2]),
+          int.parse(timeParts[0]),
+          int.parse(timeParts[1]),
+        );
+
+        // Schedule 1 hour before
+        final reminderTime =
+            departureDateTime.subtract(const Duration(minutes: 60));
+
+        if (reminderTime.isAfter(DateTime.now())) {
+          await NotificationService.scheduleNotification(
+            id: widget.bookingId.hashCode,
+            title: 'Rappel de voyage 🚌',
+            body:
+                'Votre bus pour ${booking['to_city']} part dans 1 heure. N\'oubliez pas votre ticket !',
+            scheduledDate: reminderTime,
+          );
+          debugPrint('Notification scheduled for $reminderTime');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error scheduling notification: $e');
+    }
   }
 
   @override

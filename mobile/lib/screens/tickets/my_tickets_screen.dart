@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
 import '../../services/booking_service.dart';
+import '../../services/ticket_cache_service.dart';
+import '../../providers/app_providers.dart';
 
-class MyTicketsScreen extends StatefulWidget {
+class MyTicketsScreen extends ConsumerStatefulWidget {
   const MyTicketsScreen({Key? key}) : super(key: key);
 
   @override
-  State<MyTicketsScreen> createState() => _MyTicketsScreenState();
+  ConsumerState<MyTicketsScreen> createState() => _MyTicketsScreenState();
 }
 
-class _MyTicketsScreenState extends State<MyTicketsScreen>
+class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
@@ -36,59 +39,51 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
   Future<void> _loadTickets() async {
     setState(() => _isLoading = true);
 
-    // Simulation du chargement depuis l'API
-    await Future.delayed(const Duration(seconds: 1));
+    // Try to load from cache first for better UX
+    final cached = TicketCacheService.getCachedTickets();
+    if (cached.isNotEmpty) {
+      _processTickets(cached);
+    }
 
-    // Données de test (à remplacer par l'API)
+    try {
+      final api = ref.read(apiServiceProvider);
+      final resp = await api.getMyBookings();
+      final bookings = (resp['bookings'] as List<dynamic>? ?? [])
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+
+      // Filter only confirmed/completed as tickets
+      final tickets = bookings
+          .where((b) =>
+              (b['status'] ?? '') == 'confirmed' ||
+              (b['status'] ?? '') == 'completed' ||
+              (b['status'] ?? '') == 'cancelled')
+          .toList();
+
+      await TicketCacheService.cacheTickets(tickets);
+      _processTickets(tickets);
+    } catch (e) {
+      if (cached.isEmpty) {
+        // Only show error if we have no cache
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Mode hors-ligne: Affichage des derniers tickets enregistrés')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _processTickets(List<Map<String, dynamic>> tickets) {
     setState(() {
-      _upcomingTickets = [
-        {
-          'id': 'ANK123456',
-          'bookingCode': 'ANK123456',
-          'company': 'SOTRACO',
-          'from': 'Ouagadougou',
-          'to': 'Bobo-Dioulasso',
-          'date': '25 Jan 2024',
-          'departure': '08:00',
-          'arrival': '13:00',
-          'seat': 'A12',
-          'price': 8500,
-          'rating': 4.5,
-        },
-        {
-          'id': 'ANK789012',
-          'bookingCode': 'ANK789012',
-          'company': 'TSR',
-          'from': 'Ouagadougou',
-          'to': 'Koudougou',
-          'date': '28 Jan 2024',
-          'departure': '15:00',
-          'arrival': '17:00',
-          'seat': 'B8',
-          'price': 3500,
-          'rating': 4.2,
-        },
-      ];
-
-      _pastTickets = [
-        {
-          'id': 'ANK456789',
-          'bookingCode': 'ANK456789',
-          'company': 'RAKIETA',
-          'from': 'Ouagadougou',
-          'to': 'Fada N\'Gourma',
-          'date': '15 Jan 2024',
-          'departure': '09:00',
-          'arrival': '13:30',
-          'seat': 'C5',
-          'price': 6000,
-          'rating': 4.3,
-        },
-      ];
-
-      _cancelledTickets = [];
-
-      _isLoading = false;
+      _upcomingTickets =
+          tickets.where((t) => (t['status'] ?? '') == 'confirmed').toList();
+      _pastTickets =
+          tickets.where((t) => (t['status'] ?? '') == 'completed').toList();
+      _cancelledTickets =
+          tickets.where((t) => (t['status'] ?? '') == 'cancelled').toList();
     });
   }
 
