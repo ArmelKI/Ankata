@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../providers/app_providers.dart';
 
 final tripDetailsProvider =
     FutureProvider.family<Map<String, dynamic>?, String>((ref, tripId) async {

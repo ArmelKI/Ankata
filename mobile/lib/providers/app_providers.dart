@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../models/booking_model.dart';
@@ -20,6 +21,13 @@ final currentUserProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 
 /// Authentication token
 final authTokenProvider = StateProvider<String?>((ref) => null);
+
+/// Preferred locale
+final localeProvider = StateProvider<Locale>((ref) => const Locale('fr'));
+
+/// Dynamic theme primary color
+final dynamicThemeProvider =
+    StateProvider<Color>((ref) => const Color(0xFF21808D));
 
 // ============================================================================
 // SEARCH & FILTER PROVIDERS

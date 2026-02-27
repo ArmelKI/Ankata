@@ -7,7 +7,7 @@ import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
 import '../../services/favorites_service.dart';
-import '../../services/company_logo_service.dart';
+import '../../services/company_logo_service.dart' hide CompanyColors;
 import '../../widgets/stops_list_widget.dart';
 
 class TripSearchResultsScreen extends ConsumerStatefulWidget {
