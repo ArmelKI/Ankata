@@ -1,3 +1,6 @@
+const pool = require('../database/connection');
+
+class BookingModel {
   static async getCancelledBookings(userId) {
     const query = `
       SELECT b.*, l.origin_city, l.destination_city, l.company_id,
@@ -12,9 +15,7 @@
     const result = await pool.query(query, [userId]);
     return result.rows;
   }
-const pool = require('../database/connection');
 
-class BookingModel {
   static async create(data) {
     const {
       bookingCode, userId, scheduleId, lineId,
