@@ -2,21 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/company_logo_service.dart';
 
-class LogoParams {
-  final String companyName;
-  final double width;
-  final double height;
-  final String? logoUrl;
-
-  LogoParams({
-    required this.companyName,
-    required this.width,
-    required this.height,
-    this.logoUrl,
-  });
-}
-
-final companyLogoProvider = Provider.family<Widget, LogoParams>((ref, params) {
+final companyLogoProvider = Provider.family<Widget, ({
+  required String companyName,
+  required double width,
+  required double height,
+  String? logoUrl,
+})>((ref, params) {
   if (params.logoUrl != null && params.logoUrl!.isNotEmpty) {
     return CompanyLogoService.getCompanyLogoFromUrl(
       logoUrl: params.logoUrl,

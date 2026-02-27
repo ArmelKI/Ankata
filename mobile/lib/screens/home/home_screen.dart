@@ -8,7 +8,6 @@ import '../../data/all_companies_data.dart';
 import '../../widgets/animated_button.dart';
 import '../../utils/haptic_helper.dart';
 import '../../services/search_history_service.dart';
-import '../../services/update_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -33,13 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _selectedOrigin = null;
     _selectedDestination = null;
     _loadRecentSearches();
-
-    // Check for updates
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        UpdateService.checkUpdate(context);
-      }
-    });
   }
 
   void _searchTrips() {
@@ -113,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Immersive curved header
                   Container(
                     width: double.infinity,
-                    height: 280,
+                    height: 260,
                     decoration: const BoxDecoration(
                       gradient: AppGradients.primaryGradient,
                       borderRadius: BorderRadius.vertical(
@@ -128,25 +120,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Bienvenue sur',
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                        color:
-                                            AppColors.white.withOpacity(0.8)),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    'Ankata.',
-                                    style: AppTextStyles.h1
-                                        .copyWith(color: AppColors.white),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Bienvenue sur',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.white.withOpacity(0.8)),
+                                ),
+                                Text(
+                                  'Ankata.',
+                                  style: AppTextStyles.h1
+                                      .copyWith(color: AppColors.white),
+                                ),
+                              ],
                             ),
                             Container(
                               decoration: BoxDecoration(
@@ -168,12 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          'Où voulez-vous\naller aujourd\'hui ?',
-                          style: AppTextStyles.h2.copyWith(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.w500,
+                        const SizedBox(height: AppSpacing.lg),
+                        Expanded(
+                          child: Text(
+                            'Où souhaitez-vous\naller aujourd\'hui ?',
+                            style: AppTextStyles.h2.copyWith(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
@@ -441,8 +430,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-
-              _buildQuickServices(),
 
               if (_recentSearches.isNotEmpty)
                 Padding(
@@ -769,78 +756,5 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     return null;
-  }
-
-  Widget _buildQuickServices() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Services Rapides', style: AppTextStyles.h4),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              _buildServiceItem(
-                'Gares',
-                Icons.map_outlined,
-                AppColors.primary,
-                () => context.push('/stations'),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              _buildServiceItem(
-                'SOTRACO',
-                Icons.directions_bus_outlined,
-                Colors.orange,
-                () => context.push('/sotraco'),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              _buildServiceItem(
-                'Promotions',
-                Icons.local_offer_outlined,
-                AppColors.success,
-                () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Aucune promotion en ce moment')),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xl),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildServiceItem(
-      String title, IconData icon, Color color, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          HapticHelper.lightImpact();
-          onTap();
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: AppRadius.radiusMd,
-            boxShadow: AppShadows.shadow1,
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

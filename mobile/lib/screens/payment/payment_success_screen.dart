@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
-import '../../services/notification_service.dart';
-import '../../providers/app_providers.dart';
-import '../../utils/haptic_helper.dart';
 import '../../widgets/animated_button.dart';
-import '../../services/xp_service.dart';
+import '../../utils/haptic_helper.dart';
 
-class PaymentSuccessScreen extends ConsumerStatefulWidget {
+class PaymentSuccessScreen extends StatefulWidget {
   final int amount;
   final String bookingId;
 
@@ -19,11 +15,10 @@ class PaymentSuccessScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PaymentSuccessScreen> createState() =>
-      _PaymentSuccessScreenState();
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
 }
 
-class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen>
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     with TickerProviderStateMixin {
   late AnimationController _checkmarkController;
   late AnimationController _confettiController;
@@ -63,76 +58,6 @@ class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen>
     Future.delayed(const Duration(milliseconds: 400), () {
       _confettiController.forward();
     });
-
-    _scheduleTripReminder();
-    _awardXP();
-  }
-
-  Future<void> _awardXP() async {
-    // Award XP for successful booking
-    final xpAmount = XPService.xpActions['booking'] ?? 10;
-    final levelUp =
-        await XPService.addXP(xpAmount, reason: 'Réservation réussie');
-
-    if (mounted) {
-      if (levelUp != null) {
-        LevelUpDialog.show(context, levelUp);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('+ $xpAmount XP ! Continue comme ça ! 🚀'),
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green,
-            margin: const EdgeInsets.all(16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _scheduleTripReminder() async {
-    try {
-      final api = ref.read(apiServiceProvider);
-      final booking = await api.getBookingDetails(widget.bookingId);
-
-      final departureDateStr = booking['departure_date'] as String?;
-      final departureTimeStr = booking['departure_time'] as String?;
-
-      if (departureDateStr != null && departureTimeStr != null) {
-        // Parse date and time
-        // Example: 2024-05-20 and 08:30
-        final dateParts = departureDateStr.split('-');
-        final timeParts = departureTimeStr.split(':');
-
-        final departureDateTime = DateTime(
-          int.parse(dateParts[0]),
-          int.parse(dateParts[1]),
-          int.parse(dateParts[2]),
-          int.parse(timeParts[0]),
-          int.parse(timeParts[1]),
-        );
-
-        // Schedule 1 hour before
-        final reminderTime =
-            departureDateTime.subtract(const Duration(minutes: 60));
-
-        if (reminderTime.isAfter(DateTime.now())) {
-          await NotificationService.scheduleNotification(
-            id: widget.bookingId.hashCode,
-            title: 'Rappel de voyage 🚌',
-            body:
-                'Votre bus pour ${booking['to_city']} part dans 1 heure. N\'oubliez pas votre ticket !',
-            scheduledDate: reminderTime,
-          );
-          debugPrint('Notification scheduled for $reminderTime');
-        }
-      }
-    } catch (e) {
-      debugPrint('Error scheduling notification: $e');
-    }
   }
 
   @override

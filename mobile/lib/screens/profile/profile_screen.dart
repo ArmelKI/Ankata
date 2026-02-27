@@ -6,11 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/app_theme.dart';
 import '../../services/favorites_service.dart';
-import '../../services/xp_service.dart';
+import '../../widgets/referral_dialog.dart';
 import '../../widgets/company_logo.dart';
 import '../../widgets/edit_profile_dialog.dart';
 import '../../utils/haptic_helper.dart';
 import '../../providers/app_providers.dart';
+import '../../config/constants.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -22,70 +23,12 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
   bool _smsEnabled = true;
-  bool _biometricEnabled = false;
-  bool _isBiometricAvailable = false;
   String? _photoPath;
-  int _currentXP = 0;
-  int _currentLevel = 1;
 
   @override
   void initState() {
     super.initState();
     _loadProfilePhoto();
-    _checkBiometrics();
-    _loadXP();
-  }
-
-  Future<void> _loadXP() async {
-    final xp = await XPService.getXP();
-    final level = await XPService.getLevel();
-    if (mounted) {
-      setState(() {
-        _currentXP = xp;
-        _currentLevel = level;
-      });
-    }
-    _checkProfileCompletionXP();
-  }
-
-  Future<void> _checkProfileCompletionXP() async {
-    final prefs = await SharedPreferences.getInstance();
-    final profileCompletedAwarded =
-        prefs.getBool('profile_completed_xp_awarded') ?? false;
-
-    if (profileCompletedAwarded) return;
-
-    final user = ref.read(currentUserProvider);
-    if (user != null) {
-      final email = user['email'] as String? ?? '';
-      final cnib = user['cnib'] as String? ?? '';
-
-      if (email.isNotEmpty && cnib.isNotEmpty) {
-        final levelUp = await XPService.addXP(
-            XPService.xpActions['profile_complete'] ?? 50,
-            reason: 'Profil completé');
-        await prefs.setBool('profile_completed_xp_awarded', true);
-
-        if (mounted) {
-          _loadXP(); // Refresh XP display
-          if (levelUp != null) {
-            LevelUpDialog.show(context, levelUp);
-          }
-        }
-      }
-    }
-  }
-
-  Future<void> _checkBiometrics() async {
-    final bioService = ref.read(biometricServiceProvider);
-    final available = await bioService.isAvailable();
-    final enabled = await bioService.isEnabled();
-    if (mounted) {
-      setState(() {
-        _isBiometricAvailable = available;
-        _biometricEnabled = enabled;
-      });
-    }
   }
 
   Future<void> _loadProfilePhoto() async {
@@ -101,6 +44,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     try {
       if (!mounted) return;
+
+      // Update local optimistically
       setState(() => _photoPath = image.path);
 
       final apiService = ref.read(apiServiceProvider);
@@ -111,6 +56,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         final box = Hive.box('user_profile');
         await box.put('avatarUrl', serverUrl);
 
+        // Update user provider
         final currentUser = ref.read(currentUserProvider);
         if (currentUser != null) {
           final updatedUser = Map<String, dynamic>.from(currentUser);
@@ -153,21 +99,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           children: [
             _buildProfileHeader(),
             const SizedBox(height: AppSpacing.md),
-            _buildGamificationCard(),
-            const SizedBox(height: AppSpacing.md),
             _buildPersonalInfoSection(),
             const SizedBox(height: AppSpacing.md),
-            _buildPassengersSection(),
-            const SizedBox(height: AppSpacing.md),
-            _buildReferralSection(),
+            _buildReferralSection(), // 🎁 Referral (100F par ami, max 15)
             const SizedBox(height: AppSpacing.md),
             _buildNotificationsSection(),
-            const SizedBox(height: AppSpacing.md),
-            _buildSupportSection(),
             const SizedBox(height: AppSpacing.md),
             _buildPreferencesSection(),
             const SizedBox(height: AppSpacing.md),
             _buildFavoritesSection(),
+            const SizedBox(height: AppSpacing.md),
+            _buildSupportSection(),
             const SizedBox(height: AppSpacing.md),
             _buildAboutSection(),
             const SizedBox(height: AppSpacing.md),
@@ -192,6 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       color: AppColors.white,
       child: Column(
         children: [
+          // 🎨 User Avatar (NOUVEAU - remplace l'initiale simple)
           Stack(
             children: [
               UserAvatar(
@@ -227,10 +170,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(fullName, style: AppTextStyles.h3),
+          Text(
+            fullName,
+            style: AppTextStyles.h3,
+          ),
           const SizedBox(height: AppSpacing.xs),
-          Text(phone,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray)),
+          Text(
+            phone,
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+          ),
           const SizedBox(height: AppSpacing.md),
           ElevatedButton.icon(
             onPressed: () {
@@ -241,31 +189,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             label: const Text('Modifier le profil'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildGamificationCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: XPBar(xp: _currentXP, level: _currentLevel),
     );
   }
 
   Widget _buildPersonalInfoSection() {
-    final user = ref.watch(currentUserProvider);
-    final cnib = user?['cnib'] as String? ?? 'Non renseigné';
-    final gender = user?['gender'] as String? ?? 'Non renseigné';
-    final dob =
-        user?['dateOfBirth'] as String? ?? user?['date_of_birth'] as String?;
-    final dobDisplay =
-        dob != null && dob.isNotEmpty ? dob.split('T').first : 'Non renseignée';
-    final email = user?['email'] as String? ?? 'Non renseigné';
-
     return Container(
       color: AppColors.white,
       child: Column(
@@ -273,47 +207,83 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Informations personnelles',
-                    style: AppTextStyles.bodyLarge
-                        .copyWith(fontWeight: FontWeight.w600)),
-                TextButton.icon(
-                  onPressed: () {
-                    HapticHelper.lightImpact();
-                    _showEditProfileDialog();
-                  },
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('Modifier'),
-                ),
-              ],
+            child: Text(
+              'Informations personnelles',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           _buildListItem(
-              Icons.badge, 'Numéro CNIB', cnib, () => _showEditProfileDialog()),
+            Icons.badge,
+            'Num\u00e9ro CNIB',
+            'B123456789',
+            () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text(
+                        'Modification CNIB en cours de d\u00e9veloppement')),
+              );
+            },
+          ),
           const Divider(height: 1),
           _buildListItem(
-              Icons.person, 'Sexe', gender, () => _showEditProfileDialog()),
-          const Divider(height: 1),
-          _buildListItem(Icons.calendar_today, 'Date de naissance', dobDisplay,
-              () => _showEditProfileDialog()),
+            Icons.person,
+            'Sexe',
+            'Masculin',
+            () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('S\u00e9lectionner le sexe'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RadioListTile<String>(
+                        title: const Text('Masculin'),
+                        value: 'Masculin',
+                        groupValue: 'Masculin',
+                        onChanged: (value) => Navigator.pop(context),
+                      ),
+                      RadioListTile<String>(
+                        title: const Text('F\u00e9minin'),
+                        value: 'F\u00e9minin',
+                        groupValue: 'Masculin',
+                        onChanged: (value) => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
           const Divider(height: 1),
           _buildListItem(
-              Icons.email, 'Email', email, () => _showEditProfileDialog()),
+            Icons.calendar_today,
+            'Date de naissance',
+            '15 Janvier 1990',
+            () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: DateTime(1990, 1, 15),
+                firstDate: DateTime(1940),
+                lastDate: DateTime.now(),
+              );
+              if (date != null && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'Date s\u00e9lectionn\u00e9e: ${date.day}/${date.month}/${date.year}')),
+                );
+              }
+            },
+          ),
         ],
       ),
     );
   }
 
+  // 💰 NOUVEAU: Section Premium & Referral
   Widget _buildReferralSection() {
-    final user = ref.watch(currentUserProvider);
-    final referralCode = user?['referralCode'] as String? ??
-        user?['referral_code'] as String? ??
-        'CODE?';
-    final walletBalance =
-        user?['walletBalance'] as int? ?? user?['wallet_balance'] as int? ?? 0;
-
     return Container(
       color: AppColors.white,
       child: Column(
@@ -321,51 +291,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('Parrainage',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
-          ),
-          if (walletBalance > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    borderRadius: AppRadius.radiusSm),
-                child: Row(
-                  children: [
-                    const Icon(Icons.account_balance_wallet,
-                        color: AppColors.success, size: 20),
-                    const SizedBox(width: 8),
-                    Text('Solde bonus: $walletBalance FCFA',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
+            child: Text(
+              'Gagne Des Points',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
+          ),
           _buildListItem(
             Icons.card_giftcard,
             'Parrainer un ami',
-            'Ton ami s\'inscrit avec ton code => tu gagnes 100F !\nTon code: $referralCode',
+            'Gagne 100F par personne. Max 15. Ton ami aussi!',
             () {
               HapticHelper.lightImpact();
-              context.push('/profile/referral');
+              ReferralDialog.show(context, referralCode: 'USER123');
             },
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.shade200)),
-              child: Text('+100F',
-                  style: TextStyle(
-                      color: Colors.green.shade700,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700)),
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Text(
+                '+100F',
+                style: TextStyle(
+                  color: Colors.green.shade700,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ],
@@ -381,23 +335,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('Notifications',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Notifications',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
           _buildSwitchItem(
-              Icons.notifications,
-              'Notifications push',
-              'Recevoir des notifications sur l\'application',
-              _notificationsEnabled,
-              (value) => setState(() => _notificationsEnabled = value)),
+            Icons.notifications,
+            'Notifications push',
+            'Recevoir des notifications sur l\'application',
+            _notificationsEnabled,
+            (value) {
+              setState(() => _notificationsEnabled = value);
+            },
+          ),
           const Divider(height: 1),
           _buildSwitchItem(
-              Icons.sms,
-              'Notifications SMS',
-              'Recevoir des SMS pour vos réservations',
-              _smsEnabled,
-              (value) => setState(() => _smsEnabled = value)),
+            Icons.sms,
+            'Notifications SMS',
+            'Recevoir des SMS pour vos réservations',
+            _smsEnabled,
+            (value) {
+              setState(() => _smsEnabled = value);
+            },
+          ),
         ],
       ),
     );
@@ -405,6 +367,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildPreferencesSection() {
     final isDarkMode = ref.watch(darkModeProvider);
+
     return Container(
       color: AppColors.white,
       child: Column(
@@ -412,43 +375,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('Préférences',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Préférences',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
           _buildListItem(
-              Icons.language,
-              'Langue',
-              'Modifier la langue de l\'application',
-              () => _showLanguageDialog()),
+            Icons.language,
+            'Langue',
+            'Français',
+            () {
+              _showLanguageDialog();
+            },
+          ),
           const Divider(height: 1),
-          _buildListItem(Icons.dark_mode, 'Thème',
-              isDarkMode ? 'Sombre' : 'Clair', () => _showThemeDialog()),
+          _buildListItem(
+            Icons.dark_mode,
+            'Thème',
+            isDarkMode ? 'Sombre' : 'Clair',
+            () {
+              _showThemeDialog();
+            },
+          ),
           const Divider(height: 1),
-          _buildListItem(Icons.location_on, 'Localisation par défaut',
-              'Ouagadougou', () {}),
-          if (_isBiometricAvailable) ...[
-            const Divider(height: 1),
-            _buildSwitchItem(
-              Icons.fingerprint,
-              'Authentification biométrique',
-              'Sécuriser les actions sensibles',
-              _biometricEnabled,
-              (value) async {
-                final bioService = ref.read(biometricServiceProvider);
-                if (value) {
-                  final authenticated = await bioService.authenticate();
-                  if (authenticated) {
-                    await bioService.setEnabled(true);
-                    setState(() => _biometricEnabled = true);
-                  }
-                } else {
-                  await bioService.setEnabled(false);
-                  setState(() => _biometricEnabled = false);
-                }
-              },
-            ),
-          ],
+          _buildListItem(
+            Icons.location_on,
+            'Localisation par défaut',
+            'Ouagadougou',
+            () {},
+          ),
         ],
       ),
     );
@@ -462,21 +418,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('Favoris',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Favoris',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
           FutureBuilder<List<Map<String, dynamic>>>(
-            future: FavoritesService.getFavorites(
-                api: ref.read(apiServiceProvider)),
+            future: FavoritesService.getFavorites(),
             builder: (context, snapshot) {
               final favorites = snapshot.data ?? [];
               if (favorites.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text('Aucun trajet favori pour le moment.',
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.gray)),
+                  child: Text(
+                    'Aucun trajet favori pour le moment.',
+                    style:
+                        AppTextStyles.bodySmall.copyWith(color: AppColors.gray),
+                  ),
                 );
               }
               return Column(
@@ -508,21 +467,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('Assistance & Feedback',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Assistance',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
-          _buildListItem(Icons.help_outline, 'Centre d\'aide', 'FAQ et guides',
-              () => context.push('/faq')),
-          const Divider(height: 1),
-          _buildListItem(Icons.support_agent_outlined, 'Contacter le support',
-              'Parler à un de nos agents', () => _showContactDialog()),
+          _buildListItem(
+            Icons.help,
+            'Centre d\'aide',
+            'FAQ et guides',
+            () => context.push('/faq'),
+          ),
           const Divider(height: 1),
           _buildListItem(
-              Icons.feedback_outlined,
-              'Envoyer un feedback',
-              'Signalez un bug ou suggérez une idée',
-              () => context.push('/feedback')),
+            Icons.message,
+            'Contacter le support',
+            'Nous sommes là pour vous aider',
+            () {
+              _showContactDialog();
+            },
+          ),
+          const Divider(height: 1),
+          _buildListItem(
+            Icons.feedback,
+            'Envoyer un feedback',
+            'Aidez-nous à améliorer l\'application',
+            () => context.push('/feedback'),
+          ),
         ],
       ),
     );
@@ -536,34 +508,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('À propos',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
+            child: Text(
+              'À propos',
+              style:
+                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
-          _buildListItem(Icons.description, 'Conditions générales',
-              'Conditions d\'utilisation', () => context.push('/legal/terms')),
+          _buildListItem(
+            Icons.description,
+            'Conditions générales',
+            'Conditions d\'utilisation',
+            () => context.push('/legal/terms'),
+          ),
           const Divider(height: 1),
           _buildListItem(
-              Icons.privacy_tip,
-              'Politique de confidentialité',
-              'Protection de vos données',
-              () => context.push('/legal/privacy')),
+            Icons.privacy_tip,
+            'Politique de confidentialité',
+            'Protection de vos données',
+            () => context.push('/legal/privacy'),
+          ),
           const Divider(height: 1),
-          _buildListItem(Icons.info, 'Version', '1.0.0 (Build 1)', null),
+          _buildListItem(
+            Icons.info,
+            'Version',
+            '1.0.0 (Build 1)',
+            null,
+          ),
         ],
       ),
     );
   }
 
   Widget _buildListItem(
-      IconData icon, String title, String subtitle, VoidCallback? onTap,
-      {Widget? trailing}) {
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback? onTap, {
+    Widget? trailing, // NOUVEAU: trailing custom optionnel
+  }) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: AppRadius.radiusSm),
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: AppRadius.radiusSm,
+        ),
         child: Icon(icon, color: AppColors.primary, size: 20),
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
@@ -577,23 +566,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildSwitchItem(IconData icon, String title, String subtitle,
-      bool value, Function(bool) onChanged) {
+  Widget _buildSwitchItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    bool value,
+    Function(bool) onChanged,
+  ) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: AppRadius.radiusSm),
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: AppRadius.radiusSm,
+        ),
         child: Icon(icon, color: AppColors.primary, size: 20),
       ),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: Text(subtitle,
           style: AppTextStyles.caption.copyWith(color: AppColors.gray)),
       trailing: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeThumbColor: AppColors.primary),
+        value: value,
+        onChanged: onChanged,
+        activeThumbColor: AppColors.primary,
+      ),
     );
   }
 
@@ -603,7 +599,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: () => _showLogoutDialog(),
+          onPressed: () {
+            _showLogoutDialog();
+          },
           icon: const Icon(Icons.logout),
           label: const Text('Se déconnecter'),
           style: OutlinedButton.styleFrom(
@@ -619,6 +617,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void _showEditProfileDialog() {
     final user = ref.read(currentUserProvider);
     final apiService = ref.read(apiServiceProvider);
+
     showDialog(
       context: context,
       builder: (context) => EditProfileDialog(
@@ -626,30 +625,41 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         onSave: (updatedData) async {
           try {
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+
+            // Show loading
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
                 content: Text('Mise à jour en cours...'),
-                duration: Duration(seconds: 2)));
+                duration: Duration(seconds: 5),
+              ),
+            );
+
+            // Call API
             final userId = user?['id'] ?? user?['userId'] ?? '';
             await apiService.updateUserProfile(userId, updatedData);
-            if (mounted) {
-              final updatedUser = {...?user, ...updatedData};
-              ref.read(currentUserProvider.notifier).state = updatedUser;
 
-              // Persist to Hive for local caching
-              final box = Hive.box('user_profile');
-              await box.put('userData', updatedUser);
-              if (updatedData.containsKey('profilePictureUrl')) {
-                await box.put('avatarUrl', updatedData['profilePictureUrl']);
-              }
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            // Update local provider
+            if (mounted) {
+              ref.read(currentUserProvider.notifier).state = {
+                ...?user,
+                ...updatedData,
+              };
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
                   content: Text('Profil mis à jour avec succès'),
-                  backgroundColor: AppColors.success));
-              _loadXP(); // Check for profile completion XP
+                  backgroundColor: AppColors.success,
+                ),
+              );
             }
           } catch (e) {
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Erreur: $e'), backgroundColor: AppColors.error));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Erreur: $e'),
+                backgroundColor: AppColors.error,
+              ),
+            );
           }
         },
       ),
@@ -657,7 +667,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showLanguageDialog() {
-    final currentLocale = ref.watch(localeProvider);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -668,33 +677,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             RadioListTile<String>(
               title: const Text('Français'),
               value: 'fr',
-              groupValue: currentLocale.languageCode,
+              groupValue: 'fr',
               onChanged: (value) {
-                if (value == null) return;
-                ref.read(localeProvider.notifier).state = Locale(value);
-                Hive.box('user_profile').put('locale', value);
                 Navigator.pop(context);
               },
               activeColor: AppColors.primary,
             ),
-            RadioListTile<String>(
-              title: const Text('English'),
+            const RadioListTile<String>(
+              title: Text('English (à venir)'),
               value: 'en',
-              groupValue: currentLocale.languageCode,
-              onChanged: (value) {
-                if (value == null) return;
-                ref.read(localeProvider.notifier).state = Locale(value);
-                Hive.box('user_profile').put('locale', value);
-                Navigator.pop(context);
-              },
-              activeColor: AppColors.primary,
+              groupValue: 'fr',
+              onChanged: null,
             ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fermer'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fermer'),
+          ),
         ],
       ),
     );
@@ -702,6 +703,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showThemeDialog() {
     final isDarkMode = ref.watch(darkModeProvider);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -737,8 +739,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fermer'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fermer'),
+          ),
         ],
       ),
     );
@@ -762,8 +765,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fermer'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fermer'),
+          ),
         ],
       ),
     );
@@ -787,57 +791,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
+              // Implémenter la déconnexion : vider le token et le cache local
               try {
                 await ref.read(apiServiceProvider).clearToken();
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.clear();
-                if (context.mounted) context.go('/phone-auth');
+
+                if (context.mounted) {
+                  context.go('/phone-auth');
+                }
               } catch (e) {
-                if (context.mounted)
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Erreur lors de la déconnexion')));
+                    SnackBar(content: Text('Erreur lors de la déconnexion')),
+                  );
+                }
               }
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Se déconnecter'),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPassengersSection() {
-    return Container(
-      color: AppColors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text('Gestion des Passagers',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(fontWeight: FontWeight.w600)),
-          ),
-          _buildListItem(
-              Icons.account_balance_wallet_outlined,
-              'Portefeuille Ankata',
-              'Gérez votre solde et transactions',
-              () => context.push('/wallet/transactions')),
-          _buildListItem(
-              Icons.notifications_active_outlined,
-              'Mes Alertes Prix',
-              'Recevez des alertes sur les tarifs',
-              () => context.push('/profile/price-alerts')),
-          _buildListItem(
-              Icons.people_outline,
-              'Passagers enregistrés',
-              'Gérez vos compagnons de voyage fréquents',
-              () => context.push('/profile/passengers')),
         ],
       ),
     );

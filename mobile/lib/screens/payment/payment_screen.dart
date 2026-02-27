@@ -5,12 +5,8 @@ import '../../services/payment_service.dart';
 import '../../widgets/animated_button.dart';
 import '../../utils/haptic_helper.dart';
 import '../../widgets/progress_stepper.dart';
-import '../../config/app_theme.dart';
-import '../../providers/app_providers.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../widgets/stripe_payment_sheet.dart';
 
-class PaymentScreen extends ConsumerStatefulWidget {
+class PaymentScreen extends StatefulWidget {
   final int amount;
   final String bookingId;
   final String tripDetails;
@@ -27,21 +23,15 @@ class PaymentScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PaymentScreen> createState() => _PaymentScreenState();
+  State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentScreenState extends ConsumerState<PaymentScreen>
+class _PaymentScreenState extends State<PaymentScreen>
     with SingleTickerProviderStateMixin {
   PaymentMethod _selectedMethod = PaymentMethod.orangeMoney;
   bool _isProcessing = false;
   final _phoneController = TextEditingController();
-  final _promoController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
-  int _discountAmount = 0;
-  bool _isApplyingPromo = false;
-  String? _appliedPromoCode;
-  String? _promoError;
 
   @override
   void initState() {
@@ -51,7 +41,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
   @override
   void dispose() {
     _phoneController.dispose();
-    _promoController.dispose();
     super.dispose();
   }
 
@@ -94,11 +83,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
 
                     const SizedBox(height: 24),
 
-                    // Promo Code Section
-                    _buildPromoCodeSection(),
-
-                    const SizedBox(height: 24),
-
                     // Payment method title
                     const Text(
                       'Choisir le mode de paiement',
@@ -113,29 +97,29 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
                     // Payment methods
                     _buildPaymentMethodCard(
                       method: PaymentMethod.orangeMoney,
-                      icon: 'OM',
+                      icon: '🟠',
                       title: 'Orange Money',
-                      subtitle: 'Paiement instantane et securise',
-                      badge: '70% marche',
+                      subtitle: 'Paiement instantané et sécurisé',
+                      badge: '70% marché',
                     ),
 
                     const SizedBox(height: 12),
 
                     _buildPaymentMethodCard(
                       method: PaymentMethod.mtnMoney,
-                      icon: 'MM',
+                      icon: '🟡',
                       title: 'MTN Mobile Money',
-                      subtitle: 'Paiement instantane et securise',
-                      badge: '20% marche',
+                      subtitle: 'Paiement instantané et sécurisé',
+                      badge: '20% marché',
                     ),
 
                     const SizedBox(height: 12),
 
                     _buildPaymentMethodCard(
                       method: PaymentMethod.card,
-                      icon: 'CB',
+                      icon: '💳',
                       title: 'Carte bancaire',
-                      subtitle: 'Visa, Mastercard acceptees',
+                      subtitle: 'Visa, Mastercard acceptées',
                       badge: 'International',
                     ),
 
@@ -166,7 +150,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
         child: AnimatedButton(
           text: _isProcessing
               ? 'Traitement en cours...'
-              : 'Payer ${PaymentService.formatAmount(widget.amount - _discountAmount)}',
+              : 'Payer ${PaymentService.formatAmount(widget.amount)}',
           isLoading: _isProcessing,
           onPressed: _processPayment,
           icon: _isProcessing ? null : Icons.lock_outline,
@@ -265,7 +249,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            PaymentService.formatAmount(widget.amount - _discountAmount),
+            PaymentService.formatAmount(widget.amount),
             style: const TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w700,
@@ -332,145 +316,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
                 ),
               ],
             ),
-            if (_discountAmount > 0) ...[
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Réduction Code Promo (${_appliedPromoCode})',
-                    style:
-                        TextStyle(color: Colors.green.shade200, fontSize: 13),
-                  ),
-                  Text(
-                    '- ${PaymentService.formatAmount(_discountAmount)}',
-                    style: TextStyle(
-                        color: Colors.green.shade200,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ],
           ],
         ],
       ),
     );
-  }
-
-  Widget _buildPromoCodeSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: AppShadows.shadow1,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Code Promo',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _promoController,
-                  decoration: InputDecoration(
-                    hintText: 'Ex: WELCOME10',
-                    errorText: _promoError,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  enabled: !_isApplyingPromo && _appliedPromoCode == null,
-                ),
-              ),
-              const SizedBox(width: 12),
-              if (_appliedPromoCode == null)
-                ElevatedButton(
-                  onPressed: _isApplyingPromo ? null : _handleApplyPromo,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  child: _isApplyingPromo
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Text('Appliquer'),
-                )
-              else
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _appliedPromoCode = null;
-                      _discountAmount = 0;
-                      _promoController.clear();
-                    });
-                  },
-                  icon: const Icon(Icons.cancel, color: AppColors.error),
-                ),
-            ],
-          ),
-          if (_appliedPromoCode != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'Code $_appliedPromoCode appliqué avec succès !',
-                style: const TextStyle(color: Colors.green, fontSize: 12),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _handleApplyPromo() async {
-    final code = _promoController.text.trim();
-    if (code.isEmpty) return;
-
-    setState(() {
-      _isApplyingPromo = true;
-      _promoError = null;
-    });
-
-    try {
-      final api = ref.read(apiServiceProvider);
-      final result = await api.validatePromoCode(code, widget.amount);
-
-      if (mounted) {
-        setState(() {
-          _isApplyingPromo = false;
-          _appliedPromoCode = code;
-          _discountAmount = (result['discountAmount'] as num).toInt();
-        });
-
-        HapticHelper.success();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Code promo appliqué !'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isApplyingPromo = false;
-          _promoError = e.toString().contains('400')
-              ? 'Code promo invalide ou expiré'
-              : 'Erreur lors de la validation';
-        });
-        HapticHelper.error();
-      }
-    }
   }
 
   Widget _buildPaymentMethodCard({
@@ -862,13 +711,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
   }
 
   void _showCardPaymentSheet() {
-    StripePaymentSheet.show(
-      context,
-      amount: widget.amount,
-      onPaymentSuccess: () {
-        HapticHelper.success();
-        _navigateToSuccessScreen();
-      },
+    // TODO: Implement Stripe payment sheet
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Paiement par carte bientôt disponible'),
+      ),
     );
     setState(() => _isProcessing = false);
   }
