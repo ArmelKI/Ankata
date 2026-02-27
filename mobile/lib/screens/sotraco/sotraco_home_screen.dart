@@ -623,18 +623,40 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                         dense: true,
                         title: Text(t.typeTarif,
                             style: const TextStyle(fontSize: 13)),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(t.montant,
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12)),
+                        subtitle: t.typeTarif.contains('Abonnement')
+                            ? Text('Valide pour la période indiquée',
+                                style: AppTextStyles.caption)
+                            : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(t.montant,
+                                style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12)),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: () => _handlePayment(context, t),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 0),
+                                minimumSize: const Size(60, 30),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              child: Text(
+                                t.typeTarif.contains('Abonnement')
+                                    ? 'S\'abonner'
+                                    : 'Acheter',
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       if (entry.key < tarifs.length - 1)
@@ -649,5 +671,18 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
         }),
       ],
     );
+  }
+
+  void _handlePayment(BuildContext context, SotracoTarif tarif) {
+    // Parse amount from string like "200 F CFA" or "1 000 F CFA"
+    final amountString = tarif.montant.replaceAll(RegExp(r'[^0-9]'), '');
+    final amount = int.tryParse(amountString) ?? 0;
+
+    context.push('/payment', extra: {
+      'amount': amount,
+      'bookingId':
+          'SOTRACO-${tarif.ville}-${DateTime.now().millisecondsSinceEpoch}',
+      'tripDetails': 'SOTRACO ${tarif.ville} - ${tarif.typeTarif}',
+    });
   }
 }

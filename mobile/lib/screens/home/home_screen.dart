@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Immersive curved header
                   Container(
                     width: double.infinity,
-                    height: 260,
+                    height: 280,
                     decoration: const BoxDecoration(
                       gradient: AppGradients.primaryGradient,
                       borderRadius: BorderRadius.vertical(
@@ -168,14 +168,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Expanded(
-                          child: Text(
-                            'Où souhaitez-vous\naller aujourd\'hui ?',
-                            style: AppTextStyles.h2.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Où voulez-vous\naller aujourd\'hui ?',
+                          style: AppTextStyles.h2.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],

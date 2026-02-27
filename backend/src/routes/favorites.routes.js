@@ -1,14 +1,18 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/auth');
+const FavoriteModel = require('../models/Favorite');
 
 const router = express.Router();
 
-// Get user favorites (Mocked for now since table doesn't exist)
+// Get user favorites
 router.get('/', authMiddleware, async (req, res) => {
   try {
+    const userId = req.user.id;
+    const favorites = await FavoriteModel.findByUserId(userId);
+
     res.status(200).json({
-      favorites: [],
-      count: 0
+      favorites,
+      count: favorites.length
     });
   } catch (error) {
     console.error('Get favorites error:', error);
@@ -22,8 +26,23 @@ router.get('/', authMiddleware, async (req, res) => {
 // Add favorite
 router.post('/', authMiddleware, async (req, res) => {
   try {
+    const userId = req.user.id;
+    const { itemId, itemType, itemData } = req.body;
+
+    if (!itemId || !itemType) {
+      return res.status(400).json({ error: 'itemId and itemType are required' });
+    }
+
+    const favorite = await FavoriteModel.create({
+      userId,
+      itemId,
+      itemType,
+      itemData
+    });
+
     res.status(201).json({
       message: 'Favorite added',
+      favorite
     });
   } catch (error) {
     console.error('Add favorite error:', error);
@@ -37,8 +56,21 @@ router.post('/', authMiddleware, async (req, res) => {
 // Remove favorite
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
+    const userId = req.user.id;
+    const favoriteId = req.params.id;
+
+    // We try to delete by ID first, but if it fails or we want to delete by item info:
+    const { itemId, itemType } = req.query;
+
+    const favorite = await FavoriteModel.delete(userId, favoriteId || itemId, itemType);
+
+    if (!favorite) {
+      return res.status(404).json({ error: 'Favorite not found' });
+    }
+
     res.status(200).json({
       message: 'Favorite removed',
+      favorite
     });
   } catch (error) {
     console.error('Remove favorite error:', error);

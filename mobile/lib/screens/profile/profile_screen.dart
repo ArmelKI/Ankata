@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/app_theme.dart';
 import '../../services/favorites_service.dart';
+import '../../services/xp_service.dart';
 import '../../widgets/company_logo.dart';
 import '../../widgets/edit_profile_dialog.dart';
 import '../../utils/haptic_helper.dart';
@@ -24,12 +25,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _biometricEnabled = false;
   bool _isBiometricAvailable = false;
   String? _photoPath;
+  int _currentXP = 0;
+  int _currentLevel = 1;
 
   @override
   void initState() {
     super.initState();
     _loadProfilePhoto();
     _checkBiometrics();
+    _loadXP();
+  }
+
+  Future<void> _loadXP() async {
+    final xp = await XPService.getXP();
+    final level = await XPService.getLevel();
+    if (mounted) {
+      setState(() {
+        _currentXP = xp;
+        _currentLevel = level;
+      });
+    }
+    _checkProfileCompletionXP();
+  }
+
+  Future<void> _checkProfileCompletionXP() async {
+    final prefs = await SharedPreferences.getInstance();
+    final profileCompletedAwarded =
+        prefs.getBool('profile_completed_xp_awarded') ?? false;
+
+    if (profileCompletedAwarded) return;
+
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      final email = user['email'] as String? ?? '';
+      final cnib = user['cnib'] as String? ?? '';
+
+      if (email.isNotEmpty && cnib.isNotEmpty) {
+        final levelUp = await XPService.addXP(
+            XPService.xpActions['profile_complete'] ?? 50,
+            reason: 'Profil completé');
+        await prefs.setBool('profile_completed_xp_awarded', true);
+
+        if (mounted) {
+          _loadXP(); // Refresh XP display
+          if (levelUp != null) {
+            LevelUpDialog.show(context, levelUp);
+          }
+        }
+      }
+    }
   }
 
   Future<void> _checkBiometrics() async {
@@ -206,111 +250,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildGamificationCard() {
-    final user = ref.watch(currentUserProvider);
-    final xp = (user?['xp'] as num?)?.toInt() ?? 0;
-    final level = user?['level'] as String? ?? 'Bronze';
-
-    String nextLevel = 'Silver';
-    double progress = xp / 500;
-
-    if (level == 'Silver') {
-      nextLevel = 'Gold';
-      progress = (xp - 500) / (2000 - 500);
-    } else if (level == 'Gold') {
-      nextLevel = 'Platinum';
-      progress = (xp - 2000) / (5000 - 2000);
-    } else if (level == 'Platinum') {
-      nextLevel = 'Diamant';
-      progress = (xp - 5000) / 5000;
-    }
-
-    if (progress > 1.0) progress = 1.0;
-    if (progress < 0) progress = 0;
-
-    Color levelColor = Colors.orange.shade700;
-    if (level == 'Silver') levelColor = Colors.grey.shade400;
-    if (level == 'Gold') levelColor = Colors.amber;
-    if (level == 'Platinum') levelColor = const Color(0xFFE5E4E2);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [levelColor.withOpacity(0.8), levelColor.withOpacity(0.4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: AppRadius.radiusMd,
-        boxShadow: AppShadows.shadow2,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.stars, color: levelColor, size: 28),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(level.toUpperCase(),
-                          style: AppTextStyles.h4.copyWith(
-                              color: AppColors.charcoal,
-                              fontWeight: FontWeight.bold)),
-                      Text('$xp XP cumulés',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.charcoal.withOpacity(0.7))),
-                    ],
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: () => context.push('/wallet/transactions'),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: AppRadius.radiusFull),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.history, size: 14),
-                      const SizedBox(width: 4),
-                      Text('Historique', style: AppTextStyles.overline),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.white.withOpacity(0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(levelColor),
-              minHeight: 8,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Niveau Actuel',
-                  style: AppTextStyles.overline
-                      .copyWith(color: AppColors.charcoal)),
-              Text('Prochain: $nextLevel',
-                  style: AppTextStyles.overline
-                      .copyWith(color: AppColors.charcoal)),
-            ],
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: XPBar(xp: _currentXP, level: _currentLevel),
     );
   }
 
@@ -525,7 +467,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     .copyWith(fontWeight: FontWeight.w600)),
           ),
           FutureBuilder<List<Map<String, dynamic>>>(
-            future: FavoritesService.getFavorites(),
+            future: FavoritesService.getFavorites(
+                api: ref.read(apiServiceProvider)),
             builder: (context, snapshot) {
               final favorites = snapshot.data ?? [];
               if (favorites.isEmpty) {
@@ -689,13 +632,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             final userId = user?['id'] ?? user?['userId'] ?? '';
             await apiService.updateUserProfile(userId, updatedData);
             if (mounted) {
-              ref.read(currentUserProvider.notifier).state = {
-                ...?user,
-                ...updatedData
-              };
+              final updatedUser = {...?user, ...updatedData};
+              ref.read(currentUserProvider.notifier).state = updatedUser;
+
+              // Persist to Hive for local caching
+              final box = Hive.box('user_profile');
+              await box.put('userData', updatedUser);
+              if (updatedData.containsKey('profilePictureUrl')) {
+                await box.put('avatarUrl', updatedData['profilePictureUrl']);
+              }
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                   content: Text('Profil mis à jour avec succès'),
                   backgroundColor: AppColors.success));
+              _loadXP(); // Check for profile completion XP
             }
           } catch (e) {
             if (!mounted) return;

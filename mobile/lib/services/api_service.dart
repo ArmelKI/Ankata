@@ -558,6 +558,45 @@ class ApiService {
     }
   }
 
+  // --- Favorites ---
+  Future<List<dynamic>> getFavorites() async {
+    try {
+      final response = await _dio.get('/favorites');
+      return response.data['favorites'] ?? [];
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> addFavorite({
+    required String itemId,
+    required String itemType,
+    Map<String, dynamic>? itemData,
+  }) async {
+    try {
+      final response = await _dio.post('/favorites', data: {
+        'itemId': itemId,
+        'itemType': itemType,
+        'itemData': itemData,
+      });
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> removeFavorite(String id,
+      {String? itemId, String? itemType}) async {
+    try {
+      await _dio.delete('/favorites/$id', queryParameters: {
+        if (itemId != null) 'itemId': itemId,
+        if (itemType != null) 'itemType': itemType,
+      });
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Exception _handleError(DioException error) {
     String message = 'Une erreur inattendue est survenue.';
 

@@ -3,31 +3,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../config/app_theme.dart';
 
 class CompanyLogoService {
-  static const String _svgFallback = '''
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <g>
-    <!-- Bus outline -->
-    <rect x="10" y="20" width="80" height="50" rx="5" ry="5" fill="none" stroke="#4A90E2" stroke-width="2"/>
-    <!-- Windows -->
-    <rect x="15" y="25" width="15" height="12" fill="none" stroke="#4A90E2" stroke-width="1"/>
-    <rect x="35" y="25" width="15" height="12" fill="none" stroke="#4A90E2" stroke-width="1"/>
-    <rect x="55" y="25" width="15" height="12" fill="none" stroke="#4A90E2" stroke-width="1"/>
-    <!-- Wheels -->
-    <circle cx="25" cy="75" r="8" fill="none" stroke="#4A90E2" stroke-width="2"/>
-    <circle cx="75" cy="75" r="8" fill="none" stroke="#4A90E2" stroke-width="2"/>
-    <!-- Door -->
-    <line x1="72" y1="70" x2="72" y2="20" stroke="#4A90E2" stroke-width="1"/>
-  </g>
-</svg>
-  ''';
-
   static const Map<String, String> companyLogoAssets = {
-    'SOTRACO': 'assets/logos/sotraco.png',
-    'SOTRAMA': 'assets/logos/sotrama.png',
-    'Tata': 'assets/logos/tata.png',
-    'Rimbo': 'assets/logos/rimbo.png',
-    'Azalaï': 'assets/logos/azalai.png',
-    'Africacar': 'assets/logos/africacar.png',
+    'SOTRACO': 'assets/images/companies/sotraco_logo.png',
+    'TSR': 'assets/images/companies/tsr_logo.png',
+    'STAF': 'assets/images/companies/staf_logo.png',
+    'T.C.V': 'assets/images/companies/tcv_logo.png',
+    'TCV': 'assets/images/companies/tcv_logo.png',
+    'Rakieta': 'assets/images/companies/rakieta_logo.png',
+    'Saramaya': 'assets/images/companies/saramaya_logo.png',
+    'Rahimo': 'assets/images/companies/rahimo_logo.png',
+    'Elitis': 'assets/images/companies/elitis_logo.png',
+    'FTS': 'assets/images/companies/fts_logo.png',
+    'CTKE': 'assets/images/companies/ctke_logo.png',
   };
 
   static Widget getCompanyLogo({
@@ -36,7 +23,7 @@ class CompanyLogoService {
     required double height,
     BoxFit fit = BoxFit.contain,
   }) {
-    final assetPath = companyLogoAssets[companyName];
+    final assetPath = _getAssetPath(companyName);
 
     if (assetPath != null) {
       return Image.asset(
@@ -53,19 +40,49 @@ class CompanyLogoService {
     return _buildSVGFallback(companyName, width, height);
   }
 
-  static Widget _buildSVGFallback(String companyName, double width, double height) {
+  static String? _getAssetPath(String companyName) {
+    // Exact match
+    if (companyLogoAssets.containsKey(companyName)) {
+      return companyLogoAssets[companyName];
+    }
+
+    // Case insensitive match
+    final upperName = companyName.toUpperCase();
+    for (var entry in companyLogoAssets.entries) {
+      if (entry.key.toUpperCase() == upperName) {
+        return entry.value;
+      }
+    }
+
+    // Partial match
+    for (var entry in companyLogoAssets.entries) {
+      if (upperName.contains(entry.key.toUpperCase()) ||
+          entry.key.toUpperCase().contains(upperName)) {
+        return entry.value;
+      }
+    }
+
+    return null;
+  }
+
+  static Widget _buildSVGFallback(
+      String companyName, double width, double height) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         color: CompanyColors.getCompanyColor(companyName),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: SvgPicture.string(
-        _svgFallback,
-        width: width * 0.7,
-        height: height * 0.7,
-        fit: BoxFit.contain,
+      child: Center(
+        child: Text(
+          companyName.isNotEmpty ? companyName[0].toUpperCase() : 'C',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: width * 0.4,
+          ),
+        ),
       ),
     );
   }
@@ -85,7 +102,8 @@ class CompanyLogoService {
           width: width,
           height: height,
           fit: fit,
-          placeholderBuilder: (context) => _buildSVGFallback(companyName, width, height),
+          placeholderBuilder: (context) =>
+              _buildSVGFallback(companyName, width, height),
         );
       }
 
@@ -100,7 +118,7 @@ class CompanyLogoService {
       );
     }
 
-    // Default to SVG fallback if no URL provided
+    // Default to asset or SVG fallback if no URL provided
     return getCompanyLogo(
       companyName: companyName,
       width: width,
@@ -113,23 +131,34 @@ class CompanyLogoService {
 class CompanyColors {
   static const Map<String, Color> _colorMap = {
     'SOTRACO': Color(0xFF0066CC),
-    'SOTRAMA': Color(0xFFFF5722),
-    'Tata': Color(0xFF4CAF50),
-    'Rimbo': Color(0xFF9C27B0),
-    'Azalaï': Color(0xFFFFC107),
-    'Africacar': Color(0xFF00BCD4),
+    'TSR': Color(0xFFE31E24),
+    'STAF': Color(0xFF0091DA),
+    'T.C.V': Color(0xFF00A651),
+    'TCV': Color(0xFF00A651),
+    'Rakieta': Color(0xFFF7941D),
+    'Saramaya': Color(0xFFEE2D24),
+    'Rahimo': Color(0xFF0054A6),
+    'Elitis': Color(0xFF231F20),
   };
 
   static Color getCompanyColor(String companyName) {
-    return _colorMap[companyName] ?? AppColors.primary;
+    // Exact match
+    if (_colorMap.containsKey(companyName)) {
+      return _colorMap[companyName]!;
+    }
+
+    // partial match check
+    final upperName = companyName.toUpperCase();
+    for (var entry in _colorMap.entries) {
+      if (upperName.contains(entry.key.toUpperCase())) {
+        return entry.value;
+      }
+    }
+
+    return AppColors.primary;
   }
 
   static String getCompanyTextColor(String companyName) {
-    final color = getCompanyColor(companyName);
-    // For light colors, use dark text; for dark colors, use white text
-    if (companyName == 'Azalaï') {
-      return '#000000';
-    }
     return '#FFFFFF';
   }
 }

@@ -6,6 +6,7 @@ import '../../services/notification_service.dart';
 import '../../providers/app_providers.dart';
 import '../../utils/haptic_helper.dart';
 import '../../widgets/animated_button.dart';
+import '../../services/xp_service.dart';
 
 class PaymentSuccessScreen extends ConsumerStatefulWidget {
   final int amount;
@@ -64,6 +65,32 @@ class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen>
     });
 
     _scheduleTripReminder();
+    _awardXP();
+  }
+
+  Future<void> _awardXP() async {
+    // Award XP for successful booking
+    final xpAmount = XPService.xpActions['booking'] ?? 10;
+    final levelUp =
+        await XPService.addXP(xpAmount, reason: 'Réservation réussie');
+
+    if (mounted) {
+      if (levelUp != null) {
+        LevelUpDialog.show(context, levelUp);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('+ $xpAmount XP ! Continue comme ça ! 🚀'),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+            margin: const EdgeInsets.all(16),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _scheduleTripReminder() async {

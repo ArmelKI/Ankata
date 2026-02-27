@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../config/app_theme.dart';
 import '../../data/all_companies_data.dart';
 import '../../models/transport_company.dart';
@@ -299,7 +300,8 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen>
                         extra: {
                           'originCity': route.from,
                           'destinationCity': route.to,
-                          'date': DateTime.now(),
+                          'departureDate':
+                              DateFormat('yyyy-MM-dd').format(DateTime.now()),
                           'passengers': 1,
                           'companyFilter': _company!.id,
                         },

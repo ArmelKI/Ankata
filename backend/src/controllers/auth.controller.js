@@ -113,6 +113,8 @@ class AuthController {
       const token = generateToken(user.id, formattedPhone);
       await UserModel.updateLastLogin(user.id);
 
+      const signedAvatarUrl = await getSignedAvatarUrl(user.profile_picture_url);
+
       res.status(200).json({
         message: 'Login successful',
         token,
@@ -125,7 +127,7 @@ class AuthController {
           cnib: user.cnib,
           gender: user.gender,
           email: user.email,
-          profilePictureUrl: user.profile_picture_url,
+          profilePictureUrl: signedAvatarUrl || user.profile_picture_url,
           isVerified: user.is_verified,
         },
         expiresIn: 604800,
@@ -191,6 +193,10 @@ class AuthController {
       const token = generateToken(user.id, formattedPhone);
       await UserModel.updateLastLogin(user.id);
 
+      const signedAvatarUrl = await getSignedAvatarUrl(
+        user.profile_picture_url || picture
+      );
+
       res.status(200).json({
         message: 'Google login successful',
         token,
@@ -203,7 +209,7 @@ class AuthController {
           cnib: user.cnib,
           gender: user.gender,
           email: user.email || email,
-          profilePictureUrl: user.profile_picture_url || picture,
+          profilePictureUrl: signedAvatarUrl || user.profile_picture_url || picture,
           isVerified: true,
         },
         expiresIn: 604800,

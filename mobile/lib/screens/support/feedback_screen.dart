@@ -4,6 +4,7 @@ import '../../config/app_theme.dart';
 import '../../providers/app_providers.dart';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import '../../services/xp_service.dart';
 
 class FeedbackScreen extends ConsumerStatefulWidget {
   const FeedbackScreen({Key? key}) : super(key: key);
@@ -68,10 +69,14 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
         deviceInfo: deviceInfo,
       );
 
+      // Award XP for feedback
+      final xpAmount = XPService.xpActions['review'] ?? 5;
+      await XPService.addXP(xpAmount, reason: 'Feedback envoyé');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Merci ! Votre retour a été envoyé avec succès.'),
+          SnackBar(
+            content: Text('Merci ! Votre retour a été envoyé (+ $xpAmount XP)'),
             backgroundColor: AppColors.success,
           ),
         );

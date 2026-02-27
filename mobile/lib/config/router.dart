@@ -241,8 +241,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/legal/terms',
         builder: (context, state) => const LegalScreen(
-          title: 'Conditions generales',
-          content: 'Conditions d\'utilisation a completer.',
+          title: 'Conditions générales',
+          content:
+              'Ce document sera prochainement disponible. Ankata s\'engage à assurer la transparence de ses services et la clarté de ses conditions d\'utilisation.',
         ),
       ),
       GoRoute(
@@ -252,8 +253,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/legal/privacy',
         builder: (context, state) => const LegalScreen(
-          title: 'Politique de confidentialite',
-          content: 'Politique de protection des donnees a completer.',
+          title: 'Politique de confidentialité',
+          content:
+              'La protection de vos données personnelles est une priorité pour Ankata. Ce document détaillant notre politique de confidentialité est en cours de rédaction et sera bientôt accessible.',
         ),
       ),
     ],

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/app_theme.dart';
-import '../../providers/app_providers.dart';
 
 class EditProfileDialog extends ConsumerStatefulWidget {
   final Map<String, dynamic> currentUser;
-  final Function(Map<String, dynamic>) onSave;
+  final Future<void>? Function(Map<String, dynamic>) onSave;
 
   const EditProfileDialog({
     Key? key,
@@ -30,29 +29,26 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
   void initState() {
     super.initState();
     _firstNameController = TextEditingController(
-      text: widget.currentUser?['firstName'] ??
-          widget.currentUser?['first_name'] ??
+      text: widget.currentUser['firstName'] ??
+          widget.currentUser['first_name'] ??
           '',
     );
     _lastNameController = TextEditingController(
-      text: widget.currentUser?['lastName'] ??
-          widget.currentUser?['last_name'] ??
+      text: widget.currentUser['lastName'] ??
+          widget.currentUser['last_name'] ??
           '',
     );
     _cnibController = TextEditingController(
-      text: widget.currentUser?['cnib'] ?? '',
+      text: widget.currentUser['cnib'] ?? '',
     );
     _cityController = TextEditingController(
-      text: widget.currentUser?['city'] ?? '',
+      text: widget.currentUser['city'] ?? '',
     );
     _dateController = TextEditingController(
-      text: widget.currentUser?['dateOfBirth']
-              ?.toString()
-              .split('T')
-              .first ??
-          '',
+      text:
+          widget.currentUser['dateOfBirth']?.toString().split('T').first ?? '',
     );
-    _selectedGender = widget.currentUser?['gender'] ?? 'Masculin';
+    _selectedGender = widget.currentUser['gender'] ?? 'Masculin';
   }
 
   @override
@@ -122,9 +118,8 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
               ),
               onTap: () async {
                 final now = DateTime.now();
-                final initialDate =
-                    DateTime.tryParse(_dateController.text) ??
-                        DateTime(now.year - 25, 1, 1);
+                final initialDate = DateTime.tryParse(_dateController.text) ??
+                    DateTime(now.year - 25, 1, 1);
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: initialDate,
@@ -156,16 +151,24 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
           child: const Text('Annuler'),
         ),
         TextButton(
-          onPressed: () {
-            widget.onSave({
+          onPressed: () async {
+            final data = {
               'firstName': _firstNameController.text.trim(),
               'lastName': _lastNameController.text.trim(),
               'cnib': _cnibController.text.trim(),
               'gender': _selectedGender,
               'dateOfBirth': _dateController.text.trim(),
               'city': _cityController.text.trim(),
-            });
-            Navigator.pop(context);
+            };
+
+            // On attend que le parent finisse la mise à jour si c'est asynchrone
+            final result = widget.onSave(data);
+            if (result is Future) {
+              await result;
+            }
+            if (mounted) {
+              Navigator.pop(context);
+            }
           },
           child: const Text('Enregistrer'),
         ),

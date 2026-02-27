@@ -8,6 +8,7 @@ import '../../widgets/progress_stepper.dart';
 import '../../config/app_theme.dart';
 import '../../providers/app_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../widgets/stripe_payment_sheet.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
   final int amount;
@@ -861,11 +862,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen>
   }
 
   void _showCardPaymentSheet() {
-    // TODO: Implement Stripe payment sheet
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Paiement par carte bientôt disponible'),
-      ),
+    StripePaymentSheet.show(
+      context,
+      amount: widget.amount,
+      onPaymentSuccess: () {
+        HapticHelper.success();
+        _navigateToSuccessScreen();
+      },
     );
     setState(() => _isProcessing = false);
   }
