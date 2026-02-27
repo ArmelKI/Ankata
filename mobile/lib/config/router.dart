@@ -21,6 +21,12 @@ import '../screens/companies/companies_screen.dart';
 import '../screens/companies/company_details_screen.dart';
 import '../screens/ratings/rating_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/profile/saved_passengers_screen.dart';
+import '../screens/profile/referral_dashboard_screen.dart';
+import '../screens/profile/price_alerts_screen.dart';
+import '../screens/wallet/transaction_history_screen.dart';
+import '../screens/maps/station_maps_screen.dart';
+import '../screens/trips/bus_tracking_screen.dart';
 import '../screens/sotraco/sotraco_home_screen.dart';
 import '../screens/sotraco/sotraco_line_details_screen.dart';
 import '../screens/support/faq_screen.dart';
@@ -206,8 +212,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FaqScreen(),
       ),
       GoRoute(
+        path: '/profile/passengers',
+        builder: (context, state) => const SavedPassengersScreen(),
+      ),
+      GoRoute(
+        path: '/profile/referral',
+        builder: (context, state) => const ReferralDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/profile/price-alerts',
+        builder: (context, state) => const PriceAlertsScreen(),
+      ),
+      GoRoute(
+        path: '/wallet/transactions',
+        builder: (context, state) => const TransactionHistoryScreen(),
+      ),
+      GoRoute(
         path: '/feedback',
         builder: (context, state) => const FeedbackScreen(),
+      ),
+      GoRoute(
+        path: '/tickets/track',
+        builder: (context, state) {
+          final ticketData = state.extra as Map<String, dynamic>?;
+          return BusTrackingScreen(ticketData: ticketData ?? {});
+        },
       ),
       GoRoute(
         path: '/legal/terms',
@@ -215,6 +244,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           title: 'Conditions generales',
           content: 'Conditions d\'utilisation a completer.',
         ),
+      ),
+      GoRoute(
+        path: '/stations',
+        builder: (context, state) => const StationMapsScreen(),
       ),
       GoRoute(
         path: '/legal/privacy',

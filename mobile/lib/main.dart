@@ -29,6 +29,7 @@ void main() async {
   await Hive.initFlutter();
   final userBox = await Hive.openBox('user_profile');
   final initialDarkMode = userBox.get('darkMode', defaultValue: false) as bool;
+  final initialLocale = userBox.get('locale', defaultValue: 'fr') as String;
 
   // Initialize Services
   await TicketCacheService.init();
@@ -39,6 +40,9 @@ void main() async {
       overrides: [
         darkModeProvider.overrideWith(
           (ref) => initialDarkMode,
+        ),
+        localeProvider.overrideWith(
+          (ref) => Locale(initialLocale),
         ),
       ],
       child: const AnkataApp(),
@@ -53,25 +57,28 @@ class AnkataApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final isDarkMode = ref.watch(darkModeProvider);
+    final dynamicPrimaryColor = ref.watch(dynamicThemeProvider);
+    final currentLocale = ref.watch(localeProvider);
+
     AppColors.configureForBrightness(
       isDarkMode ? Brightness.dark : Brightness.light,
     );
 
     return MaterialApp.router(
       title: 'Ankata',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme(primaryColor: dynamicPrimaryColor),
+      darkTheme: AppTheme.darkTheme(primaryColor: dynamicPrimaryColor),
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      locale: const Locale('fr'),
-      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: currentLocale,
     );
   }
 }

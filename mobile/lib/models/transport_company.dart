@@ -11,6 +11,7 @@ class TransportCompany {
   final String? email;
   final String? website;
   final List<String> services;
+  final List<String> photos;
   final Map<String, CompanyStation> stations; // Ville -> Station info
 
   const TransportCompany({
@@ -23,6 +24,7 @@ class TransportCompany {
     this.email,
     this.website,
     this.services = const [],
+    this.photos = const [],
     this.stations = const {},
   });
 }
@@ -32,12 +34,16 @@ class CompanyStation {
   final String city;
   final String address;
   final String? phone;
+  final double? latitude;
+  final double? longitude;
   final List<RouteSchedule> routes;
 
   const CompanyStation({
     required this.city,
     required this.address,
     this.phone,
+    this.latitude,
+    this.longitude,
     this.routes = const [],
   });
 }

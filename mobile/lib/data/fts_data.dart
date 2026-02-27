@@ -64,9 +64,11 @@ class FtsData {
     phones: ['+226 73 00 00 00'],
     email: 'contact@fts-transport.bf',
     services: [
-      'Transport national et international',
-      'Service VIP disponible',
+      'Ligne Ouaga/Kaya/Dori',
+      'Services regulier',
+      'Colis Express',
     ],
+    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
+import '../services/biometric_service.dart';
 import '../models/booking_model.dart';
 
 // ============================================================================
@@ -9,6 +11,11 @@ import '../models/booking_model.dart';
 /// API Service provider (singleton)
 final apiServiceProvider = Provider<ApiService>((ref) {
   return ApiService();
+});
+
+/// Biometric Service provider
+final biometricServiceProvider = Provider<BiometricService>((ref) {
+  return BiometricService();
 });
 
 // ============================================================================
@@ -158,6 +165,12 @@ final currentScreenProvider = StateProvider<String>((ref) => 'home');
 
 /// Dark mode toggle
 final darkModeProvider = StateProvider<bool>((ref) => false);
+
+/// Dynamic Theme Provider (Company-specific branding)
+final dynamicThemeProvider = StateProvider<Color?>((ref) => null);
+
+/// Locale Provider (Language support)
+final localeProvider = StateProvider<Locale>((ref) => const Locale('fr'));
 
 // ============================================================================
 // LOCATION PROVIDERS

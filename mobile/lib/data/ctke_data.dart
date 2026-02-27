@@ -5,7 +5,7 @@ class CtkeData {
   // CTKE WAYS - Liaisons internationales (prix officiels confirmés)
   // Ouagadougou: départs Mardi, Jeudi, Dimanche à 18h00
   // Bobo-Dioulasso: départs Lundi, Vendredi à 05h00
-  
+
   static const List<RouteSchedule> _ouagaRoutes = [
     RouteSchedule(
       from: 'Ouagadougou',
@@ -61,9 +61,11 @@ class CtkeData {
     phones: ['+226 72 00 00 00'],
     email: 'contact@ctke-ways.bf',
     services: [
-      'Liaisons internationales',
-      'Ouaga/Bobo vers Lome et Cotonou',
+      'Transport de luxe',
+      'Liaison Cote d\'Ivoire',
+      'Confort et Securite',
     ],
+    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

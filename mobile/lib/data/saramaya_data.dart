@@ -51,10 +51,11 @@ class SaramayaData {
     phones: ['+226 74 00 00 00'],
     email: 'contact@saramaya-transport.bf',
     services: [
-      'Liaisons Bobo-Ouaga',
-      'Departs frequents',
-      'Option VIP disponible',
+      'Liaison Ouaga-Bobo',
+      'Confort Standard',
+      'Securite garantie',
     ],
+    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

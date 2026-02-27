@@ -26,6 +26,11 @@ const favoritesRoutes = require('./routes/favorites.routes');
 const sotracoRoutes = require('./routes/sotraco.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const usersRoutes = require('./routes/users.routes');
+const passengersRoutes = require('./routes/passengers.routes');
+const promoCodesRoutes = require('./routes/promocodes.routes');
+const walletRoutes = require('./routes/wallet.routes');
+const priceAlertsRoutes = require('./routes/price_alerts.routes');
+const feedbackRoutes = require('./routes/feedback.routes');
 
 // Initialize Express app
 const app = express();
@@ -113,6 +118,11 @@ app.use('/api/favorites', verifyToken, favoritesRoutes);
 app.use('/api/sotraco', verifyOptional, sotracoRoutes);
 app.use('/api/upload', verifyToken, uploadRoutes);
 app.use('/api/users', verifyToken, usersRoutes);
+app.use('/api/passengers', verifyToken, passengersRoutes);
+app.use('/api/promocodes', verifyToken, promoCodesRoutes);
+app.use('/api/wallet', verifyToken, walletRoutes);
+app.use('/api/price-alerts', verifyToken, priceAlertsRoutes);
+app.use('/api/feedback', verifyToken, feedbackRoutes);
 
 // 404 handler
 app.use((req, res) => {

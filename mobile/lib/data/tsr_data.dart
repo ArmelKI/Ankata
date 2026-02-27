@@ -17,15 +17,24 @@ class TSRData {
       'Bus climatises',
       'Service VIP',
     ],
+    photos: [
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+      'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
+    ],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',
         address: 'Gare Goughin & Gare Wemtenga',
+        latitude: 12.3714,
+        longitude: -1.5197,
         routes: _ouagaRoutes,
       ),
       'Bobo-Dioulasso': CompanyStation(
         city: 'Bobo-Dioulasso',
         address: 'Gare Bobo',
+        latitude: 11.1771,
+        longitude: -4.2974,
         routes: _boboRoutes,
       ),
       'Gaoua': CompanyStation(

@@ -17,6 +17,12 @@ class _RatingScreenState extends State<RatingScreen> {
   int _rating = 0;
   String _comment = '';
   String? _selectedCompanyId;
+  final Map<String, int> _categoryRatings = {
+    'Confort': 0,
+    'Propreté': 0,
+    'Ponctualité': 0,
+    'Service': 0,
+  };
 
   @override
   void initState() {
@@ -82,6 +88,12 @@ class _RatingScreenState extends State<RatingScreen> {
                         }),
                       ),
                       const SizedBox(height: AppSpacing.lg),
+                      Text('Notes par catégorie',
+                          style: AppTextStyles.bodyLarge),
+                      const SizedBox(height: AppSpacing.sm),
+                      ..._categoryRatings.entries.map((entry) =>
+                          _buildCategoryRating(entry.key, entry.value)),
+                      const SizedBox(height: AppSpacing.lg),
                       Text('Commentaire', style: AppTextStyles.bodyLarge),
                       const SizedBox(height: AppSpacing.sm),
                       TextField(
@@ -109,6 +121,7 @@ class _RatingScreenState extends State<RatingScreen> {
                             tripId: widget.bookingId,
                             rating: _rating,
                             comment: _comment,
+                            categories: _categoryRatings,
                           );
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -123,6 +136,34 @@ class _RatingScreenState extends State<RatingScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryRating(String category, int value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(category, style: AppTextStyles.bodyMedium),
+          Row(
+            children: List.generate(5, (index) {
+              final starValue = index + 1;
+              return IconButton(
+                onPressed: () =>
+                    setState(() => _categoryRatings[category] = starValue),
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(
+                  value >= starValue ? Icons.star : Icons.star_border,
+                  color: AppColors.star,
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }

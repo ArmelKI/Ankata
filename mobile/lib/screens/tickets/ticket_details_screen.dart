@@ -378,10 +378,22 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
               // Boutons d'action
               if (!isCancelled) ...[
                 ElevatedButton.icon(
+                  onPressed: () {
+                    context.push('/tickets/track', extra: widget.ticket);
+                  },
+                  icon: const Icon(Icons.map_outlined),
+                  label: const Text('Suivre mon bus en direct'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                OutlinedButton.icon(
                   onPressed: () => _generatePdfTicket(context),
                   icon: const Icon(Icons.download),
                   label: const Text('Télécharger le billet PDF'),
-                  style: ElevatedButton.styleFrom(
+                  style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),

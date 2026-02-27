@@ -49,6 +49,7 @@ class TcvData {
       'Interurbain',
       'International',
     ],
+    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

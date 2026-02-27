@@ -53,6 +53,7 @@ class RahimoData {
       'Bus climatise',
       'Service VIP',
     ],
+    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

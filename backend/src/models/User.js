@@ -36,6 +36,32 @@ class UserModel {
     return result.rows[0] || null;
   }
 
+  static async addXP(userId, amount) {
+    const query = `
+      UPDATE users
+      SET xp = COALESCE(xp, 0) + $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, xp, level;
+    `;
+    const result = await pool.query(query, [amount, userId]);
+    const user = result.rows[0];
+
+    if (user) {
+      // Check for level up
+      let newLevel = 'Bronze';
+      if (user.xp >= 5000) newLevel = 'Platinum';
+      else if (user.xp >= 2000) newLevel = 'Gold';
+      else if (user.xp >= 500) newLevel = 'Silver';
+
+      if (newLevel !== user.level) {
+        await pool.query('UPDATE users SET level = $1 WHERE id = $2', [newLevel, userId]);
+        user.level = newLevel;
+      }
+    }
+
+    return user;
+  }
+
   static async create(data) {
     const {
       phoneNumber, firstName, lastName, passwordHash, securityQ1, securityA1,
@@ -119,6 +145,24 @@ class UserModel {
     const query = 'SELECT COUNT(*) as count FROM users';
     const result = await pool.query(query);
     return parseInt(result.rows[0].count, 10);
+  }
+
+  static async getReferralStats(id) {
+    const user = await this.findById(id);
+    if (!user || !user.referral_code) return { count: 0, totalEarned: 0 };
+
+    const countQuery = 'SELECT COUNT(*) as count FROM users WHERE referred_by = $1';
+    const countResult = await pool.query(countQuery, [user.referral_code]);
+    
+    // Sum of referral bonus transactions for this user
+    const earnQuery = "SELECT SUM(amount) as total FROM transactions WHERE user_id = $1 AND type = 'referral_bonus'";
+    const earnResult = await pool.query(earnQuery, [id]);
+
+    return {
+      referralCode: user.referral_code,
+      referralCount: parseInt(countResult.rows[0].count, 10),
+      totalEarned: parseFloat(earnResult.rows[0].total || 0)
+    };
   }
 }
 

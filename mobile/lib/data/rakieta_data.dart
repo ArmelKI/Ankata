@@ -52,6 +52,7 @@ class RakietaData {
       'Express VIP',
       'Colis et messagerie',
     ],
+    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

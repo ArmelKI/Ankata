@@ -35,6 +35,7 @@ class _TripSearchResultsScreenState
   String _sortBy = 'price'; // price, time, duration, rating
   final Set<String> _favoriteKeys = {};
   final Set<String> _companyFilters = {};
+  final Set<String> _amenityFilters = {};
 
   @override
   void initState() {
@@ -210,12 +211,25 @@ class _TripSearchResultsScreenState
   }
 
   List<Map<String, dynamic>> get _filteredTrips {
-    if (_companyFilters.isEmpty) {
-      return _sortedTrips;
+    var trips = _sortedTrips;
+
+    if (_companyFilters.isNotEmpty) {
+      trips = trips
+          .where((trip) => _companyFilters.contains(trip['company']))
+          .toList();
     }
-    return _sortedTrips
-        .where((trip) => _companyFilters.contains(trip['company']))
-        .toList();
+
+    if (_amenityFilters.isNotEmpty) {
+      trips = trips.where((trip) {
+        final amenities = (trip['amenities'] as List?)?.cast<String>() ?? [];
+        return _amenityFilters.every((f) {
+          if (f == 'VIP') return trip['isVip'] == true;
+          return amenities.contains(f);
+        });
+      }).toList();
+    }
+
+    return trips;
   }
 
   @override
@@ -310,6 +324,7 @@ class _TripSearchResultsScreenState
       children: [
         _buildHeader(),
         _buildCompanyFilters(),
+        _buildAmenityFilters(),
         Expanded(child: _buildTripsList()),
       ],
     );
@@ -349,6 +364,46 @@ class _TripSearchResultsScreenState
     );
   }
 
+  Widget _buildAmenityFilters() {
+    final amenities = ['WiFi', 'AC', 'VIP'];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: amenities.map((amenity) {
+            final isSelected = _amenityFilters.contains(amenity);
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(amenity),
+                selected: isSelected,
+                onSelected: (value) {
+                  setState(() {
+                    if (value) {
+                      _amenityFilters.add(amenity);
+                    } else {
+                      _amenityFilters.remove(amenity);
+                    }
+                  });
+                },
+                selectedColor: AppColors.primaryLight.withValues(alpha: 0.15),
+                checkmarkColor: AppColors.primaryLight,
+                labelStyle: AppTextStyles.caption.copyWith(
+                  color:
+                      isSelected ? AppColors.primaryLight : AppColors.charcoal,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -360,6 +415,12 @@ class _TripSearchResultsScreenState
             '${_trips.length} trajets disponibles',
             style:
                 AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+          ),
+          IconButton(
+            onPressed: _showPriceAlertDialog,
+            icon: const Icon(Icons.notifications_active_outlined,
+                color: AppColors.primary),
+            tooltip: 'Créer une alerte prix',
           ),
           DropdownButton<String>(
             value: _sortBy,
@@ -710,10 +771,95 @@ class _TripSearchResultsScreenState
               onPressed: () => _safePop(context),
               child: const Text('Modifier la recherche'),
             ),
+            const SizedBox(height: AppSpacing.md),
+            ElevatedButton.icon(
+              onPressed: _showPriceAlertDialog,
+              icon: const Icon(Icons.notifications_active_outlined),
+              label: const Text('Créer une alerte prix'),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  void _showPriceAlertDialog() {
+    final priceController = TextEditingController();
+    // Default target price: 10% less than cheapest if available, else 5000
+    double defaultPrice = 5000;
+    if (_trips.isNotEmpty) {
+      final minPrice =
+          _trips.map((t) => t['price'] as num).reduce((a, b) => a < b ? a : b);
+      defaultPrice = (minPrice * 0.9).floorToDouble();
+    }
+    priceController.text = defaultPrice.toInt().toString();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Créer une alerte prix'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Soyez notifié quand un trajet de ${widget.originCity} vers ${widget.destinationCity} est disponible à ce prix ou moins.',
+              style: AppTextStyles.caption,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: priceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Prix maximum (FCFA)',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.money),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final price = double.tryParse(priceController.text);
+              if (price != null) {
+                Navigator.pop(context);
+                _createPriceAlert(price);
+              }
+            },
+            child: const Text('Créer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _createPriceAlert(double targetPrice) async {
+    try {
+      await ref.read(apiServiceProvider).createPriceAlert(
+            originCity: widget.originCity,
+            destinationCity: widget.destinationCity,
+            targetPrice: targetPrice,
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Alerte créée avec succès !'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
+      }
+    }
   }
 
   List<Map<String, dynamic>> _generateMockStops(String? from, String? to) {

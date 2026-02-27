@@ -172,6 +172,28 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> submitFeedback({
+    required String type,
+    String? subject,
+    required String message,
+    Map<String, dynamic>? deviceInfo,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/feedback',
+        data: {
+          'type': type,
+          'subject': subject,
+          'message': message,
+          'deviceInfo': deviceInfo,
+        },
+      );
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   // Lines Endpoints
   Future<Map<String, dynamic>> searchLines(
     String originCity,
@@ -407,6 +429,129 @@ class ApiService {
   Future<Map<String, dynamic>> getFavoriteRoutes() async {
     try {
       final response = await _dio.get('/favorites');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // --- Passengers ---
+  Future<List<dynamic>> getSavedPassengers() async {
+    try {
+      final response = await _dio.get('/passengers');
+      return response.data['passengers'];
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> createSavedPassenger(
+      Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/passengers', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> updateSavedPassenger(
+      String id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/passengers/$id', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> deleteSavedPassenger(String id) async {
+    try {
+      await _dio.delete('/passengers/$id');
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // --- Users & Referral ---
+  Future<Map<String, dynamic>> getReferralStats() async {
+    try {
+      final response = await _dio.get('/users/referral/stats');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // --- Promo Codes ---
+  Future<Map<String, dynamic>> validatePromoCode(
+      String code, int amount) async {
+    try {
+      final response = await _dio.post('/promocodes/validate', data: {
+        'code': code,
+        'amount': amount,
+      });
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // --- Wallet & Transactions ---
+  Future<Map<String, dynamic>> getWalletData(
+      {int limit = 50, int offset = 0}) async {
+    try {
+      final response = await _dio.get('/wallet/transactions', queryParameters: {
+        'limit': limit,
+        'offset': offset,
+      });
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // ============================================================================
+  // PRICE ALERTS
+  // ============================================================================
+
+  Future<Map<String, dynamic>> createPriceAlert({
+    required String originCity,
+    required String destinationCity,
+    required double targetPrice,
+  }) async {
+    try {
+      final response = await _dio.post('/price-alerts', data: {
+        'originCity': originCity,
+        'destinationCity': destinationCity,
+        'targetPrice': targetPrice,
+      });
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<dynamic>> getPriceAlerts() async {
+    try {
+      final response = await _dio.get('/price-alerts');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> deletePriceAlert(String id) async {
+    try {
+      await _dio.delete('/price-alerts/$id');
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> togglePriceAlert(String id) async {
+    try {
+      final response = await _dio.patch('/price-alerts/$id/toggle');
       return response.data;
     } on DioException catch (e) {
       throw _handleError(e);

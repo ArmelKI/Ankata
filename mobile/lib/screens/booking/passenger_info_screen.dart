@@ -448,6 +448,13 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                   ),
                   if (index == 0)
                     const Icon(Icons.star, color: AppColors.primary, size: 20),
+                  if (isAdult)
+                    TextButton.icon(
+                      onPressed: () => _showSavedPassengersPicker(index),
+                      icon: const Icon(Icons.person_add, size: 16),
+                      label:
+                          const Text('Choisir', style: TextStyle(fontSize: 12)),
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
@@ -656,5 +663,74 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         ),
       ),
     );
+  }
+
+  void _showSavedPassengersPicker(int index) async {
+    setState(() => _isLoading = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      final passengers = await api.getSavedPassengers();
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (passengers.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Aucun passager enregistré')),
+        );
+        return;
+      }
+
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Choisir un passager', style: AppTextStyles.h4),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: passengers.length,
+                  itemBuilder: (context, i) {
+                    final p = passengers[i];
+                    return ListTile(
+                      leading: const Icon(Icons.person),
+                      title: Text('${p['first_name']} ${p['last_name']}'),
+                      subtitle: Text(p['phone_number'] ?? ''),
+                      onTap: () {
+                        setState(() {
+                          _nameControllers[index].text =
+                              '${p['first_name']} ${p['last_name']}';
+                          _phoneControllers[index].text =
+                              p['phone_number'] ?? '';
+                          if (index == 0 && p['id_number'] != null) {
+                            _idNumberController.text = p['id_number'];
+                            _idType = p['id_type'] ?? 'CNI';
+                          }
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
+      }
+    }
   }
 }
