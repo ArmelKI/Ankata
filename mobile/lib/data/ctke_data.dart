@@ -61,11 +61,9 @@ class CtkeData {
     phones: ['+226 72 00 00 00'],
     email: 'contact@ctke-ways.bf',
     services: [
-      'Transport de luxe',
-      'Liaison Cote d\'Ivoire',
-      'Confort et Securite',
+      'Liaisons internationales',
+      'Ouaga/Bobo vers Lome et Cotonou',
     ],
-    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',

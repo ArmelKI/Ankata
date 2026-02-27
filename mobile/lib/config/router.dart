@@ -21,12 +21,6 @@ import '../screens/companies/companies_screen.dart';
 import '../screens/companies/company_details_screen.dart';
 import '../screens/ratings/rating_screen.dart';
 import '../screens/profile/profile_screen.dart';
-import '../screens/profile/saved_passengers_screen.dart';
-import '../screens/profile/referral_dashboard_screen.dart';
-import '../screens/profile/price_alerts_screen.dart';
-import '../screens/wallet/transaction_history_screen.dart';
-import '../screens/maps/station_maps_screen.dart';
-import '../screens/trips/bus_tracking_screen.dart';
 import '../screens/sotraco/sotraco_home_screen.dart';
 import '../screens/sotraco/sotraco_line_details_screen.dart';
 import '../screens/support/faq_screen.dart';
@@ -212,74 +206,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FaqScreen(),
       ),
       GoRoute(
-        path: '/profile/passengers',
-        builder: (context, state) => const SavedPassengersScreen(),
-      ),
-      GoRoute(
-        path: '/profile/referral',
-        builder: (context, state) => const ReferralDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/profile/price-alerts',
-        builder: (context, state) => const PriceAlertsScreen(),
-      ),
-      GoRoute(
-        path: '/wallet/transactions',
-        builder: (context, state) => const TransactionHistoryScreen(),
-      ),
-      GoRoute(
         path: '/feedback',
         builder: (context, state) => const FeedbackScreen(),
       ),
       GoRoute(
-        path: '/tickets/track',
-        builder: (context, state) {
-          final ticketData = state.extra as Map<String, dynamic>?;
-          return BusTrackingScreen(ticketData: ticketData ?? {});
-        },
-      ),
-      GoRoute(
         path: '/legal/terms',
         builder: (context, state) => const LegalScreen(
-          title: 'Conditions générales',
-          content:
-              'Ce document sera prochainement disponible. Ankata s\'engage à assurer la transparence de ses services et la clarté de ses conditions d\'utilisation.',
+          title: 'Conditions generales',
+          content: 'Conditions d\'utilisation a completer.',
         ),
-      ),
-      GoRoute(
-        path: '/stations',
-        builder: (context, state) => const StationMapsScreen(),
       ),
       GoRoute(
         path: '/legal/privacy',
         builder: (context, state) => const LegalScreen(
-          title: 'Politique de confidentialité',
-          content:
-              'La protection de vos données personnelles est une priorité pour Ankata. Ce document détaillant notre politique de confidentialité est en cours de rédaction et sera bientôt accessible.',
+          title: 'Politique de confidentialite',
+          content: 'Politique de protection des donnees a completer.',
         ),
       ),
     ],
     redirect: (context, state) {
-      // La SplashScreen gere l'auto-login via getCurrentUser()
-      // Le redirect ici protege uniquement les routes necessitant une auth
-      final protectedRoutes = [
-        '/home',
-        '/search',
-        '/my-tickets',
-        '/companies',
-        '/profile',
-        '/passenger-info',
-        '/payment',
-        '/payment-success',
-        '/confirmation',
-        '/my-bookings',
-        '/rating',
-      ];
-      final isProtected =
-          protectedRoutes.any((r) => state.uri.path.startsWith(r));
-      if (!isProtected) return null;
-      // Si l'utilisateur arrive directement sur une route protegee
-      // (ex: deep link) sans passer par splash, renvoyer sur /splash
+      // TODO: Implement authentication logic
+      // Check if user is authenticated
+      // Redirect to appropriate route based on auth state
       return null;
     },
     errorBuilder: (context, state) {

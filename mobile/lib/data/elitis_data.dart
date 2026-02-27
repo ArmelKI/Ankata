@@ -49,23 +49,15 @@ class ElitisData {
       'Depart quotidiens',
       'Service Express',
     ],
-    photos: [
-      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
-      'https://images.unsplash.com/photo-1590674899484-13da0d1b58f5?w=800',
-    ],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',
         address: 'Gare Elitis',
-        latitude: 12.368,
-        longitude: -1.527,
         routes: _ouagaRoutes,
       ),
       'Bobo-Dioulasso': CompanyStation(
         city: 'Bobo-Dioulasso',
         address: 'Gare Elitis Bobo',
-        latitude: 11.183,
-        longitude: -4.294,
         routes: _boboRoutes,
       ),
     },

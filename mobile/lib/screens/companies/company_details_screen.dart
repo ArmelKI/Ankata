@@ -1,26 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../config/app_theme.dart';
 import '../../data/all_companies_data.dart';
 import '../../models/transport_company.dart';
 import '../../services/ratings_service.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
-import '../../providers/app_providers.dart';
 
-class CompanyDetailsScreen extends ConsumerStatefulWidget {
+class CompanyDetailsScreen extends StatefulWidget {
   final String companyId;
 
   const CompanyDetailsScreen({super.key, required this.companyId});
 
   @override
-  ConsumerState<CompanyDetailsScreen> createState() =>
-      _CompanyDetailsScreenState();
+  State<CompanyDetailsScreen> createState() => _CompanyDetailsScreenState();
 }
 
-class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen>
+class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   TransportCompany? _company;
@@ -34,22 +28,10 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen>
 
   void _loadCompany() {
     _company = AllCompaniesData.getCompanyById(widget.companyId);
-    if (_company != null) {
-      // Apply company branding
-      Future.microtask(() {
-        if (mounted) {
-          ref.read(dynamicThemeProvider.notifier).state = _company!.color;
-        }
-      });
-    }
   }
 
   @override
   void dispose() {
-    // Reset branding when leaving
-    Future.microtask(() {
-      ref.read(dynamicThemeProvider.notifier).state = null;
-    });
     _tabController.dispose();
     super.dispose();
   }
@@ -117,10 +99,6 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen>
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         _buildRatingsCard(),
-        if (_company!.photos.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.md),
-          _buildPhotoGallery(),
-        ],
         const SizedBox(height: AppSpacing.md),
         _buildInfoCard(
           'Contact',
@@ -300,8 +278,7 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen>
                         extra: {
                           'originCity': route.from,
                           'destinationCity': route.to,
-                          'departureDate':
-                              DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                          'date': DateTime.now(),
                           'passengers': 1,
                           'companyFilter': _company!.id,
                         },
@@ -547,87 +524,6 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen>
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPhotoGallery() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Photos & Galerie',
-            style:
-                AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: AppSpacing.md),
-        SizedBox(
-          height: 150,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _company!.photos.length,
-            itemBuilder: (context, index) {
-              return Hero(
-                tag: 'company_photo_${_company!.id}_$index',
-                child: GestureDetector(
-                  onTap: () =>
-                      _showFullScreenImage(_company!.photos[index], index),
-                  child: Container(
-                    width: 240,
-                    margin: const EdgeInsets.only(right: AppSpacing.md),
-                    decoration: BoxDecoration(
-                      borderRadius: AppRadius.radiusMd,
-                      boxShadow: AppShadows.shadow1,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: AppRadius.radiusMd,
-                      child: CachedNetworkImage(
-                        imageUrl: _company!.photos[index],
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(color: Colors.white),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.lightGray,
-                          child: const Icon(Icons.error_outline),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showFullScreenImage(String imageUrl, int index) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog.fullscreen(
-        backgroundColor: Colors.black,
-        child: Stack(
-          children: [
-            Center(
-              child: InteractiveViewer(
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Positioned(
-              top: 40,
-              right: 20,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

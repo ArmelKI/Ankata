@@ -50,7 +50,6 @@ class StafData {
       'Interurbain',
       'Prix bas',
     ],
-    photos: [],
     stations: {
       'Ouagadougou': CompanyStation(
         city: 'Ouagadougou',
