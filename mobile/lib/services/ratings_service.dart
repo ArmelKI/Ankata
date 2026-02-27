@@ -13,7 +13,9 @@ class RatingsService {
     if (raw != null) {
       try {
         final decoded = jsonDecode(raw) as List<dynamic>;
-        _cache = decoded.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+        _cache = decoded
+            .map((item) => Map<String, dynamic>.from(item as Map))
+            .toList();
       } on FormatException {
         _cache = [];
       }
@@ -47,11 +49,13 @@ class RatingsService {
 
   static Future<Map<String, dynamic>> getCompanyStats(String companyId) async {
     await _ensureLoaded();
-    final ratings = _cache.where((item) => item['companyId'] == companyId).toList();
+    final ratings =
+        _cache.where((item) => item['companyId'] == companyId).toList();
     if (ratings.isEmpty) {
       return {'average': 0.0, 'count': 0, 'ratings': <Map<String, dynamic>>[]};
     }
-    final total = ratings.fold<int>(0, (sum, item) => sum + (item['rating'] as int? ?? 0));
+    final total = ratings.fold<int>(
+        0, (sum, item) => sum + (item['rating'] as int? ?? 0));
     return {
       'average': total / ratings.length,
       'count': ratings.length,
@@ -59,12 +63,14 @@ class RatingsService {
     };
   }
 
-  static Future<List<Map<String, dynamic>>> getCompanyReviews(String companyId) async {
+  static Future<List<Map<String, dynamic>>> getCompanyReviews(
+      String companyId) async {
     await _ensureLoaded();
     return _cache.where((item) => item['companyId'] == companyId).toList();
   }
 
-  static Future<List<Map<String, dynamic>>> getTripReviews(String tripId) async {
+  static Future<List<Map<String, dynamic>>> getTripReviews(
+      String tripId) async {
     await _ensureLoaded();
     return _cache.where((item) => item['tripId'] == tripId).toList();
   }
@@ -78,11 +84,13 @@ class RatingsService {
       final companyId = trip['companyId'] as String?;
       if (companyId == null) continue;
       statsByCompany.putIfAbsent(companyId, () {
-        final ratings = _cache.where((item) => item['companyId'] == companyId).toList();
+        final ratings =
+            _cache.where((item) => item['companyId'] == companyId).toList();
         if (ratings.isEmpty) {
           return {'average': 0.0, 'count': 0};
         }
-        final total = ratings.fold<int>(0, (sum, item) => sum + (item['rating'] as int? ?? 0));
+        final total = ratings.fold<int>(
+            0, (sum, item) => sum + (item['rating'] as int? ?? 0));
         return {'average': total / ratings.length, 'count': ratings.length};
       });
     }

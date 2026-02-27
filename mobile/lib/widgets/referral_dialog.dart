@@ -187,9 +187,9 @@ class ReferralDialog extends StatelessWidget {
 
 Utilise mon code de parrainage: $referralCode
 
-Réserve facilement tes trajets partout au Burkina Faso ! 🇧🇫
+Réserve facilement tes trajets partout au Burkina Faso !
 
-Télécharge l'app: https://ankata.app/invite/$referralCode 📲
+Télécharge l'app: https://ankata.app/invite/$referralCode
     ''';
 
     Share.share(message);

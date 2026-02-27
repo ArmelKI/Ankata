@@ -21,7 +21,12 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
   late List<String> _selected;
   static const int rows = 4;
   static const int cols = 10;
-  static const List<String> occupiedSeats = ['A5', 'B2', 'C7', 'D3']; // Mock données
+  static const List<String> occupiedSeats = [
+    'A5',
+    'B2',
+    'C7',
+    'D3'
+  ]; // Mock données
 
   @override
   void initState() {

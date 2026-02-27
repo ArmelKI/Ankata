@@ -46,11 +46,8 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
       text: widget.currentUser?['city'] ?? '',
     );
     _dateController = TextEditingController(
-      text: widget.currentUser?['dateOfBirth']
-              ?.toString()
-              .split('T')
-              .first ??
-          '',
+      text:
+          widget.currentUser?['dateOfBirth']?.toString().split('T').first ?? '',
     );
     _selectedGender = widget.currentUser?['gender'] ?? 'Masculin';
   }
@@ -122,9 +119,8 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
               ),
               onTap: () async {
                 final now = DateTime.now();
-                final initialDate =
-                    DateTime.tryParse(_dateController.text) ??
-                        DateTime(now.year - 25, 1, 1);
+                final initialDate = DateTime.tryParse(_dateController.text) ??
+                    DateTime(now.year - 25, 1, 1);
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: initialDate,

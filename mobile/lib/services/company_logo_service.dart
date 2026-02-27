@@ -53,7 +53,8 @@ class CompanyLogoService {
     return _buildSVGFallback(companyName, width, height);
   }
 
-  static Widget _buildSVGFallback(String companyName, double width, double height) {
+  static Widget _buildSVGFallback(
+      String companyName, double width, double height) {
     return Container(
       width: width,
       height: height,
@@ -85,7 +86,8 @@ class CompanyLogoService {
           width: width,
           height: height,
           fit: fit,
-          placeholderBuilder: (context) => _buildSVGFallback(companyName, width, height),
+          placeholderBuilder: (context) =>
+              _buildSVGFallback(companyName, width, height),
         );
       }
 

@@ -128,7 +128,8 @@ class _TripSearchResultsScreenState
           final stops = (schedule['stops'] as List<dynamic>?)
                   ?.map((s) => Map<String, dynamic>.from(s as Map))
                   .toList() ??
-              _generateMockStops(line['origin_city'] as String?, line['destination_city'] as String?);
+              _generateMockStops(line['origin_city'] as String?,
+                  line['destination_city'] as String?);
 
           parsedTrips.add({
             'lineId': line['id'],
@@ -607,10 +608,13 @@ class _TripSearchResultsScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Arrêts', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                      Text('Arrêts',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: AppSpacing.sm),
                       StopsListWidget(
-                        stops: (trip['stops'] as List).cast<Map<String, dynamic>>(),
+                        stops: (trip['stops'] as List)
+                            .cast<Map<String, dynamic>>(),
                         routeName: trip['company'] as String? ?? 'Ligne',
                       ),
                     ],
@@ -729,4 +733,3 @@ class _TripSearchResultsScreenState
     ];
   }
 }
-
