@@ -1,3 +1,11 @@
+  Future<Map<String, dynamic>> getCancelledBookings() async {
+    try {
+      final response = await _dio.get('/bookings/cancelled');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

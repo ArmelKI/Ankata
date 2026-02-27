@@ -10,6 +10,9 @@ router.post('/', authMiddleware, BookingController.createBooking);
 // Get my bookings (upcoming and past)
 router.get('/my-bookings', authMiddleware, BookingController.getMyBookings);
 
+// Get cancelled bookings
+router.get('/cancelled', authMiddleware, BookingController.getCancelledBookings);
+
 // Get booking details
 router.get('/:bookingId', authMiddleware, BookingController.getBookingDetails);
 

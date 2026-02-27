@@ -1,3 +1,17 @@
+  // Get cancelled bookings
+  static async getCancelledBookings(req, res) {
+    try {
+      const userId = req.user.userId;
+      const bookings = await BookingModel.getCancelledBookings(userId);
+      res.status(200).json({ cancelled: bookings });
+    } catch (error) {
+      console.error('Get cancelled bookings error:', error);
+      res.status(500).json({
+        error: 'Failed to fetch cancelled bookings',
+        details: error.message,
+      });
+    }
+  }
 const BookingModel = require('../models/Booking');
 const LineModel = require('../models/Line');
 const ScheduleModel = require('../models/Schedule');

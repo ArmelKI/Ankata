@@ -1,3 +1,17 @@
+  static async getCancelledBookings(userId) {
+    const query = `
+      SELECT b.*, l.origin_city, l.destination_city, l.company_id,
+        c.name as company_name, c.logo_url, s.departure_time
+      FROM bookings b
+      JOIN lines l ON b.line_id = l.id
+      JOIN companies c ON l.company_id = c.id
+      JOIN schedules s ON b.schedule_id = s.id
+      WHERE b.user_id = $1 AND b.booking_status = 'CANCELLED'
+      ORDER BY b.cancelled_at DESC, b.departure_date DESC;
+    `;
+    const result = await pool.query(query, [userId]);
+    return result.rows;
+  }
 const pool = require('../database/connection');
 
 class BookingModel {

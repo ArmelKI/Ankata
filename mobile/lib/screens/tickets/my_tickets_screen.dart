@@ -41,16 +41,16 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
   Future<void> _loadTickets() async {
     setState(() => _isLoading = true);
     try {
-      final upcoming =
-          await _bookingService.getUserBookings(status: 'upcoming');
+      final upcoming = await _bookingService.getUserBookings(status: 'upcoming');
       final past = await _bookingService.getUserBookings(status: 'past');
+      final cancelled = await _bookingService.getCancelledBookings();
 
       if (!mounted) return;
 
       setState(() {
         _upcomingTickets = upcoming.map(_mapBookingToTicket).toList();
         _pastTickets = past.map(_mapBookingToTicket).toList();
-        _cancelledTickets = [];
+        _cancelledTickets = cancelled.map(_mapBookingToTicket).toList();
         _isLoading = false;
       });
     } catch (e) {

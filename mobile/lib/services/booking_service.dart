@@ -1,3 +1,17 @@
+  /// Récupérer tickets annulés
+  Future<List<Map<String, dynamic>>> getCancelledBookings() async {
+    try {
+      final response = await _apiService.getCancelledBookings();
+      final raw = response['cancelled'] ?? [];
+      if (raw is List) {
+        return raw.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Erreur récupération tickets annulés: $e');
+      return [];
+    }
+  }
 import 'package:flutter/foundation.dart';
 import 'api_service.dart';
 
