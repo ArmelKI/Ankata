@@ -1,3 +1,9 @@
+let BookingModel = require('../models/Booking');
+let LineModel = require('../models/Line');
+let ScheduleModel = require('../models/Schedule');
+let { generateBookingCode } = require('../utils/helpers');
+
+class BookingController {
   // Get cancelled bookings
   static async getCancelledBookings(req, res) {
     try {
@@ -12,12 +18,7 @@
       });
     }
   }
-const BookingModel = require('../models/Booking');
-const LineModel = require('../models/Line');
-const ScheduleModel = require('../models/Schedule');
-const { generateBookingCode } = require('../utils/helpers');
-
-class BookingController {
+// ...existing code...
   // Create a new booking
   static async createBooking(req, res) {
     try {
