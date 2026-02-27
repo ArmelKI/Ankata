@@ -47,13 +47,10 @@ class UserModel {
     const user = result.rows[0];
 
     if (user) {
-      // Check for level up
-      let newLevel = 'Bronze';
-      if (user.xp >= 5000) newLevel = 'Platinum';
-      else if (user.xp >= 2000) newLevel = 'Gold';
-      else if (user.xp >= 500) newLevel = 'Silver';
+      // Formula: Level = floor(sqrt(XP / 100)) + 1
+      const newLevel = Math.floor(Math.sqrt(user.xp / 100)) + 1;
 
-      if (newLevel !== user.level) {
+      if (parseInt(user.level) !== newLevel) {
         await pool.query('UPDATE users SET level = $1 WHERE id = $2', [newLevel, userId]);
         user.level = newLevel;
       }

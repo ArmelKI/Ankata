@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_theme.dart';
 
@@ -47,12 +48,12 @@ class XPService {
 
   /// Calcule le niveau basé sur XP
   static int _calculateLevel(int xp) {
-    // Formule: Level = sqrt(XP / 100)
+    // Formule: Level = floor(sqrt(XP / 100)) + 1
     // Level 1: 0-100 XP
     // Level 2: 100-400 XP
     // Level 3: 400-900 XP
-    // etc.
-    return 1 + (xp / 100).floor();
+    if (xp < 0) return 1;
+    return (1 + (sqrt(xp / 100)).floor()).toInt();
   }
 
   /// XP requis pour prochain niveau

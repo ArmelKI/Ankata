@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const pool = require('../database/connection');
 
 class Feedback {
   static async create({ userId, type, subject, message, deviceInfo }) {

@@ -14,11 +14,16 @@ class PaymentAggregator {
    * @returns {Promise<Object>} The aggregator response containing payment URL and token
    */
   static async initializePayment(paymentData) {
-    // TODO: Replace with real aggregator SDK/API call (CinetPay, FedaPay, etc.)
-    // Simulation logic
+    // Simulated network latency
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // 2% chance of failure for realistic demo
+    if (Math.random() < 0.02) {
+      throw new Error('Aggregator connection timeout');
+    }
+
     console.log('[Aggregator] Initializing payment:', paymentData.transactionId);
 
-    // Mock response simulating an aggregator
     return {
       success: true,
       transactionId: paymentData.transactionId,
@@ -34,14 +39,16 @@ class PaymentAggregator {
    * @returns {Promise<Object>} The verification status
    */
   static async verifyPayment(transactionId) {
-    // TODO: Replace with real aggregator SDK/API call
+    // Simulated network latency
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     console.log('[Aggregator] Verifying payment:', transactionId);
 
     return {
       success: true,
-      status: 'PAID', // Or 'FAILED', 'PENDING'
+      status: 'PAID',
       transactionId: transactionId,
-      amount: 0, // Mock amount
+      amount: 0,
       currency: 'XOF',
       paidAt: new Date().toISOString()
     };
