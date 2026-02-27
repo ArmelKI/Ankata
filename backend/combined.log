@@ -1,0 +1,6 @@
+{"level":"info","message":"🚀 Ankata Backend running on port 3000","service":"ankata-backend"}
+{"level":"info","message":"Environment: test","service":"ankata-backend"}
+{"level":"info","message":"Database: Connected","service":"ankata-backend"}
+{"level":"info","message":"POST /api/auth/login","service":"ankata-backend"}
+{"level":"info","message":"POST /api/auth/login","service":"ankata-backend"}
+{"level":"info","message":"POST /api/auth/register","service":"ankata-backend"}

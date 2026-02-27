@@ -1,11 +1,3 @@
-  Future<Map<String, dynamic>> getCancelledBookings() async {
-    try {
-      final response = await _dio.get('/bookings/cancelled');
-      return response.data;
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
-  }
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -16,8 +8,12 @@ class ApiService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   String? _token;
 
-  ApiService() {
-    _initDio();
+  ApiService({Dio? dio}) {
+    if (dio != null) {
+      _dio = dio;
+    } else {
+      _initDio();
+    }
   }
 
   void _initDio() {
@@ -292,6 +288,15 @@ class ApiService {
         '/bookings/$bookingId/cancel',
         data: {'reason': reason},
       );
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> getCancelledBookings() async {
+    try {
+      final response = await _dio.get('/bookings/cancelled');
       return response.data;
     } on DioException catch (e) {
       throw _handleError(e);
