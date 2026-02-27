@@ -73,17 +73,6 @@ class UsersController {
       });
     }
   }
-
-  static async getReferralStats(req, res) {
-    try {
-      const userId = req.user.userId;
-      const stats = await UserModel.getReferralStats(userId);
-      res.status(200).json(stats);
-    } catch (error) {
-      console.error('Get referral stats error:', error);
-      res.status(500).json({ error: 'Failed to fetch referral statistics' });
-    }
-  }
 }
 
 module.exports = UsersController;

@@ -1,7 +1,5 @@
 const BookingModel = require('../models/Booking');
 const PaymentModel = require('../models/Payment');
-const UserModel = require('../models/User');
-const TransactionModel = require('../models/Transaction');
 const PaymentAggregator = require('../services/payment.aggregator');
 
 class PaymentController {
@@ -108,23 +106,6 @@ class PaymentController {
           payment.booking_id,
           'completed'
         );
-
-        // Reward XP to the user
-        // 100 XP per booking + bonus based on amount?
-        // Let's keep it simple: 100 XP per travel
-        const booking = await BookingModel.findById(payment.booking_id);
-        if (booking && booking.user_id) {
-          await UserModel.addXP(booking.user_id, 100);
-          
-          // Record transaction
-          await TransactionModel.create({
-            userId: booking.user_id,
-            amount: booking.total_price || payment.amount,
-            type: 'payment',
-            description: `Paiement billet ${booking.booking_code || ''}`,
-            status: 'completed'
-          });
-        }
       } else if (status === 'failed') {
         await BookingModel.updatePaymentStatus(
           payment.booking_id,

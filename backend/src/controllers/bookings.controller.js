@@ -219,9 +219,9 @@ class BookingController {
         return res.status(403).json({ error: 'Unauthorized' });
       }
 
-      const travelDate = new Date(booking.travel_date);
-      if (travelDate < new Date()) {
-        return res.status(400).json({ error: 'Impossible d\'annuler un trajet deja passe' });
+      const departureDate = new Date(booking.departure_date);
+      if (departureDate < new Date()) {
+        return res.status(400).json({ error: 'Cannot cancel past bookings' });
       }
 
       // Cancel booking

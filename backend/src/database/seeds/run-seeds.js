@@ -16,10 +16,10 @@ async function runSeeds() {
   
   try {
     await client.query('BEGIN');
-    console.log('Starting database seeding...\n');
+    console.log('🌱 Starting database seeding...\n');
 
     // 1. Insérer les compagnies
-    console.log('Inserting companies...');
+    console.log('📦 Inserting companies...');
     const companyIds = {};
     
     for (const company of companies) {
@@ -49,11 +49,11 @@ async function runSeeds() {
         ]
       );
       companyIds[company.slug] = result.rows[0].id;
-      console.log(`  ${company.name} (ID: ${companyIds[company.slug]})`);
+      console.log(`  ✅ ${company.name} (ID: ${companyIds[company.slug]})`);
     }
 
     // 2. Insérer les lignes urbaines
-    console.log('\nInserting urban lines...');
+    console.log('\n🚌 Inserting urban lines...');
     const lineIds = {};
     
     for (const line of urbanLines) {
@@ -78,11 +78,11 @@ async function runSeeds() {
         ]
       );
       lineIds[line.line_number] = result.rows[0].id;
-      console.log(`  ${line.line_name}`);
+      console.log(`  ✅ ${line.line_name}`);
     }
 
     // 3. Insérer les lignes interurbaines
-    console.log('\nInserting interurban lines...');
+    console.log('\n🚍 Inserting interurban lines...');
     
     for (const line of interurbanLines) {
       const companyId = companyIds[line.company_slug];
@@ -111,7 +111,7 @@ async function runSeeds() {
         ]
       );
       lineIds[line.line_number] = result.rows[0].id;
-      console.log(`  ${line.line_name}`);
+      console.log(`  ✅ ${line.line_name}`);
     }
 
     // 4. Insérer les horaires
@@ -125,7 +125,7 @@ async function runSeeds() {
     for (const schedule of schedules) {
       const lineId = lineIds[schedule.line_number];
       if (!lineId) {
-        console.warn(`  [WARNING] Line not found: ${schedule.line_number}`);
+        console.warn(`  ⚠️  Line not found: ${schedule.line_number}`);
         continue;
       }
       
@@ -148,10 +148,10 @@ async function runSeeds() {
       );
       scheduleCount++;
     }
-    console.log(`  ${scheduleCount} schedules inserted`);
+    console.log(`  ✅ ${scheduleCount} schedules inserted`);
 
     // 5. Créer quelques arrêts pour les lignes urbaines
-    console.log('\nInserting bus stops for urban lines...');
+    console.log('\n🚏 Inserting bus stops for urban lines...');
     
     const urbanStops = [
       { line_number: 'L2B', stops: [
@@ -181,12 +181,12 @@ async function runSeeds() {
           [lineId, stop.city, stop.name, stop.order, stop.lat, stop.lng]
         );
       }
-      console.log(`  ${lineStops.stops.length} stops for ${lineStops.line_number}`);
+      console.log(`  ✅ ${lineStops.stops.length} stops for ${lineStops.line_number}`);
     }
 
     await client.query('COMMIT');
-    console.log('\nDatabase seeding completed successfully!\n');
-    console.log('Summary:');
+    console.log('\n✅ Database seeding completed successfully!\n');
+    console.log('📊 Summary:');
     console.log(`   - ${companies.length} companies`);
     console.log(`   - ${urbanLines.length} urban lines`);
     console.log(`   - ${interurbanLines.length} interurban lines`);
@@ -195,7 +195,7 @@ async function runSeeds() {
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('[ERROR] seeding database:', error);
+    console.error('❌ Error seeding database:', error);
     throw error;
   } finally {
     client.release();
@@ -207,11 +207,11 @@ async function runSeeds() {
 if (require.main === module) {
   runSeeds()
     .then(() => {
-      console.log('Seeding process finished!');
+      console.log('🎉 Seeding process finished!');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('[FAILED] Seeding process failed:', error);
+      console.error('💥 Seeding process failed:', error);
       process.exit(1);
     });
 }

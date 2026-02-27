@@ -1,5 +1,5 @@
 const UserModel = require('../models/User');
-const { generateToken, formatPhoneNumber, generateReferralCode } = require('../utils/helpers');
+const { generateToken, formatPhoneNumber } = require('../utils/helpers');
 const bcrypt = require('bcryptjs');
 const admin = require('../config/firebase');
 const supabase = require('../config/supabase');
@@ -21,7 +21,7 @@ class AuthController {
   // Register with Password
   static async register(req, res) {
     try {
-      const { phoneNumber, firstName, lastName, password, securityQ1, securityA1, securityQ2, securityA2, referralCode } = req.body;
+      const { phoneNumber, firstName, lastName, password, securityQ1, securityA1, securityQ2, securityA2 } = req.body;
 
       if (!phoneNumber || !firstName || !lastName || !password || !securityQ1 || !securityA1 || !securityQ2 || !securityA2) {
         return res.status(400).json({ error: 'All fields are required.' });
@@ -39,18 +39,6 @@ class AuthController {
       const secA1Hash = await bcrypt.hash(securityA1.toLowerCase().trim(), salt);
       const secA2Hash = await bcrypt.hash(securityA2.toLowerCase().trim(), salt);
 
-      // Generate unique referral code for new user
-      const newReferralCode = generateReferralCode();
-
-      // Check if a valid referral code was provided
-      let referrerId = null;
-      if (referralCode && referralCode.trim() !== '') {
-        const referrer = await UserModel.findByReferralCode(referralCode.trim().toUpperCase());
-        if (referrer) {
-          referrerId = referrer.id;
-        }
-      }
-
       const user = await UserModel.create({
         phoneNumber: formattedPhone,
         firstName,
@@ -61,14 +49,7 @@ class AuthController {
         securityQ2,
         securityA2: secA2Hash,
         isVerified: true,
-        referralCode: newReferralCode,
-        referredBy: referralCode ? referralCode.trim().toUpperCase() : null,
       });
-
-      // Credit referrer +100 FCFA
-      if (referrerId) {
-        await UserModel.addWalletBalance(referrerId, 100);
-      }
 
       const token = generateToken(user.id, formattedPhone);
       await UserModel.updateLastLogin(user.id);
@@ -76,7 +57,7 @@ class AuthController {
       res.status(201).json({
         message: 'Registered successfully',
         token,
-        user: { ...user, isVerified: true, referralCode: newReferralCode },
+        user: { ...user, isVerified: true },
         expiresIn: 604800,
       });
     } catch (error) {
@@ -113,8 +94,6 @@ class AuthController {
       const token = generateToken(user.id, formattedPhone);
       await UserModel.updateLastLogin(user.id);
 
-      const signedAvatarUrl = await getSignedAvatarUrl(user.profile_picture_url);
-
       res.status(200).json({
         message: 'Login successful',
         token,
@@ -127,7 +106,7 @@ class AuthController {
           cnib: user.cnib,
           gender: user.gender,
           email: user.email,
-          profilePictureUrl: signedAvatarUrl || user.profile_picture_url,
+          profilePictureUrl: user.profile_picture_url,
           isVerified: user.is_verified,
         },
         expiresIn: 604800,
@@ -193,10 +172,6 @@ class AuthController {
       const token = generateToken(user.id, formattedPhone);
       await UserModel.updateLastLogin(user.id);
 
-      const signedAvatarUrl = await getSignedAvatarUrl(
-        user.profile_picture_url || picture
-      );
-
       res.status(200).json({
         message: 'Google login successful',
         token,
@@ -209,7 +184,7 @@ class AuthController {
           cnib: user.cnib,
           gender: user.gender,
           email: user.email || email,
-          profilePictureUrl: signedAvatarUrl || user.profile_picture_url || picture,
+          profilePictureUrl: user.profile_picture_url || picture,
           isVerified: true,
         },
         expiresIn: 604800,

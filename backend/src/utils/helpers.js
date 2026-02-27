@@ -34,15 +34,6 @@ const generateBookingCode = () => {
   return Math.floor(10000000 + Math.random() * 90000000).toString();
 };
 
-const generateReferralCode = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans O, 0, I, 1 pour eviter confusion
-  let code = '';
-  for (let i = 0; i < 8; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
-};
-
 const generateUniqueId = () => {
   return crypto.randomUUID();
 };
@@ -94,7 +85,6 @@ module.exports = {
   verifyToken,
   generateOTP,
   generateBookingCode,
-  generateReferralCode,
   generateUniqueId,
   hashPassword,
   comparePassword,

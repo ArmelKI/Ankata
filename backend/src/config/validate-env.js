@@ -42,19 +42,19 @@ function validateEnv() {
 
   // Crash si variables critiques manquantes
   if (missing.length > 0) {
-    console.error('[ERREUR]: Variables d\'environnement manquantes:');
+    console.error('❌ ERREUR: Variables d\'environnement manquantes:');
     missing.forEach((msg) => console.error(`   - ${msg}`));
-    console.error('\nCopiez .env.example vers .env et remplissez les valeurs.');
+    console.error('\n💡 Copiez .env.example vers .env et remplissez les valeurs.');
     process.exit(1);
   }
 
   // Warnings non bloquants
   if (warnings.length > 0 && process.env.NODE_ENV === 'development') {
-    console.warn('[WARNINGS]:');
+    console.warn('⚠️  WARNINGS:');
     warnings.forEach((msg) => console.warn(`   - ${msg}`));
   }
 
-  console.log('[OK] Variables d\'environnement validées');
+  console.log('✅ Variables d\'environnement validées');
 }
 
 module.exports = { validateEnv };
