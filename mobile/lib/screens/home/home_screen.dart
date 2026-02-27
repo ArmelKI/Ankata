@@ -120,20 +120,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Bienvenue sur',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                      color: AppColors.white.withOpacity(0.8)),
-                                ),
-                                Text(
-                                  'Ankata.',
-                                  style: AppTextStyles.h1
-                                      .copyWith(color: AppColors.white),
-                                ),
-                              ],
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Bienvenue sur',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                        color:
+                                            AppColors.white.withOpacity(0.8)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    'Ankata.',
+                                    style: AppTextStyles.h1
+                                        .copyWith(color: AppColors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
                             Container(
                               decoration: BoxDecoration(

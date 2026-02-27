@@ -128,7 +128,8 @@ class _TripSearchResultsScreenState
           final stops = (schedule['stops'] as List<dynamic>?)
                   ?.map((s) => Map<String, dynamic>.from(s as Map))
                   .toList() ??
-              _generateMockStops(line['origin_city'] as String?, line['destination_city'] as String?);
+              _generateMockStops(line['origin_city'] as String?,
+                  line['destination_city'] as String?);
 
           parsedTrips.add({
             'lineId': line['id'],
@@ -142,7 +143,7 @@ class _TripSearchResultsScreenState
             'price': line['base_price'],
             'availableSeats': schedule['available_seats'],
             'amenities': schedule['is_vip'] == true
-                ? ['AC', 'WiFi', 'Siège inclinable']
+                ? ['AC', 'WiFi', 'Siege inclinable']
                 : ['Bagages'],
             'from': line['origin_city'],
             'to': line['destination_city'],
@@ -152,17 +153,22 @@ class _TripSearchResultsScreenState
             'rating': line['rating_average'] ?? 0.0,
             'reviews': 0,
             'logoUrl': line['logo_url'],
+            'isUrban': line['is_urban'] ?? false,
             'stops': stops,
           });
         }
       }
 
+      // Exclude urban companies (ex: SOTRACO) from intercity results
+      final filteredTrips =
+          parsedTrips.where((t) => !(t['isUrban'] as bool? ?? false)).toList();
+
       if (mounted) {
         setState(() {
-          _trips = parsedTrips;
+          _trips = filteredTrips;
           _isLoading = false;
         });
-        await _cacheTrips(parsedTrips);
+        await _cacheTrips(filteredTrips);
       }
     } catch (e) {
       if (mounted) {
@@ -418,20 +424,35 @@ class _TripSearchResultsScreenState
                       borderRadius: AppRadius.radiusSm,
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: trip['logoUrl'] != null && trip['logoUrl'].isNotEmpty
-                        ? Image.asset(
-                            trip['logoUrl'],
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Text(
-                                  trip['company'][0],
-                                  style: AppTextStyles.h3
-                                      .copyWith(color: AppColors.white),
-                                ),
-                              );
-                            },
-                          )
+                    child: trip['logoUrl'] != null &&
+                            (trip['logoUrl'] as String).isNotEmpty
+                        ? (trip['logoUrl'] as String).startsWith('http')
+                            ? Image.network(
+                                trip['logoUrl'] as String,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Text(
+                                      trip['company'][0],
+                                      style: AppTextStyles.h3
+                                          .copyWith(color: AppColors.white),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                trip['logoUrl'] as String,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Text(
+                                      trip['company'][0],
+                                      style: AppTextStyles.h3
+                                          .copyWith(color: AppColors.white),
+                                    ),
+                                  );
+                                },
+                              )
                         : Center(
                             child: Text(
                               trip['company'][0],
@@ -607,10 +628,13 @@ class _TripSearchResultsScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Arrêts', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                      Text('Arrêts',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: AppSpacing.sm),
                       StopsListWidget(
-                        stops: (trip['stops'] as List).cast<Map<String, dynamic>>(),
+                        stops: (trip['stops'] as List)
+                            .cast<Map<String, dynamic>>(),
                         routeName: trip['company'] as String? ?? 'Ligne',
                       ),
                     ],
@@ -729,4 +753,3 @@ class _TripSearchResultsScreenState
     ];
   }
 }
-

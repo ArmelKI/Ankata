@@ -200,6 +200,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildPersonalInfoSection() {
+    final user = ref.watch(currentUserProvider);
+    final cnib = user?['cnib'] as String? ?? 'Non renseigne';
+    final gender = user?['gender'] as String? ?? 'Non renseigne';
+    final dob =
+        user?['dateOfBirth'] as String? ?? user?['date_of_birth'] as String?;
+    final dobDisplay =
+        dob != null && dob.isNotEmpty ? dob.split('T').first : 'Non renseignee';
+    final email = user?['email'] as String? ?? 'Non renseigne';
+
     return Container(
       color: AppColors.white,
       child: Column(
@@ -207,76 +216,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text(
-              'Informations personnelles',
-              style:
-                  AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Informations personnelles',
+                  style: AppTextStyles.bodyLarge
+                      .copyWith(fontWeight: FontWeight.w600),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    HapticHelper.lightImpact();
+                    _showEditProfileDialog();
+                  },
+                  icon: const Icon(Icons.edit, size: 16),
+                  label: const Text('Modifier'),
+                ),
+              ],
             ),
           ),
           _buildListItem(
-            Icons.badge,
-            'Num\u00e9ro CNIB',
-            'B123456789',
-            () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text(
-                        'Modification CNIB en cours de d\u00e9veloppement')),
-              );
-            },
-          ),
+              Icons.badge,
+              'Numero CNIB',
+              cnib.isEmpty ? 'Non renseigne' : cnib,
+              () => _showEditProfileDialog()),
           const Divider(height: 1),
           _buildListItem(
-            Icons.person,
-            'Sexe',
-            'Masculin',
-            () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('S\u00e9lectionner le sexe'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RadioListTile<String>(
-                        title: const Text('Masculin'),
-                        value: 'Masculin',
-                        groupValue: 'Masculin',
-                        onChanged: (value) => Navigator.pop(context),
-                      ),
-                      RadioListTile<String>(
-                        title: const Text('F\u00e9minin'),
-                        value: 'F\u00e9minin',
-                        groupValue: 'Masculin',
-                        onChanged: (value) => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+              Icons.person,
+              'Sexe',
+              gender.isEmpty ? 'Non renseigne' : gender,
+              () => _showEditProfileDialog()),
+          const Divider(height: 1),
+          _buildListItem(Icons.calendar_today, 'Date de naissance', dobDisplay,
+              () => _showEditProfileDialog()),
           const Divider(height: 1),
           _buildListItem(
-            Icons.calendar_today,
-            'Date de naissance',
-            '15 Janvier 1990',
-            () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime(1990, 1, 15),
-                firstDate: DateTime(1940),
-                lastDate: DateTime.now(),
-              );
-              if (date != null && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(
-                          'Date s\u00e9lectionn\u00e9e: ${date.day}/${date.month}/${date.year}')),
-                );
-              }
-            },
-          ),
+              Icons.email,
+              'Email',
+              email.isEmpty ? 'Non renseigne' : email,
+              () => _showEditProfileDialog()),
         ],
       ),
     );
@@ -284,6 +262,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // Section Referral
   Widget _buildReferralSection() {
+    final user = ref.watch(currentUserProvider);
+    final referralCode = user?['referralCode'] as String? ??
+        user?['referral_code'] as String? ??
+        'CODE?';
+    final walletBalance =
+        user?['walletBalance'] as int? ?? user?['wallet_balance'] as int? ?? 0;
+
     return Container(
       color: AppColors.white,
       child: Column(
@@ -292,18 +277,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
-              'Gagne Des Points',
+              'Parrainage',
               style:
                   AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
+          if (walletBalance > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.1),
+                  borderRadius: AppRadius.radiusSm,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_balance_wallet,
+                        color: AppColors.success, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Solde bonus: $walletBalance FCFA',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           _buildListItem(
             Icons.card_giftcard,
             'Parrainer un ami',
-            'Gagne 100F par personne. Max 15. Ton ami aussi!',
+            'Ton ami s\'inscrit avec ton code => tu gagnes 100F !\nTon code: $referralCode',
             () {
               HapticHelper.lightImpact();
-              ReferralDialog.show(context, referralCode: 'USER123');
+              ReferralDialog.show(context, referralCode: referralCode);
             },
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
