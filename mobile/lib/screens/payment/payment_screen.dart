@@ -106,11 +106,21 @@ class _PaymentScreenState extends State<PaymentScreen>
                     const SizedBox(height: 12),
 
                     _buildPaymentMethodCard(
-                      method: PaymentMethod.mtnMoney,
-                      icon: '🟡',
-                      title: 'MTN Mobile Money',
+                      method: PaymentMethod.wave,
+                      icon: '🌊',
+                      title: 'Wave',
                       subtitle: 'Paiement instantané et sécurisé',
-                      badge: '20% marché',
+                      badge: 'Frais réduits',
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    _buildPaymentMethodCard(
+                      method: PaymentMethod.moovMoney,
+                      icon: '🔵',
+                      title: 'Moov Money',
+                      subtitle: 'Paiement instantané et sécurisé',
+                      badge: 'Local',
                     ),
 
                     const SizedBox(height: 12),

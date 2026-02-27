@@ -4,6 +4,7 @@ import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
 import '../../data/all_companies_data.dart';
 import '../../services/ratings_service.dart';
+import '../../services/company_logo_service.dart';
 
 class CompaniesScreen extends StatefulWidget {
   const CompaniesScreen({Key? key}) : super(key: key);
@@ -207,21 +208,13 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
           child: Row(
             children: [
               // Logo
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: CompanyColors.getCompanyColor(company['name']),
-                  borderRadius: AppRadius.radiusMd,
-                ),
-                child: Center(
-                  child: Text(
-                    company['name'][0],
-                    style: AppTextStyles.h1.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+              ClipRRect(
+                borderRadius: AppRadius.radiusMd,
+                child: CompanyLogoService.getCompanyLogo(
+                  companyName: company['name'],
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),

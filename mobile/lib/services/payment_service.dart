@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/constants.dart';
 import '../utils/haptic_helper.dart';
 
 enum PaymentMethod {
   orangeMoney,
-  mtnMoney,
+  wave,
+  moovMoney,
   card,
 }
 
@@ -64,6 +66,7 @@ class PaymentData {
 
 class PaymentService {
   static const String _paymentHistoryKey = 'payment_history';
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static Future<PaymentData> initiatePayment({
     required int amount,
@@ -72,8 +75,9 @@ class PaymentService {
     required String phoneNumber,
   }) async {
     try {
-      if (kDebugMode ||
-          const bool.fromEnvironment('MOCK_PAYMENT', defaultValue: true)) {
+      final useMock =
+          const bool.fromEnvironment('MOCK_PAYMENT', defaultValue: kDebugMode);
+      if (useMock) {
         await Future.delayed(const Duration(seconds: 2));
         final mockPayment = PaymentData(
           orderId: 'mock_${DateTime.now().millisecondsSinceEpoch}',
@@ -87,8 +91,7 @@ class PaymentService {
         return mockPayment;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final token = await _secureStorage.read(key: AppConfig.tokenKey);
 
       if (token == null) {
         throw Exception('User not authenticated');
@@ -97,13 +100,16 @@ class PaymentService {
       String methodStr;
       switch (method) {
         case PaymentMethod.orangeMoney:
-          methodStr = 'orange_money_bf';
+          methodStr = 'ORANGE_MONEY';
           break;
-        case PaymentMethod.mtnMoney:
-          methodStr = 'moov_money_bf';
+        case PaymentMethod.wave:
+          methodStr = 'WAVE';
+          break;
+        case PaymentMethod.moovMoney:
+          methodStr = 'MOOV_MONEY';
           break;
         case PaymentMethod.card:
-          methodStr = 'card';
+          methodStr = 'CARD';
           break;
       }
 
@@ -160,8 +166,7 @@ class PaymentService {
         return PaymentStatus.success;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final token = await _secureStorage.read(key: AppConfig.tokenKey);
 
       final response = await http.get(
         Uri.parse('${AppConfig.apiBaseUrl}/payments/$orderId'),
@@ -173,8 +178,10 @@ class PaymentService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final paymentMap = data['payment'] ?? {};
-        final statusString =
-            (paymentMap['status']?.toString() ?? 'pending').toLowerCase();
+        final statusString = (paymentMap['payment_status']?.toString() ??
+                paymentMap['status']?.toString() ??
+                'pending')
+            .toLowerCase();
 
         PaymentStatus status;
         if (statusString.contains('success') || statusString.contains('paid')) {
@@ -200,7 +207,7 @@ class PaymentService {
     }
   }
 
-  // Polling pour Orange Money / MTN (USSD prompt)
+  // Polling pour Orange Money / Wave / Moov (USSD prompt)
   static Future<PaymentStatus> waitForPaymentConfirmation(
     String orderId, {
     Duration timeout = const Duration(minutes: 5),
@@ -335,8 +342,10 @@ class PaymentService {
     switch (method) {
       case PaymentMethod.orangeMoney:
         return '🟠';
-      case PaymentMethod.mtnMoney:
-        return '🟡';
+      case PaymentMethod.wave:
+        return '🌊';
+      case PaymentMethod.moovMoney:
+        return '🔵';
       case PaymentMethod.card:
         return '💳';
     }
@@ -347,8 +356,10 @@ class PaymentService {
     switch (method) {
       case PaymentMethod.orangeMoney:
         return 'Orange Money';
-      case PaymentMethod.mtnMoney:
-        return 'MTN Mobile Money';
+      case PaymentMethod.wave:
+        return 'Wave';
+      case PaymentMethod.moovMoney:
+        return 'Moov Money';
       case PaymentMethod.card:
         return 'Carte bancaire';
     }
@@ -384,45 +395,19 @@ class PaymentService {
     return orangePrefixes.any((prefix) => phone.contains('+226$prefix'));
   }
 
-  // Vérifier si MTN est disponible
-  static bool isMTNNumber(String phone) {
+  // Vérifier si Moov est disponible (prefixes a confirmer)
+  static bool isMoovNumber(String phone) {
     phone = normalizePhoneNumber(phone);
-    // MTN BF commence par +226 50, 51, 52, 53, 54, 55, 56, 57, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 76, 77
-    final mtnPrefixes = [
-      '50',
-      '51',
-      '52',
-      '53',
-      '54',
-      '55',
-      '56',
-      '57',
-      '60',
-      '61',
-      '62',
-      '63',
-      '64',
-      '65',
-      '66',
-      '67',
-      '70',
-      '71',
-      '72',
-      '73',
-      '74',
-      '75',
-      '76',
-      '77'
-    ];
-    return mtnPrefixes.any((prefix) => phone.contains('+226$prefix'));
+    const moovPrefixes = <String>[];
+    return moovPrefixes.any((prefix) => phone.contains('+226$prefix'));
   }
 
   // Détecter automatiquement la méthode recommandée
   static PaymentMethod? detectRecommendedMethod(String phone) {
     if (isOrangeNumber(phone)) {
       return PaymentMethod.orangeMoney;
-    } else if (isMTNNumber(phone)) {
-      return PaymentMethod.mtnMoney;
+    } else if (isMoovNumber(phone)) {
+      return PaymentMethod.moovMoney;
     }
     return null; // Carte par défaut
   }

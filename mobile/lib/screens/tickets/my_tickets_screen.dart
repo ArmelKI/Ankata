@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
+import '../../providers/app_providers.dart';
 import '../../services/booking_service.dart';
 
-class MyTicketsScreen extends StatefulWidget {
+class MyTicketsScreen extends ConsumerStatefulWidget {
   const MyTicketsScreen({Key? key}) : super(key: key);
 
   @override
-  State<MyTicketsScreen> createState() => _MyTicketsScreenState();
+  ConsumerState<MyTicketsScreen> createState() => _MyTicketsScreenState();
 }
 
-class _MyTicketsScreenState extends State<MyTicketsScreen>
+class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
   List<Map<String, dynamic>> _upcomingTickets = [];
   List<Map<String, dynamic>> _pastTickets = [];
   List<Map<String, dynamic>> _cancelledTickets = [];
+
+  BookingService get _bookingService =>
+      BookingService(ref.read(apiServiceProvider));
 
   @override
   void initState() {
@@ -35,61 +40,34 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
 
   Future<void> _loadTickets() async {
     setState(() => _isLoading = true);
+    try {
+      final upcoming =
+          await _bookingService.getUserBookings(status: 'upcoming');
+      final past = await _bookingService.getUserBookings(status: 'past');
 
-    // Simulation du chargement depuis l'API
-    await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
 
-    // Données de test (à remplacer par l'API)
-    setState(() {
-      _upcomingTickets = [
-        {
-          'id': 'ANK123456',
-          'bookingCode': 'ANK123456',
-          'company': 'SOTRACO',
-          'from': 'Ouagadougou',
-          'to': 'Bobo-Dioulasso',
-          'date': '25 Jan 2024',
-          'departure': '08:00',
-          'arrival': '13:00',
-          'seat': 'A12',
-          'price': 8500,
-          'rating': 4.5,
-        },
-        {
-          'id': 'ANK789012',
-          'bookingCode': 'ANK789012',
-          'company': 'TSR',
-          'from': 'Ouagadougou',
-          'to': 'Koudougou',
-          'date': '28 Jan 2024',
-          'departure': '15:00',
-          'arrival': '17:00',
-          'seat': 'B8',
-          'price': 3500,
-          'rating': 4.2,
-        },
-      ];
-
-      _pastTickets = [
-        {
-          'id': 'ANK456789',
-          'bookingCode': 'ANK456789',
-          'company': 'RAKIETA',
-          'from': 'Ouagadougou',
-          'to': 'Fada N\'Gourma',
-          'date': '15 Jan 2024',
-          'departure': '09:00',
-          'arrival': '13:30',
-          'seat': 'C5',
-          'price': 6000,
-          'rating': 4.3,
-        },
-      ];
-
-      _cancelledTickets = [];
-
-      _isLoading = false;
-    });
+      setState(() {
+        _upcomingTickets = upcoming.map(_mapBookingToTicket).toList();
+        _pastTickets = past.map(_mapBookingToTicket).toList();
+        _cancelledTickets = [];
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _upcomingTickets = [];
+        _pastTickets = [];
+        _cancelledTickets = [];
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur: Impossible de charger les billets'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   Future<void> _refreshTickets() async {
@@ -267,6 +245,86 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
         ),
       ),
     );
+  }
+
+  Map<String, dynamic> _mapBookingToTicket(Map<String, dynamic> booking) {
+    final bookingCode = booking['booking_code'] ?? booking['bookingCode'] ?? '';
+    final company = booking['company_name'] ??
+        booking['companyName'] ??
+        booking['company'] ??
+        'Compagnie';
+    final from = booking['origin_city'] ?? booking['from'] ?? '';
+    final to = booking['destination_city'] ?? booking['to'] ?? '';
+    final date =
+        _formatDate(booking['departure_date'] ?? booking['departureDate']);
+    final departure =
+        _formatTime(booking['departure_time'] ?? booking['departureTime']);
+    final arrival =
+        _formatTime(booking['arrival_time'] ?? booking['arrivalTime']);
+    final seat = _formatSeats(
+        booking['seat_numbers'] ?? booking['seatNumbers'] ?? booking['seat']);
+    final price = booking['total_price'] ?? booking['totalPrice'] ?? 0;
+
+    return {
+      'id': booking['id']?.toString() ?? bookingCode,
+      'bookingCode': bookingCode,
+      'company': company,
+      'from': from,
+      'to': to,
+      'date': date,
+      'departure': departure,
+      'arrival': arrival,
+      'seat': seat,
+      'price': price,
+      'rating': booking['rating'] ?? 0.0,
+    };
+  }
+
+  String _formatDate(dynamic raw) {
+    if (raw == null) {
+      return '--';
+    }
+    DateTime? date;
+    if (raw is DateTime) {
+      date = raw;
+    } else if (raw is String) {
+      date = DateTime.tryParse(raw);
+    }
+    if (date == null) {
+      return '--';
+    }
+    return DateFormat('d MMM yyyy', 'en').format(date);
+  }
+
+  String _formatTime(dynamic raw) {
+    if (raw == null) {
+      return '--:--';
+    }
+    if (raw is DateTime) {
+      return DateFormat('HH:mm').format(raw);
+    }
+    if (raw is String) {
+      if (raw.contains('T')) {
+        final parsed = DateTime.tryParse(raw);
+        if (parsed != null) {
+          return DateFormat('HH:mm').format(parsed);
+        }
+      }
+      if (raw.length >= 5) {
+        return raw.substring(0, 5);
+      }
+    }
+    return '--:--';
+  }
+
+  String _formatSeats(dynamic raw) {
+    if (raw == null) {
+      return '-';
+    }
+    if (raw is List) {
+      return raw.map((s) => s.toString()).join(', ');
+    }
+    return raw.toString();
   }
 
   Widget _buildTicketCard(Map<String, dynamic> ticket, String type) {
@@ -562,7 +620,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                 return;
               }
 
-              final bookingService = BookingService();
+              final bookingService = _bookingService;
               final success = await bookingService.cancelBooking(
                 bookingId,
                 'Annulée par l\'utilisateur',

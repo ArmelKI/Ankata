@@ -82,8 +82,11 @@ class StopDetailsDialog extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
-          Text(value, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+          Text(label,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray)),
+          Text(value,
+              style: AppTextStyles.bodyMedium
+                  .copyWith(fontWeight: FontWeight.w600)),
         ],
       ),
     );

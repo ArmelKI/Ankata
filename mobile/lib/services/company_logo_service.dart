@@ -22,12 +22,16 @@ class CompanyLogoService {
   ''';
 
   static const Map<String, String> companyLogoAssets = {
-    'SOTRACO': 'assets/logos/sotraco.png',
-    'SOTRAMA': 'assets/logos/sotrama.png',
-    'Tata': 'assets/logos/tata.png',
-    'Rimbo': 'assets/logos/rimbo.png',
-    'Azalaï': 'assets/logos/azalai.png',
-    'Africacar': 'assets/logos/africacar.png',
+    'SOTRACO': 'assets/images/companies/sotraco_logo.png',
+    'TSR': 'assets/images/companies/tsr_logo.png',
+    'STAF': 'assets/images/companies/staf_logo.png',
+    'RAHIMO': 'assets/images/companies/rahimo_logo.png',
+    'RAKIETA': 'assets/images/companies/rakieta_logo.png',
+    'TCV': 'assets/images/companies/tcv_logo.png',
+    'SARAMAYA': 'assets/images/companies/saramaya_logo.png',
+    'ELITIS': 'assets/images/companies/elitis_logo.png',
+    'FTS': 'assets/images/companies/fts_logo.png',
+    'CTKE': 'assets/images/companies/ctke_logo.png',
   };
 
   static Widget getCompanyLogo({
@@ -114,12 +118,16 @@ class CompanyLogoService {
 
 class CompanyColors {
   static const Map<String, Color> _colorMap = {
-    'SOTRACO': Color(0xFF0066CC),
-    'SOTRAMA': Color(0xFFFF5722),
-    'Tata': Color(0xFF4CAF50),
-    'Rimbo': Color(0xFF9C27B0),
-    'Azalaï': Color(0xFFFFC107),
-    'Africacar': Color(0xFF00BCD4),
+    'SOTRACO': Color(0xFF00A859),
+    'TSR': Color(0xFF1E90FF),
+    'STAF': Color(0xFFFF6B00),
+    'RAHIMO': Color(0xFFDC143C),
+    'RAKIETA': Color(0xFF8B0000),
+    'TCV': Color(0xFF006400),
+    'SARAMAYA': Color(0xFF0044AA),
+    'ELITIS': Color(0xFF6A00FF),
+    'FTS': Color(0xFF2E7D32),
+    'CTKE': Color(0xFF37474F),
   };
 
   static Color getCompanyColor(String companyName) {
@@ -129,7 +137,7 @@ class CompanyColors {
   static String getCompanyTextColor(String companyName) {
     final color = getCompanyColor(companyName);
     // For light colors, use dark text; for dark colors, use white text
-    if (companyName == 'Azalaï') {
+    if (companyName == 'ELITIS') {
       return '#000000';
     }
     return '#FFFFFF';

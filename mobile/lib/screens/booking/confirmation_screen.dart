@@ -18,6 +18,17 @@ class ConfirmationScreen extends StatelessWidget {
     required this.bookingData,
   }) : super(key: key);
 
+  String _getSeatLabel() {
+    final seats = bookingData['seats'] ?? bookingData['seat'];
+    if (seats == null) {
+      return '';
+    }
+    if (seats is List) {
+      return seats.map((s) => s.toString()).join(', ');
+    }
+    return seats.toString();
+  }
+
   void _copyBookingCode(BuildContext context) {
     Clipboard.setData(ClipboardData(text: bookingData['bookingCode']));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -169,7 +180,7 @@ class ConfirmationScreen extends StatelessWidget {
                               style: const pw.TextStyle(
                                   fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
-                          pw.Text(bookingData['seat'] ?? '',
+                          pw.Text(_getSeatLabel(),
                               style: pw.TextStyle(
                                   fontSize: 11,
                                   fontWeight: pw.FontWeight.bold)),
@@ -360,7 +371,7 @@ class ConfirmationScreen extends StatelessWidget {
                 pw.SizedBox(height: 16),
                 pw.Text('Passager: ${passengerRaw['name']}',
                     style: const pw.TextStyle(fontSize: 11)),
-                pw.Text('Siège: ${bookingData['seat']}',
+                pw.Text('Siège: ${_getSeatLabel()}',
                     style: pw.TextStyle(
                         fontSize: 11, fontWeight: pw.FontWeight.bold)),
               ],
@@ -620,7 +631,7 @@ class ConfirmationScreen extends StatelessWidget {
           _buildDetailRow(Icons.calendar_today, 'Date', trip['date']),
           _buildDetailRow(Icons.access_time, 'Horaire',
               '${trip['departure']} - ${trip['arrival']}'),
-          _buildDetailRow(Icons.event_seat, 'Siège', bookingData['seat']),
+          _buildDetailRow(Icons.event_seat, 'Siège', _getSeatLabel()),
 
           const Divider(height: AppSpacing.lg),
 

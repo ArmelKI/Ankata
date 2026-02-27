@@ -34,6 +34,7 @@ class AppConfig {
 
   // Payment
   static const String orangeMoneyKey = 'ORANGE_MONEY_KEY';
+  static const String waveKey = 'WAVE_KEY';
   static const String moovMoneyKey = 'MOOV_MONEY_KEY';
 
   // Storage Keys

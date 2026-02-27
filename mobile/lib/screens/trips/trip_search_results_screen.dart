@@ -7,6 +7,7 @@ import '../../config/app_theme.dart';
 import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
 import '../../services/favorites_service.dart';
+import '../../services/company_logo_service.dart';
 import '../../widgets/stops_list_widget.dart';
 
 class TripSearchResultsScreen extends ConsumerStatefulWidget {
@@ -419,27 +420,7 @@ class _TripSearchResultsScreenState
                       borderRadius: AppRadius.radiusSm,
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child: trip['logoUrl'] != null && trip['logoUrl'].isNotEmpty
-                        ? Image.asset(
-                            trip['logoUrl'],
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Text(
-                                  trip['company'][0],
-                                  style: AppTextStyles.h3
-                                      .copyWith(color: AppColors.white),
-                                ),
-                              );
-                            },
-                          )
-                        : Center(
-                            child: Text(
-                              trip['company'][0],
-                              style: AppTextStyles.h3
-                                  .copyWith(color: AppColors.white),
-                            ),
-                          ),
+                    child: _buildCompanyLogo(trip),
                   ),
                   const SizedBox(width: AppSpacing.md),
 
@@ -650,6 +631,48 @@ class _TripSearchResultsScreenState
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCompanyLogo(Map<String, dynamic> trip) {
+    final logoUrl = trip['logoUrl'] as String?;
+    final companyName = trip['company'] as String? ?? 'Compagnie';
+
+    if (logoUrl != null && logoUrl.isNotEmpty) {
+      if (logoUrl.startsWith('assets/')) {
+        return Image.asset(
+          logoUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return CompanyLogoService.getCompanyLogo(
+              companyName: companyName,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+            );
+          },
+        );
+      }
+
+      return Image.network(
+        logoUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return CompanyLogoService.getCompanyLogo(
+            companyName: companyName,
+            width: 60,
+            height: 60,
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    }
+
+    return CompanyLogoService.getCompanyLogo(
+      companyName: companyName,
+      width: 60,
+      height: 60,
+      fit: BoxFit.cover,
     );
   }
 

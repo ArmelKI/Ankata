@@ -106,8 +106,8 @@ final paymentMethodProvider = StateProvider<String?>((ref) => null);
 /// Payment options available
 final paymentOptionsProvider = StateProvider<List<String>>((ref) => [
       'orange_money',
+      'wave',
       'moov_money',
-      'yenga_pay',
       'card',
     ]);
 

@@ -1,50 +1,53 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'api_service.dart';
 
 class BookingService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  BookingService(this._apiService);
+
+  final ApiService _apiService;
 
   /// Annuler une réservation
   Future<bool> cancelBooking(String bookingId, String reason) async {
     try {
-      await _db.collection('bookings').doc(bookingId).update({
-        'status': 'cancelled',
-        'cancelledAt': Timestamp.now(),
-        'cancellationReason': reason,
-      });
+      await _apiService.cancelBooking(bookingId, reason);
       return true;
     } catch (e) {
-      print('Erreur annulation: $e');
+      debugPrint('Erreur annulation: $e');
       return false;
     }
   }
 
   /// Récupérer réservations utilisateur
-  Future<List<Map<String, dynamic>>> getUserBookings(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserBookings({String? status}) async {
     try {
-      final snapshot = await _db
-          .collection('bookings')
-          .where('userId', isEqualTo: userId)
-          .orderBy('departureDate', descending: true)
-          .get();
-
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      final response = await _apiService.getMyBookings(status: status);
+      final raw = response['bookings'] ??
+          response['upcoming'] ??
+          response['past'] ??
+          [];
+      if (raw is List) {
+        return raw
+            .map((item) => Map<String, dynamic>.from(item as Map))
+            .toList();
+      }
+      return [];
     } catch (e) {
-      print('Erreur récupération réservations: $e');
+      debugPrint('Erreur récupération réservations: $e');
       return [];
     }
   }
 
   /// Créer une réservation
-  Future<String?> createBooking(Map<String, dynamic> bookingData) async {
+  Future<Map<String, dynamic>?> createBooking(
+      Map<String, dynamic> bookingData) async {
     try {
-      final doc = await _db.collection('bookings').add({
-        ...bookingData,
-        'createdAt': Timestamp.now(),
-        'status': 'confirmed',
-      });
-      return doc.id;
+      final response = await _apiService.createBooking(bookingData);
+      if (response['booking'] is Map) {
+        return Map<String, dynamic>.from(response['booking'] as Map);
+      }
+      return response;
     } catch (e) {
-      print('Erreur création réservation: $e');
+      debugPrint('Erreur création réservation: $e');
       return null;
     }
   }

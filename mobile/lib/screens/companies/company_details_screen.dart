@@ -4,6 +4,7 @@ import '../../config/app_theme.dart';
 import '../../data/all_companies_data.dart';
 import '../../models/transport_company.dart';
 import '../../services/ratings_service.dart';
+import '../../services/company_logo_service.dart';
 
 class CompanyDetailsScreen extends StatefulWidget {
   final String companyId;
@@ -61,11 +62,27 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen>
               background: Container(
                 color: _company!.color,
                 child: Center(
-                  child: Icon(
-                    Icons.business,
-                    size: 80,
-                    color: AppColors.white.withValues(alpha: 0.3),
-                  ),
+                  child: _company!.logo != null
+                      ? Image.asset(
+                          _company!.logo!,
+                          width: 96,
+                          height: 96,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return CompanyLogoService.getCompanyLogo(
+                              companyName: _company!.name,
+                              width: 96,
+                              height: 96,
+                              fit: BoxFit.contain,
+                            );
+                          },
+                        )
+                      : CompanyLogoService.getCompanyLogo(
+                          companyName: _company!.name,
+                          width: 96,
+                          height: 96,
+                          fit: BoxFit.contain,
+                        ),
                 ),
               ),
             ),
