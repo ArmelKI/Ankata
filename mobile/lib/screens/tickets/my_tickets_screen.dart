@@ -41,7 +41,8 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
   Future<void> _loadTickets() async {
     setState(() => _isLoading = true);
     try {
-      final upcoming = await _bookingService.getUserBookings(status: 'upcoming');
+      final upcoming =
+          await _bookingService.getUserBookings(status: 'upcoming');
       final past = await _bookingService.getUserBookings(status: 'past');
       final cancelled = await _bookingService.getCancelledBookings();
 
