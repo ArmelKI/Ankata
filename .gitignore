@@ -5,7 +5,8 @@
 # PDFs specs
 *.pdf
 
-# Flutter
+# Flutter SDK (use system Flutter installation instead)
+flutter/
 build/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
