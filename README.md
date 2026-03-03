@@ -5,33 +5,33 @@ Transport booking application for Burkina Faso connecting passengers with transp
 
 ```
 ankata/
-├── backend/                 # Node.js + Express API
-│   ├── src/
-│   │   ├── controllers/    # Business logic controllers
-│   │   ├── routes/         # API route definitions
-│   │   ├── models/         # Database models
-│   │   ├── middleware/     # Authentication & validation
-│   │   ├── services/       # External services (payment, SMS)
-│   │   ├── database/       # Database schema & connection
-│   │   ├── utils/          # Utility functions
-│   │   └── index.js        # Express server setup
-│   ├── package.json
-│   ├── .env.example
-│   └── README.md
+├── backend/     # Node.js + Express API
+│ ├── src/
+│ │ ├── controllers/ # Business logic controllers
+│ │ ├── routes/   # API route definitions
+│ │ ├── models/   # Database models
+│ │ ├── middleware/  # Authentication & validation
+│ │ ├── services/  # External services (payment, SMS)
+│ │ ├── database/  # Database schema & connection
+│ │ ├── utils/   # Utility functions
+│ │ └── index.js  # Express server setup
+│ ├── package.json
+│ ├── .env.example
+│ └── README.md
 │
-├── mobile/                  # Flutter Mobile App
-│   ├── lib/
-│   │   ├── config/         # Theme, routing, constants
-│   │   ├── models/         # Data models
-│   │   ├── providers/      # State management (Riverpod)
-│   │   ├── services/       # API client, local services
-│   │   ├── screens/        # UI screens
-│   │   ├── widgets/        # Reusable components
-│   │   ├── utils/          # Utility functions
-│   │   └── main.dart
-│   ├── assets/
-│   ├── pubspec.yaml
-│   └── README.md
+├── mobile/     # Flutter Mobile App
+│ ├── lib/
+│ │ ├── config/   # Theme, routing, constants
+│ │ ├── models/   # Data models
+│ │ ├── providers/  # State management (Riverpod)
+│ │ ├── services/  # API client, local services
+│ │ ├── screens/  # UI screens
+│ │ ├── widgets/  # Reusable components
+│ │ ├── utils/   # Utility functions
+│ │ └── main.dart
+│ ├── assets/
+│ ├── pubspec.yaml
+│ └── README.md
 │
 └── README.md
 ```
@@ -131,8 +131,8 @@ Body: { "phoneNumber": "+226XXXXXXXXXX" }
 ```
 POST /api/auth/verify-otp
 Body: { 
-  "phoneNumber": "+226XXXXXXXXXX",
-  "otp": "123456"
+ "phoneNumber": "+226XXXXXXXXXX",
+ "otp": "123456"
 }
 Returns: { token, user }
 ```
@@ -162,14 +162,14 @@ GET /api/lines/:lineId?date=2026-03-01
 POST /api/bookings
 Headers: Authorization: Bearer <token>
 Body: {
-  "scheduleId": "uuid",
-  "lineId": "uuid",
-  "companyId": "uuid",
-  "passengerName": "John Doe",
-  "passengerPhone": "+226XXXXXXXXXX",
-  "departureDate": "2026-03-01",
-  "luggageWeightKg": 0,
-  "paymentMethod": "orange_money_bf"
+ "scheduleId": "uuid",
+ "lineId": "uuid",
+ "companyId": "uuid",
+ "passengerName": "John Doe",
+ "passengerPhone": "+226XXXXXXXXXX",
+ "departureDate": "2026-03-01",
+ "luggageWeightKg": 0,
+ "paymentMethod": "orange_money_bf"
 }
 ```
 
@@ -210,15 +210,15 @@ GET /api/companies/:companyId/ratings?limit=10&offset=0
 POST /api/ratings
 Headers: Authorization: Bearer <token>
 Body: {
-  "bookingId": "uuid",
-  "companyId": "uuid",
-  "lineId": "uuid",
-  "rating": 5,
-  "punctualityRating": 5,
-  "comfortRating": 5,
-  "staffRating": 5,
-  "cleanlinessRating": 5,
-  "comment": "Great service!"
+ "bookingId": "uuid",
+ "companyId": "uuid",
+ "lineId": "uuid",
+ "rating": 5,
+ "punctualityRating": 5,
+ "comfortRating": 5,
+ "staffRating": 5,
+ "cleanlinessRating": 5,
+ "comment": "Great service!"
 }
 ```
 
@@ -229,8 +229,8 @@ Body: {
 POST /api/payments
 Headers: Authorization: Bearer <token>
 Body: {
-  "bookingId": "uuid",
-  "paymentMethod": "orange_money_bf"
+ "bookingId": "uuid",
+ "paymentMethod": "orange_money_bf"
 }
 ```
 
@@ -250,48 +250,48 @@ Body: {
 ## Features Implemented
 
 ### Authentication
-- ✅ WhatsApp OTP verification
-- ✅ JWT token management
-- ✅ User profile management
+- WhatsApp OTP verification
+- JWT token management
+- User profile management
 
 ### Search & Discovery
-- ✅ Line search by origin/destination/date
-- ✅ Schedule availability
-- ✅ Company information & ratings
-- ✅ Route stops
+- Line search by origin/destination/date
+- Schedule availability
+- Company information & ratings
+- Route stops
 
 ### Bookings
-- ✅ Create bookings
-- ✅ Manage bookings (upcoming & past)
-- ✅ Cancel bookings
-- ✅ Booking confirmation
+- Create bookings
+- Manage bookings (upcoming & past)
+- Cancel bookings
+- Booking confirmation
 
 ### Payments
-- ✅ Payment initiation
-- ✅ Payment status tracking
-- ✅ Multiple payment methods (Orange Money, Moov Money)
+- Payment initiation
+- Payment status tracking
+- Multiple payment methods (Orange Money, Moov Money)
 
 ### Ratings
-- ✅ Create ratings with verification
-- ✅ Company statistics
-- ✅ Helpful ratings tracking
+- Create ratings with verification
+- Company statistics
+- Helpful ratings tracking
 
 ## Mobile App Features
 
 ### Screens Implemented
-- ✅ Splash Screen
-- ✅ Onboarding
-- ✅ Phone Authentication
-- ✅ OTP Verification
-- ✅ Home Screen with Search
-- ✅ Trip Search Results
-- ✅ Trip Details
-- ✅ Booking Flow
-- ✅ Booking Confirmation
-- ✅ My Bookings
-- ✅ Company Details
-- ✅ Rating Screen
-- ✅ User Profile
+- Splash Screen
+- Onboarding
+- Phone Authentication
+- OTP Verification
+- Home Screen with Search
+- Trip Search Results
+- Trip Details
+- Booking Flow
+- Booking Confirmation
+- My Bookings
+- Company Details
+- Rating Screen
+- User Profile
 
 ### State Management
 - Riverpod for reactive state management

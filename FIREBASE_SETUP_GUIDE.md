@@ -1,13 +1,13 @@
-# 🔥 FIREBASE SETUP COMPLET - ANKATA
+# FIREBASE SETUP COMPLET - ANKATA
 
 ## Vue d'ensemble
 
 Firebase fournit:
-- ☁️ **Cloud Messaging (FCM)**: Notifications push
-- 📊 **Analytics**: Tracking comportement utilisateurs
-- 💥 **Crashlytics**: Détection bugs automatique
-- ⚡ **Remote Config**: Paramètres dynamiques sans redéployer
-- 🔐 **Authentication**: Auth sociale (Google, Phone, etc)
+- ️ **Cloud Messaging (FCM)**: Notifications push
+- **Analytics**: Tracking comportement utilisateurs
+- **Crashlytics**: Détection bugs automatique
+- **Remote Config**: Paramètres dynamiques sans redéployer
+- **Authentication**: Auth sociale (Google, Phone, etc)
 
 **Impact**: Rétention +40%, Debug -80% temps, Analytics complet
 
@@ -31,12 +31,12 @@ Firebase fournit:
 3. **Package name**: `com.ankata.app` (doit matcher `mobile/android/app/build.gradle.kts`)
 4. **App nickname**: Ankata Mobile
 5. **SHA-1**: Optionnel pour v1 (requis pour Google Sign-In)
-   ```bash
-   # Obtenir SHA-1:
-   cd mobile/android
-   ./gradlew signingReport
-   # Copier SHA-1 depuis output
-   ```
+ ```bash
+ # Obtenir SHA-1:
+ cd mobile/android
+ ./gradlew signingReport
+ # Copier SHA-1 depuis output
+ ```
 6. Télécharger `google-services.json`
 7. **Placer fichier**: `mobile/android/app/google-services.json`
 
@@ -57,10 +57,10 @@ Firebase fournit:
 // Fichier: mobile/android/build.gradle.kts
 
 buildscript {
-    dependencies {
-        // Ajouter cette ligne:
-        classpath("com.google.gms:google-services:4.4.0")
-    }
+ dependencies {
+  // Ajouter cette ligne:
+  classpath("com.google.gms:google-services:4.4.0")
+ }
 }
 ```
 
@@ -70,19 +70,19 @@ buildscript {
 // Fichier: mobile/android/app/build.gradle.kts
 
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("dev.flutter.flutter-gradle-plugin")
-    // Ajouter cette ligne:
-    id("com.google.gms.google-services")
+ id("com.android.application")
+ id("kotlin-android")
+ id("dev.flutter.flutter-gradle-plugin")
+ // Ajouter cette ligne:
+ id("com.google.gms.google-services")
 }
 
 dependencies {
-    // Ajouter ces dépendances:
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-messaging")
-    implementation("com.google.firebase:firebase-crashlytics")
+ // Ajouter ces dépendances:
+ implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+ implementation("com.google.firebase:firebase-analytics")
+ implementation("com.google.firebase:firebase-messaging")
+ implementation("com.google.firebase:firebase-crashlytics")
 }
 ```
 
@@ -92,22 +92,22 @@ dependencies {
 <!-- Fichier: mobile/android/app/src/main/AndroidManifest.xml -->
 
 <manifest>
-    <!-- Ajouter ces permissions avant <application> -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    
-    <application>
-        <!-- Ajouter ce service pour FCM -->
-        <service
-            android:name=".Application"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
-    </application>
+ <!-- Ajouter ces permissions avant <application> -->
+ <uses-permission android:name="android.permission.INTERNET"/>
+ <uses-permission android:name="android.permission.VIBRATE"/>
+ <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+ <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+ 
+ <application>
+  <!-- Ajouter ce service pour FCM -->
+  <service
+   android:name=".Application"
+   android:exported="false">
+   <intent-filter>
+    <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+   </intent-filter>
+  </service>
+ </application>
 </manifest>
 ```
 
@@ -121,24 +121,24 @@ dependencies {
 # Fichier: mobile/pubspec.yaml
 
 dependencies:
-  # Firebase Core (requis)
-  firebase_core: ^2.24.0
-  
-  # Cloud Messaging (Notifications)
-  firebase_messaging: ^14.7.6
-  flutter_local_notifications: ^16.3.0
-  
-  # Analytics
-  firebase_analytics: ^10.8.0
-  
-  # Crashlytics (Bug tracking)
-  firebase_crashlytics: ^3.4.8
-  
-  # Remote Config
-  firebase_remote_config: ^4.3.8
-  
-  # Performance Monitoring
-  firebase_performance: ^0.9.3+8
+ # Firebase Core (requis)
+ firebase_core: ^2.24.0
+ 
+ # Cloud Messaging (Notifications)
+ firebase_messaging: ^14.7.6
+ flutter_local_notifications: ^16.3.0
+ 
+ # Analytics
+ firebase_analytics: ^10.8.0
+ 
+ # Crashlytics (Bug tracking)
+ firebase_crashlytics: ^3.4.8
+ 
+ # Remote Config
+ firebase_remote_config: ^4.3.8
+ 
+ # Performance Monitoring
+ firebase_performance: ^0.9.3+8
 ```
 
 ### 3.2 Installer packages
@@ -165,143 +165,143 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseService {
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-  static final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
-  static final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
+ static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+ static final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+ static final FlutterLocalNotificationsPlugin _localNotifications =
+  FlutterLocalNotificationsPlugin();
 
-  /// Initialise Firebase (appeler au démarrage app)
-  static Future<void> initialize() async {
-    try {
-      // Initialize Firebase
-      await Firebase.initializeApp();
-      
-      // Setup Crashlytics
-      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-      PlatformDispatcher.instance.onError = (error, stack) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        return true;
-      };
-      
-      // Setup Notifications
-      await _setupNotifications();
-      
-      // Setup Analytics
-      await _analytics.setAnalyticsCollectionEnabled(true);
-      
-      debugPrint('✅ Firebase initialized successfully');
-    } catch (e) {
-      debugPrint('❌ Firebase initialization error: $e');
-    }
-  }
+ /// Initialise Firebase (appeler au démarrage app)
+ static Future<void> initialize() async {
+ try {
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Setup Crashlytics
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+  FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  return true;
+  };
+  
+  // Setup Notifications
+  await _setupNotifications();
+  
+  // Setup Analytics
+  await _analytics.setAnalyticsCollectionEnabled(true);
+  
+  debugPrint(' Firebase initialized successfully');
+ } catch (e) {
+  debugPrint(' Firebase initialization error: $e');
+ }
+ }
 
-  /// Configure les notifications
-  static Future<void> _setupNotifications() async {
-    // Request permission
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('✅ Notification permission granted');
-      
-      // Get FCM token
-      final token = await _messaging.getToken();
-      debugPrint('📱 FCM Token: $token');
-      // TODO: Envoyer token au backend
-      
-      // Setup foreground handler
-      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-      
-      // Setup background handler
-      FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
-      
-      // Setup local notifications
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-      const iosSettings = DarwinInitializationSettings();
-      const settings = InitializationSettings(
-        android: androidSettings,
-        iOS: iosSettings,
-      );
-      await _localNotifications.initialize(settings);
-    }
-  }
+ /// Configure les notifications
+ static Future<void> _setupNotifications() async {
+ // Request permission
+ final settings = await _messaging.requestPermission(
+  alert: true,
+  badge: true,
+  sound: true,
+ );
+ 
+ if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+  debugPrint(' Notification permission granted');
+  
+  // Get FCM token
+  final token = await _messaging.getToken();
+  debugPrint(' FCM Token: $token');
+  // TODO: Envoyer token au backend
+  
+  // Setup foreground handler
+  FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+  
+  // Setup background handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
+  
+  // Setup local notifications
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const iosSettings = DarwinInitializationSettings();
+  const settings = InitializationSettings(
+  android: androidSettings,
+  iOS: iosSettings,
+  );
+  await _localNotifications.initialize(settings);
+ }
+ }
 
-  /// Handler pour messages en foreground
-  static void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('📨 Foreground message: ${message.notification?.title}');
-    
-    // Afficher notification locale
-    _showLocalNotification(
-      title: message.notification?.title ?? 'Ankata',
-      body: message.notification?.body ?? '',
-      payload: message.data.toString(),
-    );
-  }
+ /// Handler pour messages en foreground
+ static void _handleForegroundMessage(RemoteMessage message) {
+ debugPrint(' Foreground message: ${message.notification?.title}');
+ 
+ // Afficher notification locale
+ _showLocalNotification(
+  title: message.notification?.title ?? 'Ankata',
+  body: message.notification?.body ?? '',
+  payload: message.data.toString(),
+ );
+ }
 
-  /// Affiche notification locale
-  static Future<void> _showLocalNotification({
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'ankata_channel',
-      'Ankata Notifications',
-      channelDescription: 'Notifications pour réservations, trajets, etc.',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-    
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-    
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-    
-    await _localNotifications.show(
-      DateTime.now().millisecond,
-      title,
-      body,
-      details,
-      payload: payload,
-    );
-  }
+ /// Affiche notification locale
+ static Future<void> _showLocalNotification({
+ required String title,
+ required String body,
+ String? payload,
+ }) async {
+ const androidDetails = AndroidNotificationDetails(
+  'ankata_channel',
+  'Ankata Notifications',
+  channelDescription: 'Notifications pour réservations, trajets, etc.',
+  importance: Importance.high,
+  priority: Priority.high,
+  showWhen: true,
+ );
+ 
+ const iosDetails = DarwinNotificationDetails(
+  presentAlert: true,
+  presentBadge: true,
+  presentSound: true,
+ );
+ 
+ const details = NotificationDetails(
+  android: androidDetails,
+  iOS: iosDetails,
+ );
+ 
+ await _localNotifications.show(
+  DateTime.now().millisecond,
+  title,
+  body,
+  details,
+  payload: payload,
+ );
+ }
 
-  /// Log événement Analytics
-  static Future<void> logEvent(String name, [Map<String, Object>? parameters]) async {
-    await _analytics.logEvent(name: name, parameters: parameters);
-  }
+ /// Log événement Analytics
+ static Future<void> logEvent(String name, [Map<String, Object>? parameters]) async {
+ await _analytics.logEvent(name: name, parameters: parameters);
+ }
 
-  /// Log écran Analytics
-  static Future<void> logScreen(String screenName) async {
-    await _analytics.logScreenView(screenName: screenName);
-  }
+ /// Log écran Analytics
+ static Future<void> logScreen(String screenName) async {
+ await _analytics.logScreenView(screenName: screenName);
+ }
 
-  /// Set User ID pour Analytics
-  static Future<void> setUserId(String userId) async {
-    await _analytics.setUserId(id: userId);
-  }
+ /// Set User ID pour Analytics
+ static Future<void> setUserId(String userId) async {
+ await _analytics.setUserId(id: userId);
+ }
 
-  /// Log erreur custom Crashlytics
-  static Future<void> logError(dynamic error, StackTrace? stackTrace) async {
-    await FirebaseCrashlytics.instance.recordError(error, stackTrace);
-  }
+ /// Log erreur custom Crashlytics
+ static Future<void> logError(dynamic error, StackTrace? stackTrace) async {
+ await FirebaseCrashlytics.instance.recordError(error, stackTrace);
+ }
 }
 
 /// Background handler (doit être top-level function)
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  debugPrint('📨 Background message: ${message.notification?.title}');
+ await Firebase.initializeApp();
+ debugPrint(' Background message: ${message.notification?.title}');
 }
 ```
 
@@ -314,26 +314,26 @@ import 'package:flutter/material.dart';
 import 'services/firebase_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Firebase
-  await FirebaseService.initialize();
-  
-  runApp(const MyApp());
+ WidgetsFlutterBinding.ensureInitialized();
+ 
+ // Initialize Firebase
+ await FirebaseService.initialize();
+ 
+ runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+ const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      // ... votre config existante
-      navigatorObservers: [
-        FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
-      ],
-    );
-  }
+ @override
+ Widget build(BuildContext context) {
+ return MaterialApp(
+  // ... votre config existante
+  navigatorObservers: [
+  FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+  ],
+ );
+ }
 }
 ```
 
@@ -361,24 +361,24 @@ import '../services/firebase_service.dart';
 // Log écran
 @override
 void initState() {
-  super.initState();
-  FirebaseService.logScreen('HomeScreen');
+ super.initState();
+ FirebaseService.logScreen('HomeScreen');
 }
 
 // Log événement
 void onBookingComplete() {
-  FirebaseService.logEvent('booking_completed', {
-    'trip_id': '123',
-    'amount': 5000,
-    'company': 'STAF',
-  });
+ FirebaseService.logEvent('booking_completed', {
+ 'trip_id': '123',
+ 'amount': 5000,
+ 'company': 'STAF',
+ });
 }
 
 // Log erreur
 try {
-  // Code susceptible d'erreur
+ // Code susceptible d'erreur
 } catch (e, stack) {
-  FirebaseService.logError(e, stack);
+ FirebaseService.logError(e, stack);
 }
 ```
 
@@ -387,10 +387,10 @@ try {
 ```dart
 // Bouton de test (à enlever en production)
 ElevatedButton(
-  onPressed: () {
-    throw Exception('Test crash');
-  },
-  child: Text('Test Crash'),
+ onPressed: () {
+ throw Exception('Test crash');
+ },
+ child: Text('Test Crash'),
 );
 ```
 
@@ -413,35 +413,35 @@ const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json'); // Télécharger depuis Firebase Console
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+ credential: admin.credential.cert(serviceAccount),
 });
 
 async function sendNotification(fcmToken, title, body, data = {}) {
-  const message = {
-    notification: {
-      title,
-      body,
-    },
-    data,
-    token: fcmToken,
-  };
+ const message = {
+ notification: {
+  title,
+  body,
+ },
+ data,
+ token: fcmToken,
+ };
 
-  try {
-    const response = await admin.messaging().send(message);
-    console.log('✅ Notification sent:', response);
-    return response;
-  } catch (error) {
-    console.error('❌ Notification error:', error);
-    throw error;
-  }
+ try {
+ const response = await admin.messaging().send(message);
+ console.log(' Notification sent:', response);
+ return response;
+ } catch (error) {
+ console.error(' Notification error:', error);
+ throw error;
+ }
 }
 
 // Usage:
 // sendNotification(
-//   userFcmToken,
-//   'Réservation confirmée',
-//   'Ton trajet vers Bobo est confirmé pour demain 8h',
-//   { trip_id: '123', type: 'booking_confirmed' }
+// userFcmToken,
+// 'Réservation confirmée',
+// 'Ton trajet vers Bobo est confirmé pour demain 8h',
+// { trip_id: '123', type: 'booking_confirmed' }
 // );
 
 module.exports = { sendNotification };
@@ -453,10 +453,10 @@ module.exports = { sendNotification };
 
 | Service | Plan Gratuit | Suffisant pour |
 |---------|--------------|----------------|
-| **Cloud Messaging** | Illimité | ✅ Toujours OK |
-| **Analytics** | Illimité | ✅ Toujours OK |
-| **Crashlytics** | Illimité | ✅ Toujours OK |
-| **Remote Config** | Illimité | ✅ Toujours OK |
+| **Cloud Messaging** | Illimité | Toujours OK |
+| **Analytics** | Illimité | Toujours OK |
+| **Crashlytics** | Illimité | Toujours OK |
+| **Remote Config** | Illimité | Toujours OK |
 
 **Conclusion**: Tout est GRATUIT pour MVP et même au-delà de 100K utilisateurs !
 
@@ -470,7 +470,7 @@ module.exports = { sendNotification };
 - [ ] Packages Flutter ajoutés
 - [ ] `FirebaseService` créé
 - [ ] `main.dart` modifié
-- [ ] Notification test envoyée et reçue ✅
+- [ ] Notification test envoyée et reçue 
 - [ ] Analytics logs visible dans console
 - [ ] Crashlytics test crash visible
 

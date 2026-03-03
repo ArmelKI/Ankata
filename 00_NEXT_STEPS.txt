@@ -1,197 +1,62 @@
-╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║                    🎯 IMMEDIATE NEXT STEPS - NOW! 🎯                     ║
-║                                                                           ║
-╚═══════════════════════════════════════════════════════════════════════════╝
+ANKATA - NEXT STEPS
+Dernière mise à jour: 3 mars 2026
 
-👋 WELCOME BACK!
+Ce fichier sert de checklist rapide pour redémarrer le projet sans perdre de temps.
 
-Your Ankata project is now **FULLY DOCUMENTED** and **READY TO BUILD**.
+1) Lire la bonne documentation (10 min)
+- LIRE_MOI_EN_PREMIER.txt
+- QUICK_START.md
+- INDEX.md
 
-In the next 2 hours, you can be coding. Here's exactly how:
+Si besoin spécifique:
+- Déploiement: DEPLOYMENT_GUIDE.md
+- Firebase: FIREBASE_SETUP_GUIDE.md
+- Paiement: PAIEMENT_SETUP_GUIDE.md
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2) Démarrer le backend (10 min)
 
-⏱️ STEP 1: READ (5 minutes)
-═══════════════════════════════════════════════════════════════════════════
+cd /home/armelki/Documents/projets/Ankata/backend
+cp .env.example .env
+npm install
+npm run db:migrate
+npm run dev
 
-Open this file:
-  → /home/armelki/Documents/projets/Ankata/LIRE_MOI_EN_PREMIER.txt
+Vérifier:
+- API: http://localhost:3000/health
 
-This file will:
-  ✓ Orient you to the documentation
-  ✓ Point you to YOUR role's document
-  ✓ Get you started in 2 minutes
+3) Démarrer le mobile (10-15 min)
 
-Then read YOUR role-specific document:
+cd /home/armelki/Documents/projets/Ankata/mobile
+flutter pub get
+flutter run
 
-  If you're a MANAGER:        Read RESUME_EXECUTIF.md (10 min)
-  If you're a DEVELOPER:      Read QUICKSTART.md (15 min)
-  If you're a TECH LEAD:      Read STANDARDS_SNCF.md (30 min)
-  If you have an ERROR:       Read CORRECTIONS_GUIDE.md (5 min)
-  If you're IN A HURRY:       Read QUICK_FIX.md (2 min)
+Vérifier:
+- L'app démarre
+- Navigation principale OK
+- Pas de crash immédiat
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4) Contrôles fonctionnels minimum (20 min)
+- Auth: inscription/connexion
+- Recherche trajets: origine/destination/date
+- Détail trajet: horaires + places
+- Réservation: sélection siège + passager
+- Paiement: écran et statuts cohérents
 
-⏱️ STEP 2: SETUP BACKEND (10 minutes)
-═══════════════════════════════════════════════════════════════════════════
+5) Contrôles base de données / API (15 min)
+- Vérifier que les compagnies et lignes se chargent depuis l'API
+- Vérifier que les horaires existent et sont affichés
+- Vérifier les champs referral (users.referral_code, users.referred_by, users.wallet_balance)
 
-Open Terminal #1:
+6) Priorités de travail (ordre recommandé)
+1. Fix PaymentAggregator manquant
+2. Fix Auth guard router
+3. Fix sièges hardcodés + seat availability
+4. Finaliser MyBookings réel
+5. Vérifier logos compagnies dans les écrans
+6. Compléter données TSR + horaires manquants si nécessaire
 
-$ cd /home/armelki/Documents/projets/Ankata/backend
-$ npm install
-$ npm start
-
-Expected output:
-  ✓ Server running on http://localhost:3000
-  ✓ Database connected
-  ✓ 7 companies loaded
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⏱️ STEP 3: SETUP MOBILE (15 minutes)
-═══════════════════════════════════════════════════════════════════════════
-
-Open Terminal #2:
-
-$ cd /home/armelki/Documents/projets/Ankata/mobile
-$ flutter clean
-$ flutter pub get
-$ flutter analyze                    # Should be clean now (5 fixes applied)
-$ flutter run -d 57191JEBF10407      # Your Pixel 9a
-
-Expected result:
-  ✓ App launches on phone
-  ✓ Shows Ankata splash screen
-  ✓ Interface is 100% in French
-  ✓ No crash
-  ✓ Navigation works
-
-⚠️ Make sure your Pixel 9a is connected via USB:
-   adb devices                        # Should show your device
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⏱️ STEP 4: VERIFY BACKEND WORKS (5 minutes)
-═══════════════════════════════════════════════════════════════════════════
-
-Open Terminal #3 and run:
-
-$ curl http://localhost:3000/api/companies | jq
-
-Expected: JSON with 7 companies (SOTRACO, TSR, STAF, RAHIMO, RAKIETA, TCV, SARAMAYA)
-
-Other quick tests:
-
-$ curl http://localhost:3000/                                  # Welcome message
-$ curl http://localhost:3000/api/lines | jq '.length'         # Should show 51+
-$ curl http://localhost:3000/api/companies/sotraco | jq        # Details
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⏱️ STEP 5: FOLLOW TODAY'S PLAN (4 hours)
-═══════════════════════════════════════════════════════════════════════════
-
-Open: /home/armelki/Documents/projets/Ankata/SEMAINE_1_PLAN.md
-
-Read the section: "JOUR 1 (AUJOURD'HUI - 23/02)"
-
-This lists exactly what to do today:
-  □ Fix remaining compilation issues
-  □ Clean build (apk)
-  □ Test on device
-  □ Verify all navigation works
-  □ Document any blockers
-
-Success criteria for today:
-  ✓ App launches without crash
-  ✓ Zero runtime errors
-  ✓ Can navigate all screens
-  ✓ API connectivity verified
-  ✓ Team is ready for Day 2
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ YOU'RE ALL SET!
-
-Timeline for the next 2 hours:
-├─ 0:00 - 0:05   → Read LIRE_MOI_EN_PREMIER.txt
-├─ 0:05 - 0:20   → Read your role document
-├─ 0:20 - 0:30   → Setup backend (npm start)
-├─ 0:30 - 0:45   → Setup mobile (flutter run)
-├─ 0:45 - 0:50   → Verify everything works
-└─ 0:50 - 2:00   → Start today's tasks (SEMAINE_1_PLAN.md - Jour 1)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📚 DOCUMENT REFERENCE
-
-All documents are in the root directory:
-
-LIRE_MOI_EN_PREMIER.txt       ← Your navigation map (start here!)
-RESUME_EXECUTIF.md            ← For managers/executives
-AUDIT_COMPLET.md              ← Full project audit
-SEMAINE_1_PLAN.md             ← What to code each day
-STANDARDS_SNCF.md             ← How to code correctly
-QUICK_FIX.md                  ← Fast commands
-CORRECTIONS_GUIDE.md          ← Error solutions
-INDEX.md                       ← Complete documentation index
-MANIFEST.md                    ← File inventory
-SESSION_SUMMARY.md            ← What was done today
-QUICKSTART.md                 ← Setup guide
-DATABASE_README.md            ← Database documentation
-API_TESTS.md                  ← API testing guide
-
-Plus backend/ and mobile/ subdirectories with code.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-❓ QUICK TROUBLESHOOTING
-
-Problem: "npm command not found"
-  → Install Node.js from nodejs.org
-
-Problem: "flutter command not found"
-  → Install Flutter from flutter.dev
-
-Problem: "Pixel 9a not detected"
-  → Run: adb devices
-  → Run: adb usb
-  → Or: Enable USB Debugging in Settings
-
-Problem: "Compilation errors"
-  → Run: flutter clean && flutter pub get
-  → Or read: CORRECTIONS_GUIDE.md
-
-Problem: "App won't launch"
-  → Check: Backend is running (http://localhost:3000)
-  → Check: Pixel 9a is connected
-  → Read: SEMAINE_1_PLAN.md - Jour 1 - Troubleshooting
-
-Problem: "I don't know what to do"
-  → Read: LIRE_MOI_EN_PREMIER.txt
-  → Or: INDEX.md
-  → Or: SEMAINE_1_PLAN.md
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎯 YOUR GOAL THIS WEEK
-
-Complete v0.1.0 Beta by Friday, February 27 EOD:
-  ✅ Compilable APK
-  ✅ Zero crashes on Pixel 9a
-  ✅ Search feature working
-  ✅ Booking flow complete
-  ✅ All E2E tests pass
-  
-That's 42 hours of work (Days 1-5).
-
-You can do this! 💪
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Ready? Open LIRE_MOI_EN_PREMIER.txt and let's go! 🚀
-
-Generated: 23 Février 2026
-By: GitHub Copilot
+7) Rappel important
+- Supabase reste la source de vérité pour le schéma de production.
+- Éviter les changements qui cassent le script d'initialisation Render.
+- Éviter les données hardcodées quand l'API peut fournir l'information.
 
