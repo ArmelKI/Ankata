@@ -75,12 +75,15 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
 
   List<SotracoLine> get _filteredLines {
     var lines = SotracoData.getLinesByCity(_selectedCity);
-    if (_selectedLineType == 'Ordinaire')
+    if (_selectedLineType == 'Ordinaire') {
       lines = SotracoData.getOrdinaryLines(_selectedCity);
-    if (_selectedLineType == 'Intercommunale')
+    }
+    if (_selectedLineType == 'Intercommunale') {
       lines = SotracoData.getIntercommunalLines(_selectedCity);
-    if (_selectedLineType == 'Étudiants')
+    }
+    if (_selectedLineType == 'Étudiants') {
       lines = SotracoData.getStudentLines(_selectedCity);
+    }
     return lines;
   }
 
@@ -96,10 +99,11 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
             onPressed: () {
-              if (context.canPop())
+              if (context.canPop()) {
                 context.pop();
-              else
+              } else {
                 context.go('/home');
+              }
             },
           ),
           title: Row(
@@ -270,8 +274,9 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
                     onTap: () {
-                      if (line.coordinates.isNotEmpty)
+                      if (line.coordinates.isNotEmpty) {
                         _mapController.move(line.coordinates.first, 14.5);
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(12),
@@ -302,13 +307,14 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                           ]),
                           const Spacer(),
                           Row(children: [
-                            Icon(Icons.place, size: 14, color: AppColors.gray),
+                            const Icon(Icons.place,
+                                size: 14, color: AppColors.gray),
                             const SizedBox(width: 4),
                             Text('${line.stopsCount} arrêts',
                                 style: AppTextStyles.caption
                                     .copyWith(color: AppColors.gray)),
                             const SizedBox(width: 12),
-                            Icon(Icons.schedule,
+                            const Icon(Icons.schedule,
                                 size: 14, color: AppColors.gray),
                             const SizedBox(width: 4),
                             Expanded(
@@ -342,7 +348,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
     if (lines.isEmpty) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.info_outline, size: 48, color: AppColors.gray),
+          const Icon(Icons.info_outline, size: 48, color: AppColors.gray),
           const SizedBox(height: 12),
           Text('Aucune ligne pour $_selectedCity',
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray)),
@@ -464,7 +470,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
     return Row(mainAxisSize: MainAxisSize.min, children: [
       Icon(icon, size: 12, color: AppColors.gray),
       const SizedBox(width: 3),
-      Text(text, style: TextStyle(fontSize: 11, color: AppColors.gray)),
+      Text(text, style: const TextStyle(fontSize: 11, color: AppColors.gray)),
     ]);
   }
 
@@ -631,7 +637,7 @@ class _SotracoHomeScreenState extends State<SotracoHomeScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(t.montant,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),

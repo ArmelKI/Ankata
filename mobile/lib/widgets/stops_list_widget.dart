@@ -42,7 +42,7 @@ class StopDetailsDialog extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) => Container(
                   height: 200,
                   color: AppColors.lightGray,
-                  child: Center(
+                  child: const Center(
                     child: Icon(Icons.location_off, color: AppColors.gray),
                   ),
                 ),

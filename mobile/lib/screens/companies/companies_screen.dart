@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
 import '../../data/all_companies_data.dart';
 import '../../services/ratings_service.dart';
 import '../../services/company_logo_service.dart';

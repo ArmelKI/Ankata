@@ -4,10 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
+import '../../services/company_logo_service.dart';
 import '../../services/favorites_service.dart';
-import '../../services/company_logo_service.dart' hide CompanyColors;
 import '../../widgets/stops_list_widget.dart';
 
 class TripSearchResultsScreen extends ConsumerStatefulWidget {
@@ -170,7 +169,8 @@ class _TripSearchResultsScreenState
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: Impossible de trouver des trajets')),
+          const SnackBar(
+              content: Text('Erreur: Impossible de trouver des trajets')),
         );
       }
     }
@@ -205,13 +205,35 @@ class _TripSearchResultsScreenState
     return trips;
   }
 
-  List<Map<String, dynamic>> get _filteredTrips {
-    if (_companyFilters.isEmpty) {
-      return _sortedTrips;
+  // Get unique lines with all their schedules grouped
+  List<Map<String, dynamic>> get _filteredLines {
+    final grouped = <String, List<Map<String, dynamic>>>{};
+
+    // Group all trips by line
+    for (final trip in _sortedTrips) {
+      final groupKey = '${trip['lineId']}_${trip['company']}';
+      grouped.putIfAbsent(groupKey, () => []);
+      // Avoid duplicate schedules
+      if (!grouped[groupKey]!
+          .any((t) => t['scheduleId'] == trip['scheduleId'])) {
+        grouped[groupKey]!.add(trip);
+      }
     }
-    return _sortedTrips
-        .where((trip) => _companyFilters.contains(trip['company']))
-        .toList();
+
+    // Get unique lines (first of each group) and store all schedules in metadata
+    final uniqueLines = <Map<String, dynamic>>[];
+    for (final entry in grouped.entries) {
+      final firstTrip = Map<String, dynamic>.from(entry.value.first);
+      firstTrip['_allSchedules'] = entry.value;
+
+      // Apply company filter if set
+      if (_companyFilters.isEmpty ||
+          _companyFilters.contains(firstTrip['company'])) {
+        uniqueLines.add(firstTrip);
+      }
+    }
+
+    return uniqueLines;
   }
 
   @override
@@ -353,7 +375,7 @@ class _TripSearchResultsScreenState
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '${_trips.length} trajets disponibles',
+            '${_filteredLines.length} trajets disponibles',
             style:
                 AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
           ),
@@ -381,15 +403,18 @@ class _TripSearchResultsScreenState
   Widget _buildTripsList() {
     return ListView.builder(
       padding: const EdgeInsets.all(AppSpacing.md),
-      itemCount: _filteredTrips.length,
+      itemCount: _filteredLines.length,
       itemBuilder: (context, index) {
-        final trip = _filteredTrips[index];
+        final trip = _filteredLines[index];
         return _buildTripCard(trip);
       },
     );
   }
 
   Widget _buildTripCard(Map<String, dynamic> trip) {
+    // Get all schedules for this line from metadata
+    final allSchedulesForLine = (trip['_allSchedules'] as List?) ?? [trip];
+
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
@@ -397,238 +422,368 @@ class _TripSearchResultsScreenState
         borderRadius: AppRadius.radiusMd,
         boxShadow: AppShadows.shadow1,
       ),
-      child: InkWell(
-        onTap: () {
-          context.push('/passenger-info', extra: {
-            'trip': trip,
-            'passengers': widget.passengers,
-          });
-        },
-        borderRadius: AppRadius.radiusMd,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  // Logo compagnie
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: CompanyColors.getCompanyColor(trip['company']),
-                      borderRadius: AppRadius.radiusSm,
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: _buildCompanyLogo(trip),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-
-                  // Info compagnie
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          trip['company'] as String? ?? 'Compagnie',
-                          style: AppTextStyles.bodyLarge
-                              .copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${trip['availableSeats'] ?? 0} places disponibles',
-                          style: AppTextStyles.caption
-                              .copyWith(color: AppColors.gray),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  IconButton(
-                    onPressed: () async {
-                      final route = {
-                        'from': trip['from'] as String? ?? '',
-                        'to': trip['to'] as String? ?? '',
-                        'company': trip['company'] as String? ?? '',
-                      };
-                      await FavoritesService.toggleFavorite(route);
-                      await _loadFavorites();
-                    },
-                    icon: Icon(
-                      _favoriteKeys.contains(_favoriteKey(trip))
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: AppColors.star,
-                    ),
-                  ),
-
-                  // Places disponibles badge
-                  if ((trip['availableSeats'] as int? ?? 99) <= 10)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.1),
-                        borderRadius: AppRadius.radiusFull,
-                      ),
-                      child: Text(
-                        '${trip['availableSeats']}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.warning,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Horaires
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(trip['departure'] as String? ?? '--:--',
-                            style: AppTextStyles.h3),
-                        Text('Départ',
-                            style: AppTextStyles.caption
-                                .copyWith(color: AppColors.gray)),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Container(
-                                width: 30,
-                                height: 2,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: Icon(Icons.arrow_forward,
-                                  color: AppColors.primary, size: 16),
-                            ),
-                            Flexible(
-                              child: Container(
-                                width: 30,
-                                height: 2,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(trip['duration'] as String? ?? '--',
-                            style: AppTextStyles.caption),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(trip['arrival'] as String? ?? '--:--',
-                            style: AppTextStyles.h3),
-                        Text('Arrivée',
-                            style: AppTextStyles.caption
-                                .copyWith(color: AppColors.gray)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Équipements
-              Wrap(
-                spacing: AppSpacing.xs,
-                runSpacing: AppSpacing.xs,
-                children: (trip['amenities'] as List?)
-                        ?.cast<String>()
-                        .map((amenity) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.sm,
-                                vertical: AppSpacing.xs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.lightGray,
-                                borderRadius: AppRadius.radiusFull,
-                              ),
-                              child: Text(
-                                amenity,
-                                style: AppTextStyles.caption,
-                              ),
-                            ))
-                        .toList() ??
-                    [],
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Arrêts
-              if ((trip['stops'] as List?)?.isNotEmpty ?? false) ...[
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          children: [
+            // Header with company logo and info
+            Row(
+              children: [
+                // Logo compagnie
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    color: AppColors.lightGray,
+                    color: CompanyColors.getCompanyColor(trip['company']),
                     borderRadius: AppRadius.radiusSm,
                   ),
+                  clipBehavior: Clip.hardEdge,
+                  child: _buildCompanyLogo(trip),
+                ),
+                const SizedBox(width: AppSpacing.md),
+
+                // Info compagnie
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Arrêts',
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: AppSpacing.sm),
-                      StopsListWidget(
-                        stops: (trip['stops'] as List)
-                            .cast<Map<String, dynamic>>(),
-                        routeName: trip['company'] as String? ?? 'Ligne',
+                      Text(
+                        trip['company'] as String? ?? 'Compagnie',
+                        style: AppTextStyles.bodyLarge
+                            .copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${trip['availableSeats'] ?? 0} places disponibles',
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.gray),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-              ],
 
-              // Prix et bouton
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${trip['price'] ?? 0} FCFA',
-                      style: AppTextStyles.price),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.push('/passenger-info', extra: {
-                        'trip': trip,
-                        'passengers': widget.passengers,
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
+                IconButton(
+                  onPressed: () async {
+                    final route = {
+                      'from': trip['from'] as String? ?? '',
+                      'to': trip['to'] as String? ?? '',
+                      'company': trip['company'] as String? ?? '',
+                    };
+                    await FavoritesService.toggleFavorite(route);
+                    await _loadFavorites();
+                  },
+                  icon: Icon(
+                    _favoriteKeys.contains(_favoriteKey(trip))
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: AppColors.star,
+                  ),
+                ),
+
+                // Places disponibles badge
+                if ((trip['availableSeats'] as int? ?? 99) <= 10)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.radiusFull,
+                    ),
+                    child: Text(
+                      '${trip['availableSeats']}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    child: const Text('Sélectionner'),
                   ),
-                ],
+              ],
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Route info: from -> to
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        trip['from'] as String? ?? 'Départ',
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.gray),
+                      ),
+                      Text(
+                        trip['departure'] as String? ?? '--:--',
+                        style: AppTextStyles.h3,
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Container(
+                              width: 30,
+                              height: 2,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4),
+                            child: Icon(Icons.arrow_forward,
+                                color: AppColors.primary, size: 16),
+                          ),
+                          Flexible(
+                            child: Container(
+                              width: 30,
+                              height: 2,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(trip['duration'] as String? ?? '--',
+                          style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        trip['to'] as String? ?? 'Arrivée',
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.gray),
+                      ),
+                      Text(
+                        trip['arrival'] as String? ?? '--:--',
+                        style: AppTextStyles.h3,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Équipements
+            Wrap(
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
+              children: (trip['amenities'] as List?)
+                      ?.cast<String>()
+                      .map((amenity) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.lightGray,
+                              borderRadius: AppRadius.radiusFull,
+                            ),
+                            child: Text(
+                              amenity,
+                              style: AppTextStyles.caption,
+                            ),
+                          ))
+                      .toList() ??
+                  [],
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Arrêts
+            if ((trip['stops'] as List?)?.isNotEmpty ?? false) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: AppRadius.radiusSm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Arrêts',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    StopsListWidget(
+                      stops:
+                          (trip['stops'] as List).cast<Map<String, dynamic>>(),
+                      routeName: trip['company'] as String? ?? 'Ligne',
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: AppSpacing.md),
             ],
-          ),
+
+            // Available schedules if multiple exist
+            if (allSchedulesForLine.length > 1) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: AppRadius.radiusSm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Horaires disponibles',
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: allSchedulesForLine.map((schedule) {
+                        final isCurrentSchedule =
+                            schedule['scheduleId'] == trip['scheduleId'];
+                        final availableSeats =
+                            (schedule['availableSeats'] as int?) ?? 0;
+                        final seatsWarning =
+                            availableSeats <= 5; // Highlight if few seats left
+
+                        return GestureDetector(
+                          onTap: () {
+                            // Navigate with selected schedule
+                            context.push('/passenger-info', extra: {
+                              'trip': schedule,
+                              'passengers': widget.passengers,
+                            });
+                          },
+                          child: AnimatedScale(
+                            scale: isCurrentSchedule ? 1.05 : 1.0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isCurrentSchedule
+                                    ? AppColors.primary.withValues(alpha: 0.2)
+                                    : seatsWarning
+                                        ? AppColors.warning
+                                            .withValues(alpha: 0.1)
+                                        : AppColors.white,
+                                border: Border.all(
+                                  color: isCurrentSchedule
+                                      ? AppColors.primary
+                                      : seatsWarning
+                                          ? AppColors.warning
+                                          : AppColors.gray
+                                              .withValues(alpha: 0.3),
+                                  width: isCurrentSchedule ? 2 : 1,
+                                ),
+                                borderRadius: AppRadius.radiusFull,
+                                boxShadow: isCurrentSchedule
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primary
+                                              .withValues(alpha: 0.2),
+                                          blurRadius: 8,
+                                          spreadRadius: 2,
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    schedule['departure'] as String,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      fontWeight: isCurrentSchedule
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                      color: isCurrentSchedule
+                                          ? AppColors.primary
+                                          : AppColors.charcoal,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        availableSeats > 0
+                                            ? Icons.event_seat
+                                            : Icons.event_seat_outlined,
+                                        size: 12,
+                                        color: seatsWarning
+                                            ? AppColors.warning
+                                            : AppColors.gray,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        seatsWarning && availableSeats > 0
+                                            ? '$availableSeats restantes'
+                                            : availableSeats > 0
+                                                ? '$availableSeats places'
+                                                : 'Complet',
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: seatsWarning
+                                              ? AppColors.warning
+                                              : AppColors.gray,
+                                          fontWeight: seatsWarning
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+
+            // Prix et bouton
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${trip['price'] ?? 0} FCFA', style: AppTextStyles.price),
+                ElevatedButton(
+                  onPressed: () {
+                    context.push('/passenger-info', extra: {
+                      'trip': trip,
+                      'passengers': widget.passengers,
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                  ),
+                  child: const Text('Réserver'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

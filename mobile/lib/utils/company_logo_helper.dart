@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import '../config/app_constants.dart';
+import '../services/company_logo_service.dart';
 
 /// Helper centralisé pour afficher les logos des compagnies de transport
 class CompanyLogoHelper {
   /// Map nom de compagnie → path de l'asset logo
   static const Map<String, String> _logos = {
-    'TSR': 'assets/images/tsr_logo.png',
-    'STAF': 'assets/images/staf_logo.png',
-    'RAHIMO': 'assets/images/rahimo_logo.png',
-    'RAKIETA': 'assets/images/rakieta_logo.png',
-    'TCV': 'assets/images/tcv_logo.png',
-    'SARAMAYA': 'assets/images/saramaya_logo.png',
-    'SOTRACO': 'assets/images/sotraco_logo.png',
-    'ELITIS EXPRESS': 'assets/images/elitis_logo.png',
-    'ELITIS': 'assets/images/elitis_logo.png',
-    'CTKE WAYS': 'assets/images/ctke_logo.png',
-    'CTKE': 'assets/images/ctke_logo.png',
-    'FTS': 'assets/images/fts_logo.png',
+    'TSR': 'assets/images/companies/tsr_logo.png',
+    'STAF': 'assets/images/companies/staf_logo.png',
+    'RAHIMO': 'assets/images/companies/rahimo_logo.png',
+    'RAKIETA': 'assets/images/companies/rakieta_logo.png',
+    'TCV': 'assets/images/companies/tcv_logo.png',
+    'SARAMAYA': 'assets/images/companies/saramaya_logo.png',
+    'SOTRACO': 'assets/images/companies/sotraco_logo.png',
+    'ELITIS EXPRESS': 'assets/images/companies/elitis_logo.png',
+    'ELITIS': 'assets/images/companies/elitis_logo.png',
+    'CTKE WAYS': 'assets/images/companies/ctke_logo.png',
+    'CTKE': 'assets/images/companies/ctke_logo.png',
+    'FTS': 'assets/images/companies/fts_logo.png',
   };
 
   /// Retourne le path du logo pour un nom de compagnie donné

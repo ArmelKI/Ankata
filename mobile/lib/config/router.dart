@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -27,6 +28,7 @@ import '../screens/support/faq_screen.dart';
 import '../screens/support/feedback_screen.dart';
 import '../screens/support/legal_screen.dart';
 import '../screens/main_layout.dart';
+import 'constants.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -138,16 +140,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/payment-success',
-        builder: (context, state) {
-          final data = state.extra as Map<String, dynamic>? ?? {};
-          return PaymentSuccessScreen(
-            amount: data['amount'] as int? ?? 0,
-            bookingId: data['bookingId'] as String? ?? '',
-          );
-        },
-      ),
-      GoRoute(
         path: '/confirmation',
         builder: (context, state) {
           final bookingData = state.extra as Map<String, dynamic>?;
@@ -224,10 +216,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
     ],
-    redirect: (context, state) {
-      // TODO: Implement authentication logic
-      // Check if user is authenticated
-      // Redirect to appropriate route based on auth state
+    redirect: (context, state) async {
+      const storage = FlutterSecureStorage();
+      final token = await storage.read(key: AppConfig.tokenKey);
+      final isAuthenticated = token != null && token.isNotEmpty;
+
+      final isAuthRoute = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/' ||
+          state.matchedLocation == '/onboarding';
+
+      // If authenticated and trying to access auth routes, redirect to home
+      if (isAuthenticated && isAuthRoute) {
+        return '/home';
+      }
+
+      // If not authenticated and trying to access protected routes, redirect to login
+      if (!isAuthenticated && !isAuthRoute) {
+        return '/login';
+      }
+
       return null;
     },
     errorBuilder: (context, state) {

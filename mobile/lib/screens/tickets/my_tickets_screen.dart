@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
+
 import '../../providers/app_providers.dart';
+import '../../services/company_logo_service.dart';
 import '../../services/booking_service.dart';
 
 class MyTicketsScreen extends ConsumerStatefulWidget {

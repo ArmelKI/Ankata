@@ -267,12 +267,13 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.schedule, size: 13, color: AppColors.gray),
+                          const Icon(Icons.schedule,
+                              size: 13, color: AppColors.gray),
                           const SizedBox(width: 4),
                           Text(
                             '${stop.premierDepart} → ${stop.dernierDepart}',
-                            style:
-                                TextStyle(fontSize: 12, color: AppColors.gray),
+                            style: const TextStyle(
+                                fontSize: 12, color: AppColors.gray),
                           ),
                           const Spacer(),
                           Container(
@@ -284,7 +285,7 @@ class _SotracoLineDetailsScreenState extends State<SotracoLineDetailsScreen>
                             ),
                             child: Text(
                               stop.frequence,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 10,
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w500),

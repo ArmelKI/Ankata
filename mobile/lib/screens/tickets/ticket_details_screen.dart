@@ -8,8 +8,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
 import '../../providers/app_providers.dart';
+import '../../services/company_logo_service.dart';
 
 class TicketDetailsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> ticket;
@@ -74,7 +74,7 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Erreur: Impossible d\'annuler ce billet'),
             backgroundColor: AppColors.error,
           ),
@@ -581,8 +581,8 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
+                              const Padding(
+                                padding: EdgeInsets.symmetric(
                                     horizontal: AppSpacing.sm),
                                 child: Icon(Icons.arrow_forward_rounded,
                                     color: AppColors.gray, size: 28),
@@ -615,13 +615,13 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                     // Ligne de séparation style ticket
                     Row(
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                           width: 10,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: AppColors.lightGray,
-                              borderRadius: const BorderRadius.horizontal(
+                              borderRadius: BorderRadius.horizontal(
                                   right: Radius.circular(10)),
                             ),
                           ),
@@ -643,13 +643,13 @@ class _TicketDetailsScreenState extends ConsumerState<TicketDetailsScreen> {
                             ),
                           );
                         })),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                           width: 10,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: AppColors.lightGray,
-                              borderRadius: const BorderRadius.horizontal(
+                              borderRadius: BorderRadius.horizontal(
                                   left: Radius.circular(10)),
                             ),
                           ),
