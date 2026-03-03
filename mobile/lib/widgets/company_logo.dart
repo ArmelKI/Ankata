@@ -138,8 +138,6 @@ class CompanyLogo extends StatelessWidget {
     );
   }
 }
-  }
-}
 
 /// Avatar utilisateur avec initiales
 class UserAvatar extends StatelessWidget {

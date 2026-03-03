@@ -23,6 +23,10 @@ jobs:
       - name: Run tests
         working-directory: backend
         run: npm test
+        env:
+          JWT_SECRET: "dummy_secret_for_tests_that_is_32_characters_long"
+          DATABASE_URL: "postgres://dummy:dummy@localhost:5432/dummy"
+          NODE_ENV: test
 
   mobile-test:
     runs-on: ubuntu-latest
