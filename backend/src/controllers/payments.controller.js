@@ -9,7 +9,7 @@ class PaymentController {
       const userId = req.user.userId;
       const {
         bookingId,
-        paymentMethod, // 'ORANGE_MONEY', 'WAVE', 'MOOV_MONEY', 'CARD'
+        paymentMethod, // 'ORANGE_MONEY', 'MTN_MONEY', 'MOOV_MONEY', 'CARD'
       } = req.body;
 
       if (!bookingId || !paymentMethod) {
@@ -21,7 +21,7 @@ class PaymentController {
       const normalizedMethod = this._normalizePaymentMethod(paymentMethod);
       if (!normalizedMethod) {
         return res.status(400).json({
-          error: 'Unsupported payment method. Use ORANGE_MONEY, WAVE, MOOV_MONEY, CARD',
+          error: 'Unsupported payment method. Use ORANGE_MONEY, MTN_MONEY, MOOV_MONEY, or CARD',
         });
       }
 
@@ -169,6 +169,7 @@ class PaymentController {
   static _getPaymentGateway(paymentMethod) {
     const gateways = {
       ORANGE_MONEY: 'aggregator_om',
+      MTN_MONEY: 'aggregator_moov',
       WAVE: 'aggregator_wave',
       MOOV_MONEY: 'aggregator_moov',
       CARD: 'aggregator_card',
@@ -184,9 +185,11 @@ class PaymentController {
     const mapping = {
       ORANGE_MONEY_BF: 'ORANGE_MONEY',
       ORANGE_MONEY: 'ORANGE_MONEY',
+      MTN_MONEY_BF: 'MTN_MONEY',
+      MTN_MONEY: 'MTN_MONEY',
       WAVE: 'WAVE',
-      MOOV_MONEY_BF: 'MOOV_MONEY',
-      MOOV_MONEY: 'MOOV_MONEY',
+      MOOV_MONEY_BF: 'MTN_MONEY',
+      MOOV_MONEY: 'MTN_MONEY',
       CARD: 'CARD',
     };
     return mapping[normalized] || null;

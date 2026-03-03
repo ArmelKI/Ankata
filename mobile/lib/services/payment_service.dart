@@ -75,8 +75,8 @@ class PaymentService {
     required String phoneNumber,
   }) async {
     try {
-      final useMock =
-          const bool.fromEnvironment('MOCK_PAYMENT', defaultValue: kDebugMode);
+      const useMock =
+          bool.fromEnvironment('MOCK_PAYMENT', defaultValue: kDebugMode);
       if (useMock) {
         await Future.delayed(const Duration(seconds: 2));
         final mockPayment = PaymentData(
@@ -395,7 +395,7 @@ class PaymentService {
     return orangePrefixes.any((prefix) => phone.contains('+226$prefix'));
   }
 
-  // Vérifier si Moov est disponible (prefixes a confirmer)
+  // Vérifier si Moov est disponible (prefixes à confirmer)
   static bool isMoovNumber(String phone) {
     phone = normalizePhoneNumber(phone);
     const moovPrefixes = <String>[];

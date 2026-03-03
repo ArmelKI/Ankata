@@ -3,6 +3,13 @@ const { generateToken, formatPhoneNumber } = require('../utils/helpers');
 const bcrypt = require('bcryptjs');
 const admin = require('../config/firebase');
 const supabase = require('../config/supabase');
+const pool = require('../database/pool');
+const crypto = require('crypto');
+
+// Generate unique 10-char referral code
+const generateReferralCode = () => {
+  return crypto.randomBytes(5).toString('hex').toUpperCase().slice(0, 10);
+};
 
 const getSignedAvatarUrl = async (avatarPath) => {
   if (!avatarPath) return null;
@@ -20,8 +27,9 @@ const getSignedAvatarUrl = async (avatarPath) => {
 class AuthController {
   // Register with Password
   static async register(req, res) {
+    let client;
     try {
-      const { phoneNumber, firstName, lastName, password, securityQ1, securityA1, securityQ2, securityA2 } = req.body;
+      const { phoneNumber, firstName, lastName, password, securityQ1, securityA1, securityQ2, securityA2, referralCode } = req.body;
 
       if (!phoneNumber || !firstName || !lastName || !password || !securityQ1 || !securityA1 || !securityQ2 || !securityA2) {
         return res.status(400).json({ error: 'All fields are required.' });
@@ -39,6 +47,57 @@ class AuthController {
       const secA1Hash = await bcrypt.hash(securityA1.toLowerCase().trim(), salt);
       const secA2Hash = await bcrypt.hash(securityA2.toLowerCase().trim(), salt);
 
+      // Generate unique referral code for new user
+      let newReferralCode;
+      let codeExists = true;
+      while (codeExists) {
+        newReferralCode = generateReferralCode();
+        const result = await pool.query(
+          'SELECT id FROM users WHERE referral_code = $1',
+          [newReferralCode]
+        );
+        codeExists = result.rows.length > 0;
+      }
+
+      // Start transaction for referral processing
+      client = await pool.connect();
+      await client.query('BEGIN');
+
+      // Handle referral bonus (max 15 referrals = 1500 FCFA)
+      let referredById = null;
+      if (referralCode && referralCode.trim()) {
+        const referrerResult = await client.query(
+          'SELECT id, wallet_balance FROM users WHERE referral_code = $1',
+          [referralCode.trim().toUpperCase()]
+        );
+
+        if (referrerResult.rows.length > 0) {
+          const referrer = referrerResult.rows[0];
+
+          // Count existing referrals for this user
+          const referralCountResult = await client.query(
+            'SELECT COUNT(*) as count FROM users WHERE referred_by = $1',
+            [referrer.id]
+          );
+          const referralCount = parseInt(referralCountResult.rows[0].count, 10);
+
+          // Only credit if under 15 referrals limit (1500 FCFA max)
+          if (referralCount < 15) {
+            referredById = referrer.id;
+            const currentBalance = referrer.wallet_balance || 0;
+            const newBalance = currentBalance + 100;
+
+            await client.query(
+              'UPDATE users SET wallet_balance = $1 WHERE id = $2',
+              [newBalance, referrer.id]
+            );
+            console.log(`✅ Referrer credited: +100 FCFA (new balance: ${newBalance})`);
+          } else {
+            console.log(`⚠️  Referrer has reached maximum referrals (15), no bonus given`);
+          }
+        }
+      }
+
       const user = await UserModel.create({
         phoneNumber: formattedPhone,
         firstName,
@@ -51,18 +110,36 @@ class AuthController {
         isVerified: true,
       });
 
+      // Update new user with referral code and referred_by
+      if (referredById) {
+        await client.query(
+          'UPDATE users SET referral_code = $1, referred_by = $2 WHERE id = $3',
+          [newReferralCode, referredById, user.id]
+        );
+      } else {
+        await client.query(
+          'UPDATE users SET referral_code = $1 WHERE id = $2',
+          [newReferralCode, user.id]
+        );
+      }
+
+      await client.query('COMMIT');
+
       const token = generateToken(user.id, formattedPhone);
       await UserModel.updateLastLogin(user.id);
 
       res.status(201).json({
         message: 'Registered successfully',
         token,
-        user: { ...user, isVerified: true },
+        user: { ...user, isVerified: true, referralCode: newReferralCode },
         expiresIn: 604800,
       });
     } catch (error) {
+      if (client) await client.query('ROLLBACK');
       console.error('Register error:', error);
       res.status(500).json({ error: 'Registration failed', details: error.message });
+    } finally {
+      if (client) client.release();
     }
   }
 

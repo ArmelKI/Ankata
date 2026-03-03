@@ -158,7 +158,7 @@ class _PriceAlertsScreenState extends ConsumerState<PriceAlertsScreen> {
             trailing: Switch(
               value: isActive,
               onChanged: (value) => _toggleAlert(alert['id']),
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
           ),
           const Divider(height: 1),

@@ -8,6 +8,7 @@ import '../../data/all_companies_data.dart';
 import '../../widgets/animated_button.dart';
 import '../../utils/haptic_helper.dart';
 import '../../services/search_history_service.dart';
+import '../../services/company_logo_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);

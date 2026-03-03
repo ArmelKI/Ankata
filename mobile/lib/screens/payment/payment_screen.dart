@@ -120,7 +120,7 @@ class _PaymentScreenState extends State<PaymentScreen>
                       icon: '🔵',
                       title: 'Moov Money',
                       subtitle: 'Paiement instantané et sécurisé',
-                      badge: 'Local',
+                      badge: 'Frais compétitifs',
                     ),
 
                     const SizedBox(height: 12),
@@ -338,6 +338,7 @@ class _PaymentScreenState extends State<PaymentScreen>
     required String title,
     required String subtitle,
     String? badge,
+    bool isComingSoon = false,
   }) {
     final isSelected = _selectedMethod == method;
 
@@ -418,7 +419,9 @@ class _PaymentScreenState extends State<PaymentScreen>
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                            color: isComingSoon
+                                ? Colors.red.shade50
+                                : Colors.green.shade50,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -426,7 +429,9 @@ class _PaymentScreenState extends State<PaymentScreen>
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: Colors.green.shade700,
+                              color: isComingSoon
+                                  ? Colors.red.shade700
+                                  : Colors.green.shade700,
                             ),
                           ),
                         ),
@@ -721,21 +726,59 @@ class _PaymentScreenState extends State<PaymentScreen>
   }
 
   void _showCardPaymentSheet() {
-    // TODO: Implement Stripe payment sheet
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Paiement par carte bientôt disponible'),
+    // Dans le cadre du développement, on permet de simuler le paiement par carte
+    // pour voir le flux complet de confirmation.
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Paiement par carte'),
+        content: const Text(
+          'Le paiement par carte est en cours de développement.\n\nVoulez-vous simuler un succès pour voir la suite du flux ?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() => _isProcessing = false);
+            },
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              HapticHelper.success();
+              _navigateToSuccessScreen();
+              setState(() => _isProcessing = false);
+            },
+            child: const Text('Simuler Succès'),
+          ),
+        ],
       ),
     );
-    setState(() => _isProcessing = false);
   }
 
   void _navigateToSuccessScreen() {
     context.go(
-      '/payment-success',
+      '/confirmation',
       extra: {
         'amount': widget.amount,
         'bookingId': widget.bookingId,
+        'tripDetails': widget.tripDetails,
+        'bookingCode': widget
+            .bookingId, // Note: backend ID is often used as code if code not passed
+        'basePrice': widget.basePrice,
+        'serviceFee': widget.serviceFee,
+        // Pass essential info for the final screen
+        'trip': {
+          'company': 'Compagnie',
+          'from': '',
+          'to': '',
+          'departure': '',
+          'arrival': '',
+          'date': '',
+          'price': widget.amount
+        },
+        'passenger': {'name': 'Passager', 'phone': ''},
       },
     );
   }

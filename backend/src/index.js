@@ -72,6 +72,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 // Serve static files (uploads)
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/logos', express.static(path.join(__dirname, '../public/logos')));
 
 // Request logging middleware
 app.use((req, res, next) => {

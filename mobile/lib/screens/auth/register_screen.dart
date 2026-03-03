@@ -199,7 +199,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _securityQ1,
+                  initialValue: _securityQ1,
                   isExpanded: true,
                   decoration: InputDecoration(
                       labelText: 'Question 1',
@@ -226,7 +226,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _securityQ2,
+                  initialValue: _securityQ2,
                   isExpanded: true,
                   decoration: InputDecoration(
                       labelText: 'Question 2',

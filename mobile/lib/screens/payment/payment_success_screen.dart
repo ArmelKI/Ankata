@@ -1,404 +1,212 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:math' as math;
-import '../../widgets/animated_button.dart';
-import '../../utils/haptic_helper.dart';
+import '../../config/app_theme.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
-  final int amount;
-  final String bookingId;
+  final String? bookingCode;
+  final String? amount;
+  final String? paymentMethod;
 
   const PaymentSuccessScreen({
-    super.key,
-    required this.amount,
-    required this.bookingId,
-  });
+    Key? key,
+    this.bookingCode,
+    this.amount,
+    this.paymentMethod,
+  }) : super(key: key);
 
   @override
   State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
 }
 
 class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _checkmarkController;
-  late AnimationController _confettiController;
-  late Animation<double> _checkmarkAnimation;
-  late Animation<double> _confettiAnimation;
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
 
   @override
   void initState() {
     super.initState();
-
-    // Checkmark animation
-    _checkmarkController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _checkmarkAnimation = CurvedAnimation(
-      parent: _checkmarkController,
-      curve: Curves.elasticOut,
-    );
-
-    // Confetti animation
-    _confettiController = AnimationController(
+    _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _confettiAnimation = CurvedAnimation(
-      parent: _confettiController,
-      curve: Curves.easeOut,
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
 
-    // Start animations
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _checkmarkController.forward();
-      HapticHelper.success();
-    });
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 3.0).animate(
+      CurvedAnimation(
+          parent: _animationController, curve: Curves.easeInOutCubic),
+    );
 
-    Future.delayed(const Duration(milliseconds: 400), () {
-      _confettiController.forward();
+    _animationController.forward();
+
+    // Auto-navigate to home after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        context.go('/my-bookings');
+      }
     });
   }
 
   @override
   void dispose() {
-    _checkmarkController.dispose();
-    _confettiController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Confetti background
-            AnimatedBuilder(
-              animation: _confettiAnimation,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: ConfettiPainter(
-                    animation: _confettiAnimation.value,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: AppColors.lightGray,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Animated checkmark circle
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: RotationTransition(
+                  turns: _rotationAnimation,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.success.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.white,
+                      size: 70,
+                    ),
                   ),
-                  size: Size.infinite,
-                );
-              },
-            ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
 
-            // Main content
-            Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+              // Success message
+              Text(
+                'Paiement réussi!',
+                style: AppTextStyles.h2.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.charcoal,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              Text(
+                'Votre réservation a été confirmée',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.gray,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Booking details
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: AppRadius.radiusMd,
+                  boxShadow: AppShadows.shadow1,
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Animated checkmark
-                    ScaleTransition(
-                      scale: _checkmarkAnimation,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.green.withValues(alpha: 0.3),
-                              blurRadius: 30,
-                              spreadRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.check,
-                          size: 70,
-                          color: Colors.white,
-                        ),
+                    if (widget.bookingCode != null) ...[
+                      _buildDetailRow(
+                        '📋 Code de réservation',
+                        widget.bookingCode!,
                       ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Success title
-                    const Text(
-                      'Paiement réussi !',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Amount
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    if (widget.amount != null) ...[
+                      _buildDetailRow(
+                        '💰 Montant payé',
                         '${widget.amount} FCFA',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green.shade700,
-                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    if (widget.paymentMethod != null) ...[
+                      _buildDetailRow(
+                        '💳 Méthode de paiement',
+                        widget.paymentMethod!,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Action buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Column(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => context.go('/my-bookings'),
+                      icon: const Icon(Icons.receipt_long),
+                      label: const Text('Voir mes réservations'),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: AppColors.primary,
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Success message
-                    Text(
-                      'Ta réservation a été confirmée avec succès',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
+                    const SizedBox(height: AppSpacing.md),
+                    OutlinedButton.icon(
+                      onPressed: () => context.go('/home'),
+                      icon: const Icon(Icons.home),
+                      label: const Text('Retour à l\'accueil'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        side: const BorderSide(color: AppColors.primary),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Booking ID card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.confirmation_number_outlined,
-                                size: 20,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Numéro de réservation',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          SelectableText(
-                            widget.bookingId,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    const SizedBox(height: 32),
-
-                    // Info cards
-                    _buildInfoCard(
-                      icon: Icons.email_outlined,
-                      title: 'E-mail de confirmation',
-                      subtitle: 'Envoyé à ton adresse e-mail',
-                      color: Colors.blue,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildInfoCard(
-                      icon: Icons.directions_bus,
-                      title: 'Point de départ',
-                      subtitle: 'Présente-toi 15 min avant le départ',
-                      color: Colors.orange,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    _buildInfoCard(
-                      icon: Icons.phone,
-                      title: 'Besoin d\'aide ?',
-                      subtitle: 'Contacte-nous au +226 XX XX XX XX',
-                      color: Colors.green,
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Action buttons
-                    AnimatedButton(
-                      text: 'Voir mes réservations',
-                      onPressed: () {
-                        context.go('/my-bookings');
-                      },
-                      icon: Icons.receipt_long,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    SecondaryButton(
-                      text: 'Retour à l\'accueil',
-                      onPressed: () {
-                        context.go('/home');
-                      },
-                      icon: Icons.home_outlined,
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.gray,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.charcoal,
             ),
+            textAlign: TextAlign.end,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
-}
-
-// Confetti painter for celebration effect
-class ConfettiPainter extends CustomPainter {
-  final double animation;
-  final List<ConfettiParticle> particles;
-
-  ConfettiPainter({required this.animation})
-      : particles = List.generate(50, (index) => ConfettiParticle());
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (var particle in particles) {
-      final progress = animation;
-      final x = size.width * particle.x;
-      final y = size.height * progress * particle.speed;
-
-      if (y > size.height) continue;
-
-      final paint = Paint()
-        ..color = particle.color.withValues(alpha: 1.0 - progress)
-        ..style = PaintingStyle.fill;
-
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate(progress * particle.rotation);
-
-      // Draw confetti shape
-      if (particle.shape == 0) {
-        // Circle
-        canvas.drawCircle(Offset.zero, particle.size, paint);
-      } else {
-        // Rectangle
-        canvas.drawRect(
-          Rect.fromCenter(
-            center: Offset.zero,
-            width: particle.size * 2,
-            height: particle.size,
-          ),
-          paint,
-        );
-      }
-
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(ConfettiPainter oldDelegate) =>
-      animation != oldDelegate.animation;
-}
-
-class ConfettiParticle {
-  final double x;
-  final double speed;
-  final double rotation;
-  final double size;
-  final Color color;
-  final int shape;
-
-  ConfettiParticle()
-      : x = math.Random().nextDouble(),
-        speed = 0.5 + math.Random().nextDouble() * 1.5,
-        rotation = math.Random().nextDouble() * math.pi * 4,
-        size = 4 + math.Random().nextDouble() * 8,
-        color = [
-          Colors.red,
-          Colors.blue,
-          Colors.green,
-          Colors.yellow,
-          Colors.orange,
-          Colors.purple,
-          Colors.pink,
-        ][math.Random().nextInt(7)],
-        shape = math.Random().nextInt(2);
 }
