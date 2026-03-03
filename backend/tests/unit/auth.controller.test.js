@@ -20,6 +20,14 @@ jest.mock('../../src/config/supabase', () => ({
     createSignedUrl: jest.fn(),
   },
 }));
+// Mock Postgres Pool
+jest.mock('../../src/database/connection', () => ({
+  connect: jest.fn().mockResolvedValue({
+    query: jest.fn().mockResolvedValue({ rows: [] }),
+    release: jest.fn(),
+  }),
+  query: jest.fn().mockResolvedValue({ rows: [] }),
+}));
 
 describe('AuthController', () => {
   afterEach(() => {
