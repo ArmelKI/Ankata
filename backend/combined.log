@@ -31,3 +31,6 @@
 {"level":"info","message":"POST /api/auth/login","service":"ankata-backend"}
 {"level":"info","message":"POST /api/auth/login","service":"ankata-backend"}
 {"level":"info","message":"POST /api/auth/register","service":"ankata-backend"}
+{"level":"info","message":"POST /api/auth/login","service":"ankata-backend"}
+{"level":"info","message":"POST /api/auth/login","service":"ankata-backend"}
+{"level":"info","message":"POST /api/auth/register","service":"ankata-backend"}
