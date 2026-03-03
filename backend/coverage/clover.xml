@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1772532838187" clover="3.2.0">
-  <project timestamp="1772532838187" name="All files">
-    <metrics statements="1187" coveredstatements="298" conditionals="585" coveredconditionals="44" methods="137" coveredmethods="10" elements="1909" coveredelements="352" complexity="0" loc="1187" ncloc="1187" packages="8" files="33" classes="33"/>
+<coverage generated="1772533515139" clover="3.2.0">
+  <project timestamp="1772533515139" name="All files">
+    <metrics statements="1188" coveredstatements="294" conditionals="587" coveredconditionals="41" methods="137" coveredmethods="9" elements="1912" coveredelements="344" complexity="0" loc="1188" ncloc="1188" packages="8" files="33" classes="33"/>
     <package name="src">
-      <metrics statements="61" coveredstatements="54" conditionals="19" coveredconditionals="7" methods="6" coveredmethods="2"/>
+      <metrics statements="62" coveredstatements="50" conditionals="21" coveredconditionals="4" methods="6" coveredmethods="1"/>
       <file name="index.js" path="/home/armelki/Documents/projets/Ankata/backend/src/index.js">
-        <metrics statements="61" coveredstatements="54" conditionals="19" coveredconditionals="7" methods="6" coveredmethods="2"/>
+        <metrics statements="62" coveredstatements="50" conditionals="21" coveredconditionals="4" methods="6" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="5" count="1" type="stmt"/>
@@ -61,12 +61,13 @@
         <line num="135" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="136" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="138" count="0" type="stmt"/>
-        <line num="146" count="1" type="cond" truecount="2" falsecount="1"/>
-        <line num="147" count="1" type="stmt"/>
-        <line num="148" count="1" type="stmt"/>
-        <line num="149" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="150" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="153" count="1" type="stmt"/>
+        <line num="146" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="147" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="148" count="0" type="stmt"/>
+        <line num="149" count="0" type="stmt"/>
+        <line num="150" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="151" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="155" count="1" type="stmt"/>
       </file>
     </package>
     <package name="src.config">
