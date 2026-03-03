@@ -143,11 +143,13 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || process.env.API_PORT || 3000;
-app.listen(PORT, () => {
-  logger.info(`🚀 Ankata Backend running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || process.env.API_PORT || 3000;
+  app.listen(PORT, () => {
+    logger.info(`🚀 Ankata Backend running on port ${PORT}`);
+    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
+  });
+}
 
 module.exports = app;
