@@ -30,7 +30,7 @@ class PdfService {
                             fontSize: 20, fontWeight: pw.FontWeight.bold)),
                     pw.Text(
                         'Code: ${booking['bookingCode'] ?? booking['booking_code'] ?? 'N/A'}',
-                        style: pw.TextStyle(fontSize: 16)),
+                        style: const pw.TextStyle(fontSize: 16)),
                   ],
                 ),
               ),
@@ -101,7 +101,7 @@ class PdfService {
               pw.Center(
                   child: pw.Text(
                       'Ce billet électronique est valable sur présentation d\'une pièce d\'identité.',
-                      style: pw.TextStyle(fontSize: 10))),
+                      style: const pw.TextStyle(fontSize: 10))),
             ],
           );
         },

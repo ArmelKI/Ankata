@@ -640,9 +640,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             // Update local provider
             if (mounted) {
+              final photoUrl = user?['profilePictureUrl'] ??
+                  user?['profile_picture_url'] ??
+                  _photoPath;
+
               ref.read(currentUserProvider.notifier).state = {
                 ...?user,
                 ...updatedData,
+                if (photoUrl != null) 'profilePictureUrl': photoUrl,
               };
 
               ScaffoldMessenger.of(context).showSnackBar(
@@ -809,7 +814,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erreur lors de la déconnexion')),
+                    const SnackBar(
+                        content: Text('Erreur lors de la déconnexion')),
                   );
                 }
               }

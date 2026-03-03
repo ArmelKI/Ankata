@@ -29,6 +29,8 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
   String? _idType = 'CNI';
   int _adultCount = 1;
   int _childCount = 0;
+  List<String> _occupiedSeats = [];
+  bool _loadingSeats = true;
 
   @override
   void initState() {
@@ -37,6 +39,8 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     if (passengers is int && passengers > 0) {
       _adultCount = passengers;
     }
+
+    _fetchOccupiedSeats();
 
     // Pre-fill user data
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -52,6 +56,25 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
         });
       }
     });
+  }
+
+  Future<void> _fetchOccupiedSeats() async {
+    try {
+      final trip = widget.tripData['trip'] as Map<String, dynamic>;
+      final scheduleId = trip['scheduleId'];
+      
+      // TODO: Fetch from actual API endpoint: GET /api/schedules/{scheduleId}/occupied-seats
+      // For now, empty array (no seats occupied)
+      setState(() {
+        _occupiedSeats = []; // Les sièges occupés depuis l'API
+        _loadingSeats = false;
+      });
+    } catch (e) {
+      setState(() {
+        _occupiedSeats = [];
+        _loadingSeats = false;
+      });
+    }
   }
 
   @override
@@ -175,6 +198,8 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                         setState(() => _selectedSeats = seats);
                       },
                       maxSeats: 4,
+                      totalSeats: (widget.tripData['availableSeats'] as int?) ?? 45,
+                      occupiedSeats: _occupiedSeats,
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _buildPersonalInfo(),

@@ -5,12 +5,16 @@ class SeatSelectionWidget extends StatefulWidget {
   final List<String> selectedSeats;
   final Function(List<String>) onSeatsSelected;
   final int maxSeats;
+  final int totalSeats; // New: configurable seat count from DB
+  final List<String>? occupiedSeats; // New: actual occupied seats from DB
 
   const SeatSelectionWidget({
     Key? key,
     required this.selectedSeats,
     required this.onSeatsSelected,
     this.maxSeats = 4,
+    this.totalSeats = 45, // Default from DB
+    this.occupiedSeats,
   }) : super(key: key);
 
   @override
@@ -19,27 +23,40 @@ class SeatSelectionWidget extends StatefulWidget {
 
 class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
   late List<String> _selected;
-  static const int rows = 4;
-  static const int cols = 10;
-  static const List<String> occupiedSeats = [
-    'A5',
-    'B2',
-    'C7',
-    'D3'
-  ]; // Mock données
+  late int rows;
+  late int cols;
+  late List<String> _occupiedSeats;
 
   @override
   void initState() {
     super.initState();
     _selected = List.from(widget.selectedSeats);
+    _occupiedSeats = widget.occupiedSeats ?? [];
+    
+    // Calculate grid dimensions based on total seats (45 = 5 rows x 9 cols)
+    // Standard bus layout: 45 seats = 5 rows x 9 columns
+    // 40 seats = 4 rows x 10 columns, 50 seats = 5 rows x 10, etc.
+    cols = 9; // Standard column count
+    rows = (widget.totalSeats / cols).ceil();
   }
 
   String _seatNumber(int row, int col) {
-    final rowLetter = String.fromCharCode(65 + row); // A, B, C, D
+    final rowLetter = String.fromCharCode(65 + row); // A, B, C, etc.
     return '$rowLetter${col + 1}';
   }
 
   void _toggleSeat(String seat) {
+    if (_occupiedSeats.contains(seat)) {
+      // Can't select occupied seat
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Ce siège est déjà réservé'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       if (_selected.contains(seat)) {
         _selected.remove(seat);
@@ -77,18 +94,18 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
           child: GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: cols,
               childAspectRatio: 0.8,
               mainAxisSpacing: 4,
               crossAxisSpacing: 4,
             ),
-            itemCount: rows * cols,
+            itemCount: widget.totalSeats,
             itemBuilder: (context, index) {
               final row = index ~/ cols;
               final col = index % cols;
               final seat = _seatNumber(row, col);
-              final isOccupied = occupiedSeats.contains(seat);
+              final isOccupied = _occupiedSeats.contains(seat);
               final isSelected = _selected.contains(seat);
 
               return GestureDetector(
@@ -102,8 +119,8 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
                             : AppColors.white,
                     border: Border.all(
                       color: isOccupied
-                          ? AppColors.gray.withOpacity(0.5)
-                          : AppColors.primary.withOpacity(0.3),
+                          ? AppColors.gray.withValues(alpha: 0.5)
+                          : AppColors.primary.withValues(alpha: 0.3),
                       width: 1,
                     ),
                     borderRadius: AppRadius.radiusSm,

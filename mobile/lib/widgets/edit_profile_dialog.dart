@@ -30,26 +30,26 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
   void initState() {
     super.initState();
     _firstNameController = TextEditingController(
-      text: widget.currentUser?['firstName'] ??
-          widget.currentUser?['first_name'] ??
+      text: widget.currentUser['firstName'] ??
+          widget.currentUser['first_name'] ??
           '',
     );
     _lastNameController = TextEditingController(
-      text: widget.currentUser?['lastName'] ??
-          widget.currentUser?['last_name'] ??
+      text: widget.currentUser['lastName'] ??
+          widget.currentUser['last_name'] ??
           '',
     );
     _cnibController = TextEditingController(
-      text: widget.currentUser?['cnib'] ?? '',
+      text: widget.currentUser['cnib'] ?? '',
     );
     _cityController = TextEditingController(
-      text: widget.currentUser?['city'] ?? '',
+      text: widget.currentUser['city'] ?? '',
     );
     _dateController = TextEditingController(
       text:
-          widget.currentUser?['dateOfBirth']?.toString().split('T').first ?? '',
+          widget.currentUser['dateOfBirth']?.toString().split('T').first ?? '',
     );
-    _selectedGender = widget.currentUser?['gender'] ?? 'Masculin';
+    _selectedGender = widget.currentUser['gender'] ?? 'Masculin';
   }
 
   @override
@@ -95,7 +95,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
             ),
             const SizedBox(height: AppSpacing.md),
             DropdownButtonFormField<String>(
-              value: _selectedGender,
+              initialValue: _selectedGender,
               decoration: const InputDecoration(
                 labelText: 'Sexe',
                 prefixIcon: Icon(Icons.wc),

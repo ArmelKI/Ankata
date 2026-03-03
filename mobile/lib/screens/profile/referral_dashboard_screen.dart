@@ -218,7 +218,7 @@ class _ReferralDashboardScreenState
           Container(
             width: 24,
             height: 24,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.primary,
               shape: BoxShape.circle,
             ),

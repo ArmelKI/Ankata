@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -8,9 +9,10 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_theme.dart';
-import '../../config/app_constants.dart';
 
-class ConfirmationScreen extends StatelessWidget {
+import '../../services/company_logo_service.dart';
+
+class ConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
 
   const ConfirmationScreen({
@@ -18,8 +20,54 @@ class ConfirmationScreen extends StatelessWidget {
     required this.bookingData,
   }) : super(key: key);
 
+  @override
+  State<ConfirmationScreen> createState() => _ConfirmationScreenState();
+}
+
+class _ConfirmationScreenState extends State<ConfirmationScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _checkmarkController;
+  late AnimationController _confettiController;
+  late Animation<double> _checkmarkAnimation;
+  late Animation<double> _confettiAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkmarkController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _checkmarkAnimation = CurvedAnimation(
+      parent: _checkmarkController,
+      curve: Curves.elasticOut,
+    );
+    _confettiController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _confettiAnimation = CurvedAnimation(
+      parent: _confettiController,
+      curve: Curves.easeOut,
+    );
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      _checkmarkController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      _confettiController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _checkmarkController.dispose();
+    _confettiController.dispose();
+    super.dispose();
+  }
+
   String _getSeatLabel() {
-    final seats = bookingData['seats'] ?? bookingData['seat'];
+    final seats = widget.bookingData['seats'] ?? widget.bookingData['seat'];
     if (seats == null) {
       return '';
     }
@@ -30,7 +78,8 @@ class ConfirmationScreen extends StatelessWidget {
   }
 
   void _copyBookingCode(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: bookingData['bookingCode']));
+    Clipboard.setData(
+        ClipboardData(text: widget.bookingData['bookingCode'] ?? ''));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Code de réservation copié'),
@@ -43,275 +92,8 @@ class ConfirmationScreen extends StatelessWidget {
   Future<void> _generateAndDownloadPdf(BuildContext context) async {
     try {
       final pdf = pw.Document();
-      final tripRaw = bookingData['trip'] as Map<String, dynamic>;
-      final passengerRaw = bookingData['passenger'] as Map<String, dynamic>;
-      final bookingCode = bookingData['bookingCode'] as String? ?? '';
-
-      // Générer QR code
-      final qrImage = await QrPainter(
-        data: bookingCode,
-        version: QrVersions.auto,
-        gapless: false,
-        color: const Color(0xFF000000),
-        emptyColor: const Color(0xFFFFFFFF),
-      ).toImageData(200);
-
-      final qrBytes = qrImage!.buffer.asUint8List();
-
-      pdf.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
-          build: (context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'ANKATA TRANSPORT',
-                          style: pw.TextStyle(
-                            fontSize: 24,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.blue700,
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          'Billet de Transport',
-                          style: const pw.TextStyle(
-                            fontSize: 12,
-                            color: PdfColors.grey700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    pw.Container(
-                      width: 100,
-                      height: 100,
-                      child: pw.Image(pw.MemoryImage(qrBytes)),
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 24),
-                pw.Divider(),
-                pw.SizedBox(height: 16),
-                pw.Text(
-                  'Code de réservation: $bookingCode',
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 24),
-                pw.Text(
-                  'Informations du trajet',
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 12),
-                pw.Row(
-                  children: [
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('Départ:',
-                              style: const pw.TextStyle(
-                                  fontSize: 10, color: PdfColors.grey700)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['from'] ?? '',
-                              style: pw.TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: pw.FontWeight.bold)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['departure'] ?? '',
-                              style: const pw.TextStyle(fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('Arrivée:',
-                              style: const pw.TextStyle(
-                                  fontSize: 10, color: PdfColors.grey700)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['to'] ?? '',
-                              style: pw.TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: pw.FontWeight.bold)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['arrival'] ?? '',
-                              style: const pw.TextStyle(fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 16),
-                pw.Row(
-                  children: [
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('Compagnie:',
-                              style: const pw.TextStyle(
-                                  fontSize: 10, color: PdfColors.grey700)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(tripRaw['company'] ?? '',
-                              style: const pw.TextStyle(fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('Siège:',
-                              style: const pw.TextStyle(
-                                  fontSize: 10, color: PdfColors.grey700)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(_getSeatLabel(),
-                              style: pw.TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: pw.FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 24),
-                pw.Text(
-                  'Informations du passager',
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 12),
-                pw.Row(
-                  children: [
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('Nom:',
-                              style: const pw.TextStyle(
-                                  fontSize: 10, color: PdfColors.grey700)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(passengerRaw['name'] ?? '',
-                              style: const pw.TextStyle(fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('Téléphone:',
-                              style: const pw.TextStyle(
-                                  fontSize: 10, color: PdfColors.grey700)),
-                          pw.SizedBox(height: 4),
-                          pw.Text(passengerRaw['phone'] ?? '',
-                              style: const pw.TextStyle(fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                pw.Spacer(),
-                pw.Divider(),
-                pw.SizedBox(height: 16),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'Conditions:',
-                          style: pw.TextStyle(
-                            fontSize: 8,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          '• Présentez ce billet à l\'embarquement',
-                          style: const pw.TextStyle(
-                              fontSize: 7, color: PdfColors.grey700),
-                        ),
-                        pw.Text(
-                          '• Arrivez 30 min avant le départ',
-                          style: const pw.TextStyle(
-                              fontSize: 7, color: PdfColors.grey700),
-                        ),
-                      ],
-                    ),
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        pw.Text(
-                          'Support:',
-                          style: pw.TextStyle(
-                            fontSize: 8,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          'support@ankata.bf',
-                          style: const pw.TextStyle(
-                              fontSize: 7, color: PdfColors.grey700),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      );
-
-      final outputDir = await getTemporaryDirectory();
-      final outputFile = File('${outputDir.path}/billet_$bookingCode.pdf');
-      await outputFile.writeAsBytes(await pdf.save());
-
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Billet téléchargé: ${outputFile.path}'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur: $e'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
-  }
-
-  Future<void> _sharePdf(BuildContext context) async {
-    try {
-      final pdf = pw.Document();
-      final tripRaw = bookingData['trip'] as Map<String, dynamic>;
-      final passengerRaw = bookingData['passenger'] as Map<String, dynamic>;
-      final bookingCode = bookingData['bookingCode'] as String? ?? '';
+      final bookingCode = widget.bookingData['bookingCode'] as String? ?? '';
+      final tripRaw = widget.bookingData['trip'] as Map<String, dynamic>? ?? {};
 
       final qrImage = await QrPainter(
         data: bookingCode,
@@ -323,7 +105,6 @@ class ConfirmationScreen extends StatelessWidget {
 
       final qrBytes = qrImage!.buffer.asUint8List();
 
-      // Same PDF generation as download
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -362,18 +143,93 @@ class ConfirmationScreen extends StatelessWidget {
                     style: pw.TextStyle(
                         fontSize: 18, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 24),
-                pw.Text('Trajet: ${tripRaw['from']} → ${tripRaw['to']}',
+                pw.Text(
+                    'Trajet: ${tripRaw['from'] ?? ''} → ${tripRaw['to'] ?? ''}',
                     style: pw.TextStyle(
                         fontSize: 14, fontWeight: pw.FontWeight.bold)),
                 pw.Text(
-                    'Départ: ${tripRaw['departure']} - Arrivée: ${tripRaw['arrival']}',
+                    'Départ: ${tripRaw['departure'] ?? ''} - Arrivée: ${tripRaw['arrival'] ?? ''}',
                     style: const pw.TextStyle(fontSize: 11)),
+              ],
+            );
+          },
+        ),
+      );
+
+      final outputDir = await getTemporaryDirectory();
+      final outputFile = File('${outputDir.path}/billet_$bookingCode.pdf');
+      await outputFile.writeAsBytes(await pdf.save());
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Billet téléchargé: ${outputFile.path}'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _sharePdf(BuildContext context) async {
+    try {
+      final pdf = pw.Document();
+      final bookingCode = widget.bookingData['bookingCode'] as String? ?? '';
+
+      final qrImage = await QrPainter(
+        data: bookingCode,
+        version: QrVersions.auto,
+        gapless: false,
+        color: const Color(0xFF000000),
+        emptyColor: const Color(0xFFFFFFFF),
+      ).toImageData(200);
+
+      final qrBytes = qrImage!.buffer.asUint8List();
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('ANKATA TRANSPORT',
+                            style: pw.TextStyle(
+                                fontSize: 24,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.blue700)),
+                        pw.SizedBox(height: 4),
+                        pw.Text('Billet de Transport',
+                            style: const pw.TextStyle(
+                                fontSize: 12, color: PdfColors.grey700)),
+                      ],
+                    ),
+                    pw.Container(
+                        width: 100,
+                        height: 100,
+                        child: pw.Image(pw.MemoryImage(qrBytes))),
+                  ],
+                ),
+                pw.SizedBox(height: 24),
+                pw.Divider(),
                 pw.SizedBox(height: 16),
-                pw.Text('Passager: ${passengerRaw['name']}',
-                    style: const pw.TextStyle(fontSize: 11)),
-                pw.Text('Siège: ${_getSeatLabel()}',
+                pw.Text('Code: $bookingCode',
                     style: pw.TextStyle(
-                        fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
               ],
             );
           },
@@ -401,9 +257,9 @@ class ConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tripRaw = bookingData['trip'];
-    final passengerRaw = bookingData['passenger'];
-    final bookingCode = bookingData['bookingCode'] as String? ?? '';
+    final tripRaw = widget.bookingData['trip'];
+    final passengerRaw = widget.bookingData['passenger'];
+    final bookingCode = widget.bookingData['bookingCode'] as String? ?? '';
 
     if (tripRaw is! Map<String, dynamic> ||
         passengerRaw is! Map<String, dynamic>) {
@@ -416,7 +272,7 @@ class ConfirmationScreen extends StatelessWidget {
         ),
         body: Center(
           child: Text(
-            'Donnees de reservation manquantes',
+            'Données de réservation manquantes',
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
           ),
         ),
@@ -429,41 +285,57 @@ class ConfirmationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.lightGray,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  children: [
-                    const SizedBox(height: AppSpacing.xl),
-                    _buildSuccessIcon(),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'Réservation confirmée !',
-                      style: AppTextStyles.h2,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Votre billet a été envoyé par SMS',
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.gray),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    _buildBookingCode(context, bookingCode),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildQRCode(bookingCode),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildTripDetails(trip, passenger),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildInstructions(),
-                  ],
-                ),
-              ),
+            // Confetti background
+            AnimatedBuilder(
+              animation: _confettiAnimation,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: ConfettiPainter(
+                    animation: _confettiAnimation.value,
+                  ),
+                  size: Size.infinite,
+                );
+              },
             ),
-            _buildBottomActions(context),
+            Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: AppSpacing.xl),
+                        _buildSuccessIcon(),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'Réservation confirmée !',
+                          style: AppTextStyles.h2,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Votre billet a été envoyé par SMS',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.gray),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        _buildBookingCode(context, bookingCode),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildQRCode(bookingCode),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildTripDetails(trip, passenger),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildInstructions(),
+                      ],
+                    ),
+                  ),
+                ),
+                _buildBottomActions(context),
+              ],
+            ),
           ],
         ),
       ),
@@ -471,17 +343,27 @@ class ConfirmationScreen extends StatelessWidget {
   }
 
   Widget _buildSuccessIcon() {
-    return Container(
-      width: 120,
-      height: 120,
-      decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.1),
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.check_circle,
-        size: 80,
-        color: AppColors.success,
+    return ScaleTransition(
+      scale: _checkmarkAnimation,
+      child: Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+          color: AppColors.success,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.success.withValues(alpha: 0.3),
+              blurRadius: 30,
+              spreadRadius: 10,
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.check,
+          size: 70,
+          color: AppColors.white,
+        ),
       ),
     );
   }
@@ -578,20 +460,18 @@ class ConfirmationScreen extends StatelessWidget {
         children: [
           Text('Détails du voyage', style: AppTextStyles.h4),
           const SizedBox(height: AppSpacing.md),
-
-          // Company logo and name
           Row(
             children: [
               Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: CompanyColors.getCompanyColor(trip['company']),
+                  color: CompanyColors.getCompanyColor(trip['company'] ?? ''),
                   borderRadius: AppRadius.radiusSm,
                 ),
                 child: Center(
                   child: Text(
-                    trip['company'][0],
+                    (trip['company'] ?? 'C')[0],
                     style: AppTextStyles.h2.copyWith(color: AppColors.white),
                   ),
                 ),
@@ -602,58 +482,38 @@ class ConfirmationScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      trip['company'],
+                      trip['company'] ?? 'Compagnie',
                       style: AppTextStyles.bodyLarge
                           .copyWith(fontWeight: FontWeight.w600),
-                    ),
-                    Row(
-                      children: [
-                        const Icon(Icons.star,
-                            size: 16, color: Color(0xFFFFB800)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${trip['rating']} (${trip['reviews']} avis)',
-                          style: AppTextStyles.caption,
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
             ],
           ),
-
           const Divider(height: AppSpacing.lg),
-
-          // Route
           _buildDetailRow(
               Icons.route, 'Trajet', '${trip['from']} → ${trip['to']}'),
-          _buildDetailRow(Icons.calendar_today, 'Date', trip['date']),
+          _buildDetailRow(Icons.calendar_today, 'Date', trip['date'] ?? ''),
           _buildDetailRow(Icons.access_time, 'Horaire',
-              '${trip['departure']} - ${trip['arrival']}'),
+              '${trip['departure'] ?? ''} - ${trip['arrival'] ?? ''}'),
           _buildDetailRow(Icons.event_seat, 'Siège', _getSeatLabel()),
-
           const Divider(height: AppSpacing.lg),
-
-          // Passenger
           Text('Passager',
               style: AppTextStyles.bodyMedium
                   .copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: AppSpacing.sm),
-          _buildDetailRow(Icons.person, 'Nom', passenger['name']),
+          _buildDetailRow(Icons.person, 'Nom', passenger['name'] ?? ''),
           _buildDetailRow(
-              Icons.phone, 'Téléphone', '+226 ${passenger['phone']}'),
-
+              Icons.phone, 'Téléphone', '+226 ${passenger['phone'] ?? ''}'),
           const Divider(height: AppSpacing.lg),
-
-          // Price
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Total payé',
                   style: AppTextStyles.bodyLarge
                       .copyWith(fontWeight: FontWeight.w700)),
-              Text('${trip['price'] + 500} FCFA', style: AppTextStyles.price),
+              Text('${trip['price'] ?? 0} FCFA', style: AppTextStyles.price),
             ],
           ),
         ],
@@ -713,8 +573,6 @@ class ConfirmationScreen extends StatelessWidget {
           _buildInstructionItem('Apportez votre pièce d\'identité'),
           _buildInstructionItem(
               'Présentez votre code de réservation ou QR code'),
-          _buildInstructionItem(
-              'Annulation gratuite jusqu\'à 24h avant le départ'),
         ],
       ),
     );
@@ -766,10 +624,6 @@ class ConfirmationScreen extends StatelessWidget {
                   onPressed: () => _generateAndDownloadPdf(context),
                   icon: const Icon(Icons.download),
                   label: const Text('Télécharger'),
-                  style: OutlinedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -778,10 +632,6 @@ class ConfirmationScreen extends StatelessWidget {
                   onPressed: () => _sharePdf(context),
                   icon: const Icon(Icons.share),
                   label: const Text('Partager'),
-                  style: OutlinedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  ),
                 ),
               ),
             ],
@@ -791,9 +641,6 @@ class ConfirmationScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => context.go('/home'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-              ),
               child: const Text('Retour à l\'accueil'),
             ),
           ),
@@ -801,4 +648,68 @@ class ConfirmationScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class ConfettiPainter extends CustomPainter {
+  final double animation;
+  final List<ConfettiParticle> particles;
+
+  ConfettiPainter({required this.animation})
+      : particles = List.generate(50, (index) => ConfettiParticle());
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (var particle in particles) {
+      final progress = animation;
+      final x = size.width * particle.x;
+      final y = size.height * progress * particle.speed;
+      if (y > size.height) continue;
+      final paint = Paint()
+        ..color = particle.color.withValues(alpha: 1.0 - progress)
+        ..style = PaintingStyle.fill;
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(progress * particle.rotation);
+      if (particle.shape == 0) {
+        canvas.drawCircle(Offset.zero, particle.size, paint);
+      } else {
+        canvas.drawRect(
+            Rect.fromCenter(
+                center: Offset.zero,
+                width: particle.size * 2,
+                height: particle.size),
+            paint);
+      }
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(ConfettiPainter oldDelegate) =>
+      animation != oldDelegate.animation;
+}
+
+class ConfettiParticle {
+  final double x;
+  final double speed;
+  final double rotation;
+  final double size;
+  final Color color;
+  final int shape;
+
+  ConfettiParticle()
+      : x = math.Random().nextDouble(),
+        speed = 0.5 + math.Random().nextDouble() * 1.5,
+        rotation = math.Random().nextDouble() * math.pi * 4,
+        size = 4 + math.Random().nextDouble() * 8,
+        color = [
+          Colors.red,
+          Colors.blue,
+          Colors.green,
+          Colors.yellow,
+          Colors.orange,
+          Colors.purple,
+          Colors.pink
+        ][math.Random().nextInt(7)],
+        shape = math.Random().nextInt(2);
 }

@@ -75,7 +75,7 @@ class _SavedPassengersScreenState extends ConsumerState<SavedPassengersScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedIdType,
+                  initialValue: selectedIdType,
                   decoration: const InputDecoration(labelText: 'Type de pièce'),
                   items: ['CNIB', 'Passport', 'Carte Militaire', 'Autre']
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
