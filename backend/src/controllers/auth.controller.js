@@ -3,7 +3,7 @@ const { generateToken, formatPhoneNumber } = require('../utils/helpers');
 const bcrypt = require('bcryptjs');
 const admin = require('../config/firebase');
 const supabase = require('../config/supabase');
-const pool = require('../database/pool');
+const pool = require('../database/connection');
 const crypto = require('crypto');
 
 // Generate unique 10-char referral code
