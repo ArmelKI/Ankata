@@ -32,7 +32,7 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
     super.initState();
     _selected = List.from(widget.selectedSeats);
     _occupiedSeats = widget.occupiedSeats ?? [];
-    
+
     // Calculate grid dimensions based on total seats (45 = 5 rows x 9 cols)
     // Standard bus layout: 45 seats = 5 rows x 9 columns
     // 40 seats = 4 rows x 10 columns, 50 seats = 5 rows x 10, etc.

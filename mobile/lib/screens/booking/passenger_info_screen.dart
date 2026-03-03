@@ -62,7 +62,7 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
     try {
       final trip = widget.tripData['trip'] as Map<String, dynamic>;
       final scheduleId = trip['scheduleId'];
-      
+
       // TODO: Fetch from actual API endpoint: GET /api/schedules/{scheduleId}/occupied-seats
       // For now, empty array (no seats occupied)
       setState(() {
@@ -198,7 +198,8 @@ class _PassengerInfoScreenState extends ConsumerState<PassengerInfoScreen> {
                         setState(() => _selectedSeats = seats);
                       },
                       maxSeats: 4,
-                      totalSeats: (widget.tripData['availableSeats'] as int?) ?? 45,
+                      totalSeats:
+                          (widget.tripData['availableSeats'] as int?) ?? 45,
                       occupiedSeats: _occupiedSeats,
                     ),
                     const SizedBox(height: AppSpacing.lg),
