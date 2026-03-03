@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1772530842938" clover="3.2.0">
-  <project timestamp="1772530842938" name="All files">
-    <metrics statements="1197" coveredstatements="297" conditionals="589" coveredconditionals="44" methods="139" coveredmethods="10" elements="1925" coveredelements="351" complexity="0" loc="1197" ncloc="1197" packages="9" files="34" classes="34"/>
+<coverage generated="1772532838187" clover="3.2.0">
+  <project timestamp="1772532838187" name="All files">
+    <metrics statements="1187" coveredstatements="298" conditionals="585" coveredconditionals="44" methods="137" coveredmethods="10" elements="1909" coveredelements="352" complexity="0" loc="1187" ncloc="1187" packages="8" files="33" classes="33"/>
     <package name="src">
       <metrics statements="61" coveredstatements="54" conditionals="19" coveredconditionals="7" methods="6" coveredmethods="2"/>
       <file name="index.js" path="/home/armelki/Documents/projets/Ankata/backend/src/index.js">
@@ -98,9 +98,9 @@
       </file>
     </package>
     <package name="src.controllers">
-      <metrics statements="573" coveredstatements="68" conditionals="358" coveredconditionals="19" methods="45" coveredmethods="3"/>
+      <metrics statements="573" coveredstatements="77" conditionals="358" coveredconditionals="21" methods="45" coveredmethods="3"/>
       <file name="auth.controller.js" path="/home/armelki/Documents/projets/Ankata/backend/src/controllers/auth.controller.js">
-        <metrics statements="154" coveredstatements="42" conditionals="108" coveredconditionals="19" methods="9" coveredmethods="3"/>
+        <metrics statements="154" coveredstatements="51" conditionals="108" coveredconditionals="21" methods="9" coveredmethods="3"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -133,11 +133,11 @@
         <line num="53" count="1" type="stmt"/>
         <line num="54" count="1" type="stmt"/>
         <line num="55" count="1" type="stmt"/>
-        <line num="59" count="0" type="stmt"/>
-        <line num="63" count="0" type="stmt"/>
-        <line num="64" count="0" type="stmt"/>
-        <line num="67" count="0" type="stmt"/>
-        <line num="68" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="68" count="1" type="cond" truecount="2" falsecount="2"/>
         <line num="69" count="0" type="stmt"/>
         <line num="74" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="75" count="0" type="stmt"/>
@@ -150,17 +150,17 @@
         <line num="90" count="0" type="stmt"/>
         <line num="94" count="0" type="stmt"/>
         <line num="96" count="0" type="stmt"/>
-        <line num="101" count="0" type="stmt"/>
-        <line num="114" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="101" count="1" type="stmt"/>
+        <line num="114" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="115" count="0" type="stmt"/>
-        <line num="120" count="0" type="stmt"/>
-        <line num="126" count="0" type="stmt"/>
-        <line num="128" count="0" type="stmt"/>
-        <line num="129" count="0" type="stmt"/>
-        <line num="131" count="0" type="stmt"/>
-        <line num="138" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="139" count="1" type="stmt"/>
-        <line num="140" count="1" type="stmt"/>
+        <line num="120" count="1" type="stmt"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="128" count="1" type="stmt"/>
+        <line num="129" count="1" type="stmt"/>
+        <line num="131" count="1" type="stmt"/>
+        <line num="138" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="139" count="0" type="stmt"/>
+        <line num="140" count="0" type="stmt"/>
         <line num="142" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="148" count="2" type="stmt"/>
         <line num="149" count="2" type="stmt"/>
@@ -695,22 +695,6 @@
         <line num="69" count="0" type="stmt"/>
         <line num="70" count="0" type="stmt"/>
         <line num="78" count="1" type="stmt"/>
-      </file>
-    </package>
-    <package name="src.database">
-      <metrics statements="10" coveredstatements="8" conditionals="4" coveredconditionals="2" methods="2" coveredmethods="0"/>
-      <file name="connection.js" path="/home/armelki/Documents/projets/Ankata/backend/src/database/connection.js">
-        <metrics statements="10" coveredstatements="8" conditionals="4" coveredconditionals="2" methods="2" coveredmethods="0"/>
-        <line num="1" count="2" type="stmt"/>
-        <line num="2" count="2" type="stmt"/>
-        <line num="3" count="2" type="stmt"/>
-        <line num="5" count="2" type="stmt"/>
-        <line num="15" count="2" type="stmt"/>
-        <line num="25" count="2" type="stmt"/>
-        <line num="26" count="0" type="stmt"/>
-        <line num="29" count="2" type="stmt"/>
-        <line num="30" count="0" type="stmt"/>
-        <line num="33" count="2" type="stmt"/>
       </file>
     </package>
     <package name="src.middleware">
@@ -1287,7 +1271,7 @@
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="4" count="1" type="cond" truecount="2" falsecount="1"/>
-        <line num="5" count="1" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
         <line num="17" count="0" type="stmt"/>
         <line num="18" count="0" type="stmt"/>
